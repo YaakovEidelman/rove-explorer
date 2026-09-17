@@ -2,18 +2,14 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-# Builds and tests the current working tree, then uploads a linux-x64 build
-# to the "dev" prerelease on GitHub. Run this locally instead of pushing to
-# main (dev-build.yml is manual-trigger only now). See dev-release-win.ps1
-# for the Windows half — run that separately on a Windows machine.
-
-version="0.2.$(date +%s)"
+now="$(date +%s)"
+version="0.2.$((now / 86400)).$(((now % 86400) / 60))"
 sha="$(git rev-parse --short HEAD)"
 dirty=""
 [[ -n "$(git status --porcelain)" ]] && dirty=" (dirty working tree)"
 
 echo "Testing..."
-dotnet test Rove.slnx -c Release --nologo
+dotnet test Rove.slnx -c Release --nologo -p:RuntimeIdentifier=linux-x64
 
 echo "Publishing rove $version..."
 rm -rf out/linux stage rove-linux-x64.tar.gz

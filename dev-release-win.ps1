@@ -1,12 +1,9 @@
 #!/usr/bin/env pwsh
-# Builds and tests the current working tree, then uploads a win-x64 build
-# to the "dev" prerelease on GitHub. Run this locally instead of pushing to
-# main (dev-build.yml is manual-trigger only now). See dev-release-linux.sh
-# for the Linux half — run that separately on a Linux machine.
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
-$version = "0.2." + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+$now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+$version = "0.2.$([int]($now / 86400)).$([int](($now % 86400) / 60))"
 $sha = (git rev-parse --short HEAD).Trim()
 $dirty = ""
 if (git status --porcelain) { $dirty = " (dirty working tree)" }
