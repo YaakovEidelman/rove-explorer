@@ -4,10 +4,11 @@ using System.Text.Json.Serialization;
 namespace Rove.Core.Services;
 
 public sealed record PortalInstallState(
-    [property: JsonPropertyName("priorContent")] string? PriorContent
+    [property: JsonPropertyName("priorContent")] string? PriorContent,
+    [property: JsonPropertyName("configPath")] string? ConfigPath = null
 )
 {
-    public static PortalInstallState For(string? priorContent) => new(priorContent);
+    public static PortalInstallState For(string? priorContent, string configPath) => new(priorContent, configPath);
 
     public static PortalInstallState? Read(string path)
     {

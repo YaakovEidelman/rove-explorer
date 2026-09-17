@@ -47,8 +47,9 @@ public static class PortalInstall
             ReloadSessionBus();
     }
 
-    public static void Withdraw(string dataHome)
+    public static void Withdraw(string dataHome, string portalExecutable)
     {
+        KillRunning(portalExecutable);
         bool changed = TryDelete(PortalFilePath(dataHome));
         changed |= TryDelete(ServiceFilePath(dataHome));
         if (changed)
@@ -83,10 +84,10 @@ public static class PortalInstall
             && ClaimNow(configPath, statePath, preferredName);
     }
 
-    public static bool Disable(string dataHome, string configPath, string statePath)
+    public static bool Disable(string dataHome, string configPath, string statePath, string portalExecutable)
     {
         bool reverted = RevertBackend(configPath, statePath);
-        Withdraw(dataHome);
+        Withdraw(dataHome, portalExecutable);
         return reverted;
     }
 
@@ -96,15 +97,17 @@ public static class PortalInstall
         if (state is null)
             return false;
 
+        string target = state.ConfigPath is { Length: > 0 } claimed ? claimed : configPath;
+
         try
         {
             if (state.PriorContent is null)
-                File.Delete(configPath);
+                File.Delete(target);
             else
             {
-                if (Path.GetDirectoryName(configPath) is { Length: > 0 } parent)
+                if (Path.GetDirectoryName(target) is { Length: > 0 } parent)
                     Directory.CreateDirectory(parent);
-                File.WriteAllText(configPath, state.PriorContent);
+                File.WriteAllText(target, state.PriorContent);
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -119,7 +122,7 @@ public static class PortalInstall
     private static bool ClaimNow(string configPath, string statePath, string preferredName)
     {
         string? prior = ReadIfPresent(configPath);
-        return PortalInstallState.For(prior).Write(statePath) && WriteConfig(configPath, preferredName);
+        return PortalInstallState.For(prior, configPath).Write(statePath) && WriteConfig(configPath, preferredName);
     }
 
     private static bool WriteConfig(string configPath, string preferredName)
@@ -179,6 +182,45 @@ public static class PortalInstall
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return false;
+        }
+    }
+
+    // xdg-desktop-portal starts rove-portal on demand and it stays running
+    // afterward, so uninstalling out from under it leaves an orphaned process
+    // holding its own deleted binary open.
+    private static void KillRunning(string portalExecutable)
+    {
+        try
+        {
+            foreach (string procDir in Directory.EnumerateDirectories("/proc"))
+            {
+                if (!int.TryParse(Path.GetFileName(procDir), out int pid))
+                    continue;
+
+                string? exe;
+                try
+                {
+                    exe = new FileInfo(Path.Combine(procDir, "exe")).LinkTarget;
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    continue;
+                }
+
+                if (exe != portalExecutable && exe != portalExecutable + " (deleted)")
+                    continue;
+
+                try
+                {
+                    Process.GetProcessById(pid).Kill();
+                }
+                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException)
+                {
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
         }
     }
 

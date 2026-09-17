@@ -107,7 +107,7 @@ public class PortalInstallEnableTests
         Assert.True(enabled);
         Assert.Contains("FileChooser=rove", File.ReadAllText(home.ConfigPath), StringComparison.Ordinal);
 
-        PortalInstall.Disable(home.DataHome, home.ConfigPath, home.StatePath);
+        PortalInstall.Disable(home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal");
         Assert.Equal("[preferred]\ndefault=gtk\n", File.ReadAllText(home.ConfigPath));
     }
 
@@ -131,7 +131,7 @@ public class PortalInstallDisableTests
         using PortalHome home = new();
         PortalInstall.Enable(home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal", "rove");
 
-        bool disabled = PortalInstall.Disable(home.DataHome, home.ConfigPath, home.StatePath);
+        bool disabled = PortalInstall.Disable(home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal");
 
         Assert.True(disabled);
         Assert.False(File.Exists(home.ConfigPath));
@@ -146,6 +146,21 @@ public class PortalInstallDisableTests
         using PortalHome home = new();
 
         Assert.False(PortalInstall.RevertBackend(home.ConfigPath, home.StatePath));
+    }
+
+    [Fact]
+    public void RevertingUsesTheConfigPathRecordedAtClaimTimeNotTheCurrentOne()
+    {
+        using PortalHome home = new();
+        PortalInstall.Enable(home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal", "rove");
+
+        string differentPath = Path.Combine(home.ConfigHome, "xdg-desktop-portal", "gnome-portals.conf");
+
+        bool reverted = PortalInstall.RevertBackend(differentPath, home.StatePath);
+
+        Assert.True(reverted);
+        Assert.False(File.Exists(home.ConfigPath));
+        Assert.False(File.Exists(differentPath));
     }
 }
 
@@ -204,10 +219,27 @@ public class PortalInstallAdvertiseTests
         using PortalHome home = new();
         PortalInstall.Advertise(home.DataHome, "/opt/rove/rove-portal");
 
-        PortalInstall.Withdraw(home.DataHome);
+        PortalInstall.Withdraw(home.DataHome, "/opt/rove/rove-portal");
 
         Assert.False(File.Exists(PortalInstall.PortalFilePath(home.DataHome)));
         Assert.False(File.Exists(PortalInstall.ServiceFilePath(home.DataHome)));
+    }
+
+    [Fact]
+    public void WithdrawingKillsARunningPortalProcess()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+
+        using PortalHome home = new();
+        using System.Diagnostics.Process process = System.Diagnostics.Process.Start(
+            new System.Diagnostics.ProcessStartInfo("sleep", "30") { UseShellExecute = false })!;
+        string exePath = new FileInfo($"/proc/{process.Id}/exe").LinkTarget!;
+
+        PortalInstall.Withdraw(home.DataHome, exePath);
+
+        process.WaitForExit(2000);
+        Assert.True(process.HasExited);
     }
 }
 

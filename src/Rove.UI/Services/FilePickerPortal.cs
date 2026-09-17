@@ -61,7 +61,7 @@ public sealed class FilePickerPortal
 
     public bool Disable()
     {
-        bool portal = PortalInstall.Disable(_dataHome, _configPath, _statePath);
+        bool portal = PortalInstall.Disable(_dataHome, _configPath, _statePath, _executable);
         bool mime = DefaultFileManager.Disable(_mimeAppsPath, _mimeStatePath);
         return portal || mime;
     }
