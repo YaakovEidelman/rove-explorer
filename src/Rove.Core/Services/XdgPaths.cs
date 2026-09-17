@@ -23,6 +23,11 @@ public static class XdgPaths
             ? dir
             : Path.Combine(Home, ".local", "state");
 
+    public static string? CurrentDesktop =>
+        Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") is { Length: > 0 } value
+            ? value
+            : null;
+
     public static IEnumerable<string> DataDirs()
     {
         yield return DataHome;

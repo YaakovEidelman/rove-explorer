@@ -13,7 +13,7 @@ public sealed class FilePickerPortal
 
     public FilePickerPortal() : this(
         XdgPaths.DataHome,
-        PortalInstall.ConfigPath(XdgPaths.ConfigHome),
+        PortalInstall.ConfigPath(XdgPaths.ConfigHome, XdgPaths.CurrentDesktop),
         RovePaths.PortalInstallStateFile,
         LinuxInstall.PortalBinaryPath(LinuxInstall.LibDirectory))
     {
