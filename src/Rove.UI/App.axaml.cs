@@ -11,6 +11,7 @@ using Rove.UI.ViewModels;
 using Rove.UI.Views;
 using System;
 using System.Net.Http;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 
 namespace Rove.UI;
@@ -88,6 +89,10 @@ public partial class App : Application
             {
                 DataContext = main,
             };
+
+            if (OperatingSystem.IsLinux())
+                OfferDefaultFilePicker(confirm);
+
             desktop.ShutdownRequested += (_, _) =>
             {
                 session.Save(tabs.Snapshot());
@@ -99,6 +104,19 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    [SupportedOSPlatform("linux")]
+    private static void OfferDefaultFilePicker(ConfirmViewModel confirm)
+    {
+        FilePickerPortal portal = new();
+        if (portal.Status != PortalStatus.NotInstalled || portal.HasAskedAboutDefault)
+            return;
+
+        portal.MarkAskedAboutDefault();
+        confirm.Request(
+            "Make Rove the default for opening folders and other apps' Open/Save dialogs?",
+            () => portal.Enable());
     }
 
     private static void StartPicker(IClassicDesktopStyleApplicationLifetime desktop, PickerLaunchOptions picker)
@@ -116,6 +134,8 @@ public partial class App : Application
         BookmarkStore bookmarks = new();
         SettingsStore settings = new();
         UndoStack undo = new();
+
+        ThemePalette.ApplyFromSettings(settings.Current);
 
         ContentViewModel content = new(
             registry, core, fileClipboard, systemClipboard, iconCache, fileOperation, bookmarks, undo, settings);

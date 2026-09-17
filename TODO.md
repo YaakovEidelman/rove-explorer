@@ -19,5 +19,3 @@ The following is in no particular order (other then that prod grade is first, bu
 ## v2
 1. I want to even support, ssh, ftp (including sftp and ftps support) and mobile devices.
 2. An easy feedback screen, so users can send feedback from inside the app.
-3. On Linux, make Rove act as a file picker portal, so browsers and other
-   programs can use it to pick a file.

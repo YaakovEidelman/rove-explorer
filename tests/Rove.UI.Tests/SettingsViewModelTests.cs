@@ -96,7 +96,11 @@ public sealed class SettingsPortalRowTests : IDisposable
             Path.Combine(_root, "share"),
             Path.Combine(_root, "config", "xdg-desktop-portal", "portals.conf"),
             Path.Combine(_root, "state", "portal-install.json"),
-            "/opt/rove/rove-portal");
+            Path.Combine(_root, "state", "portal-asked.json"),
+            Path.Combine(_root, "config", "mimeapps.list"),
+            Path.Combine(_root, "state", "mime-default.json"),
+            "/opt/rove/rove-portal",
+            "rove.desktop");
         SettingsStore store = new(Path.Combine(_root, "settings.json"));
         return new SettingsViewModel(new CommandRegistry(KeymapLoad.Empty), store, portal);
     }

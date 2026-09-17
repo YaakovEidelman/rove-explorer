@@ -4,10 +4,6 @@ using Tmds.DBus.Protocol;
 
 string executable = Environment.ProcessPath ?? "rove-portal";
 PortalInstall.Advertise(XdgPaths.DataHome, executable);
-PortalInstall.EnsureBackend(
-    PortalInstall.ConfigPath(XdgPaths.ConfigHome, XdgPaths.CurrentDesktop),
-    RovePaths.PortalInstallStateFile,
-    PortalFiles.PreferredName);
 
 var connection = new DBusConnection(DBusAddress.Session!);
 await connection.ConnectAsync();

@@ -109,5 +109,11 @@ public static class RovePaths
 
     public static string PortalInstallStateFile => Path.Combine(StateDirectory, "portal-install.json");
 
+    /// <summary>Marks that Rove has already offered to become the default file picker.</summary>
+    public static string PortalAskedFile => Path.Combine(StateDirectory, "portal-asked.json");
+
+    /// <summary>What mimeapps.list pointed at for folders before Rove claimed it.</summary>
+    public static string MimeDefaultStateFile => Path.Combine(StateDirectory, "mime-default.json");
+
     public static string UpdateCheckStateFile => Path.Combine(StateDirectory, "update-check.json");
 }

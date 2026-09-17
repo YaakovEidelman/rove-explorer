@@ -19,6 +19,17 @@ public static class ThemePalette
     private static Dictionary<string, IBrush>? _stockLight;
     private static Dictionary<string, IBrush>? _stockDark;
 
+    public static void ApplyFromSettings(AppSettings settings)
+    {
+        ThemeColors? palette = settings.Theme switch
+        {
+            "Custom" => CustomTheme.Load(),
+            "Omarchy" when OperatingSystem.IsLinux() => OmarchyTheme.Load(),
+            _ => null,
+        };
+        Apply(settings.Theme, palette);
+    }
+
     public static void Apply(string themeSetting, ThemeColors? palette)
     {
         if (Application.Current is not { } app)

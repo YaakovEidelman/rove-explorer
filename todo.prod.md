@@ -8,7 +8,6 @@ The following is in no particular order (other than that the first group is bloc
 group no particular order)
 
 ## Blocking for a real release
-1. No license file. Legal status for anyone but me is undefined.
-2. The release pipeline only produces one rolling "dev" prerelease tag, deleted and recreated on
+1. The release pipeline only produces one rolling "dev" prerelease tag, deleted and recreated on
    every push to main. No versioned/stable channel, no changelog, no "last known-good build."
-3. The Windows binary is not code signed, so first run likely trips SmartScreen/Defender.
+2. The Windows binary is not code signed, so first run likely trips SmartScreen/Defender.

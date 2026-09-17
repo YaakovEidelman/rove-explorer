@@ -60,9 +60,20 @@ public static class PortalInstall
         : File.Exists(configPath) ? PortalStatus.OwnedByOther
         : PortalStatus.NotInstalled;
 
-    public static bool EnsureBackend(string configPath, string statePath, string preferredName) =>
-        CurrentStatus(configPath, statePath) == PortalStatus.NotInstalled
-            && ClaimNow(configPath, statePath, preferredName);
+    public static bool HasAskedAboutDefault(string askedPath) => File.Exists(askedPath);
+
+    public static void MarkAskedAboutDefault(string askedPath)
+    {
+        try
+        {
+            if (Path.GetDirectoryName(askedPath) is { Length: > 0 } parent)
+                Directory.CreateDirectory(parent);
+            File.WriteAllText(askedPath, "");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
 
     public static bool Enable(
         string dataHome, string configPath, string statePath, string executable, string preferredName)

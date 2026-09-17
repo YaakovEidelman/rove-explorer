@@ -1,11 +1,17 @@
-# The Linux file picker portal
+# The Linux default-app claim
 
-On Linux, Rove can act as the system file picker: the "Open File" and "Save
-File" dialogs other apps show — GTK, Qt, Flatpaks, anything that goes through
-`xdg-desktop-portal` — can open as Rove instead of GTK's or KDE's own picker.
-Windows has nothing like this; it is not touched by any of this document.
+On Linux, Rove can become the system default for two separate things:
 
-Two pieces make this work:
+- The "Open File" and "Save File" dialogs other apps show — GTK, Qt,
+  Flatpaks, anything that goes through `xdg-desktop-portal` — can open as
+  Rove instead of GTK's or KDE's own picker.
+- The default handler for `inode/directory`, which is what "Show in Folder"
+  (Chrome downloads, most file-open buttons) and plain `xdg-open` on a
+  directory use to decide which file manager to launch.
+
+Windows has nothing like either; it is not touched by any of this document.
+
+Three pieces make this work:
 
 - `rove-portal`, a small headless program that speaks the
   `org.freedesktop.impl.portal.FileChooser` D-Bus interface and, when asked,
@@ -13,26 +19,31 @@ Two pieces make this work:
 - `xdg-desktop-portal` itself, which decides which installed backend
   implements which interface, and has to be told rove-portal exists and
   should be the one handling `FileChooser`.
+- `~/.config/mimeapps.list`, the file every XDG-compliant desktop and
+  `xdg-open` read to find the default app for a mime type — Rove's claim
+  sets its `inode/directory` entry.
 
-## What happens automatically
+## What happens automatically, and what doesn't
 
-The first time Rove runs, and every time after that, it:
+Every launch, Rove copies `rove-portal` into `~/.local/lib/rove/` alongside
+itself (see `docs/installing.md`) and writes the two files that tell
+`xdg-desktop-portal` rove-portal exists and can handle `FileChooser`. This
+only advertises that Rove is *available* as a backend — it never by itself
+makes Rove the preferred one, and `rove-portal` does not touch preferences
+either when `xdg-desktop-portal` activates it on demand.
 
-1. Copies `rove-portal` into `~/.local/lib/rove/` alongside itself, the same
-   place its own binary lives (see `docs/installing.md`).
-2. Writes the two files that tell `xdg-desktop-portal` rove-portal exists and
-   can handle `FileChooser` — this always happens, whether or not rove-portal
-   ends up the one actually in charge.
-3. Claims the `FileChooser` preference for itself, but only the first time it
-   finds no preference there at all. If a preference already exists — GTK's,
-   KDE's, another file manager's, or one you set by hand — Rove leaves it
-   alone. What it found (or that it found nothing) is saved first, so the
-   claim can be undone later.
+Claiming either default only ever happens two ways:
 
-None of this needs a display or a running `rove-portal` process — Rove does
-the registration itself, in the background, on every launch. `xdg-desktop-portal`
-starts `rove-portal` on its own, on demand, the first time something asks it
-to open a file.
+1. **The first-run ask.** The first time Rove's main window opens and it
+   finds neither default already pointed at itself, it asks once, in a
+   confirm dialog, whether to become the default for both. Answering no
+   still records that it asked — it will not ask again. Answering yes claims
+   both, saving what was there before so the claim can be undone.
+2. **The Settings row**, at any time after that — see below.
+
+Nothing claims a default that already has an explicit owner (GTK's, KDE's,
+another file manager's, or one set by hand) without you doing it yourself
+from Settings.
 
 ## Where things go
 
@@ -43,25 +54,38 @@ to open a file.
   `~/.local/share/dbus-1/services/org.freedesktop.impl.portal.desktop.rove.service`
 - The FileChooser preference: `~/.config/xdg-desktop-portal/portals.conf`
 - What Rove found there before claiming it: `~/.local/state/rove/portal-install.json`
+- The default file manager: `~/.config/mimeapps.list`'s `inode/directory` key
+- What Rove found there before claiming it: `~/.local/state/rove/mime-default.json`
+- Whether the first-run ask has happened: `~/.local/state/rove/portal-asked.json`
 
 All of these follow `$XDG_DATA_HOME`/`$XDG_CONFIG_HOME`/`$XDG_STATE_HOME` when
 set, falling back to the paths above.
 
 ## Settings
 
-Rove's Settings screen has a "Linux file picker" row showing the current
-state: `Not installed`, `Rove`, or `Owned by something else`. Activating it
-(Enter/Space, same as any other setting) does the opposite of whatever it
-shows — claims the preference if Rove doesn't have it, or gives it back if
-Rove does. This is the same "ask first" step the automatic claim skips when
-something else already has an opinion: nothing takes over a preference you
-didn't already have set for yourself without you doing it from here.
+Rove's Settings screen has a "Default for opening files and folders" row
+showing the current state: `Not installed`, `Rove`, or `Owned by something
+else`. Activating it (Enter/Space, same as any other setting) does the
+opposite of whatever it shows — claims both defaults if Rove doesn't have
+them, or gives both back if Rove does.
 
-Giving it back restores exactly what was there before Rove claimed it — the
-other backend's preference, or nothing, whichever it was.
+Giving it back restores exactly what was there before Rove claimed it —
+the other backend's preference and the other file manager's mime entry, or
+nothing, whichever they were.
 
 Uninstalling Rove (`rove --uninstall`, see `docs/installing.md`) also gives
 back the claim if Rove is the one holding it.
+
+## Known gap
+
+Some desktops (GNOME among them) resolve "Show in Folder" via the
+`org.freedesktop.FileManager1` D-Bus interface before ever consulting
+`mimeapps.list`, and Nautilus registers that interface itself. Claiming the
+`inode/directory` default fixes `xdg-open` and anything that reads
+`mimeapps.list` directly; it will not override a desktop that goes straight
+to `FileManager1`. Taking over that interface too is a larger, riskier
+change — it means owning a D-Bus well-known name another running file
+manager also claims — and hasn't been done here.
 
 ## Known limitations
 

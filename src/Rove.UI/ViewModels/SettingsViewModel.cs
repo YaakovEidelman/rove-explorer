@@ -67,7 +67,7 @@ public partial class SettingsViewModel : ViewModelBase
             new("Auto-update", s.AutoUpdate ? "On" : "Off"),
         ];
         if (OperatingSystem.IsLinux() && _portal is not null)
-            rows.Add(new("Linux file picker", PortalStatusLabel(_portal.Status)));
+            rows.Add(new("Default for opening files and folders", PortalStatusLabel(_portal.Status)));
         Rows = new(rows);
     }
 
@@ -139,16 +139,7 @@ public partial class SettingsViewModel : ViewModelBase
         return options[(index + 1) % options.Length];
     }
 
-    public void ApplyTheme()
-    {
-        ThemeColors? palette = _store.Current.Theme switch
-        {
-            "Custom" => CustomTheme.Load(),
-            "Omarchy" when OperatingSystem.IsLinux() => OmarchyTheme.Load(),
-            _ => null,
-        };
-        ThemePalette.Apply(_store.Current.Theme, palette);
-    }
+    public void ApplyTheme() => ThemePalette.ApplyFromSettings(_store.Current);
 
     private void RegisterBindings()
     {

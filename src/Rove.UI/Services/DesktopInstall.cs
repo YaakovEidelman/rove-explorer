@@ -45,7 +45,7 @@ public static class DesktopInstall
             {
                 Run(force: false);
                 if (OperatingSystem.IsLinux())
-                    new FilePickerPortal().EnsureRegisteredInBackground();
+                    new FilePickerPortal().AdvertiseInBackground();
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
             {

@@ -13,6 +13,8 @@ public sealed class PortalHome : IDisposable
 
     public string StatePath => Path.Combine(Root, "state", "portal-install.json");
 
+    public string AskedPath => Path.Combine(Root, "state", "portal-asked.json");
+
     public string ConfigPath => PortalInstall.ConfigPath(ConfigHome);
 
     public void Dispose()
@@ -41,7 +43,7 @@ public class PortalInstallStatusTests
     public void AConfigRoveWroteMeansOwnedByRove()
     {
         using PortalHome home = new();
-        PortalInstall.EnsureBackend(home.ConfigPath, home.StatePath, "rove");
+        PortalInstall.Enable(home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal", "rove");
 
         Assert.Equal(PortalStatus.OwnedByRove, PortalInstall.CurrentStatus(home.ConfigPath, home.StatePath));
     }
@@ -57,45 +59,24 @@ public class PortalInstallStatusTests
     }
 }
 
-public class PortalInstallEnsureBackendTests
+public class PortalInstallAskedTests
 {
     [Fact]
-    public void WithNoConfigAtAllRoveClaimsFileChooser()
+    public void NothingAskedYetReturnsFalse()
     {
         using PortalHome home = new();
 
-        bool claimed = PortalInstall.EnsureBackend(home.ConfigPath, home.StatePath, "rove");
-
-        Assert.True(claimed);
-        string written = File.ReadAllText(home.ConfigPath);
-        Assert.Contains("org.freedesktop.impl.portal.FileChooser=rove", written, StringComparison.Ordinal);
+        Assert.False(PortalInstall.HasAskedAboutDefault(home.AskedPath));
     }
 
     [Fact]
-    public void AnExistingConfigIsNeverTouched()
+    public void MarkingAskedIsRemembered()
     {
         using PortalHome home = new();
-        Directory.CreateDirectory(Path.GetDirectoryName(home.ConfigPath)!);
-        File.WriteAllText(home.ConfigPath, "[preferred]\ndefault=gtk\n");
 
-        bool claimed = PortalInstall.EnsureBackend(home.ConfigPath, home.StatePath, "rove");
+        PortalInstall.MarkAskedAboutDefault(home.AskedPath);
 
-        Assert.False(claimed);
-        Assert.Equal("[preferred]\ndefault=gtk\n", File.ReadAllText(home.ConfigPath));
-        Assert.False(File.Exists(home.StatePath));
-    }
-
-    [Fact]
-    public void ASecondLaunchDoesNotClaimAgain()
-    {
-        using PortalHome home = new();
-        PortalInstall.EnsureBackend(home.ConfigPath, home.StatePath, "rove");
-        string firstWrite = File.ReadAllText(home.ConfigPath);
-
-        bool claimedAgain = PortalInstall.EnsureBackend(home.ConfigPath, home.StatePath, "rove");
-
-        Assert.False(claimedAgain);
-        Assert.Equal(firstWrite, File.ReadAllText(home.ConfigPath));
+        Assert.True(PortalInstall.HasAskedAboutDefault(home.AskedPath));
     }
 }
 
