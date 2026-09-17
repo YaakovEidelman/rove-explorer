@@ -2,6 +2,7 @@
 bin/
 obj/
 out/
+stage/
 [Dd]ebug/
 [Rr]elease/
 [Bb]uild/
@@ -11,6 +12,10 @@ publish/
 *.exe
 *.pdb
 *.cache
+
+# ── dev-release artifacts ──
+rove-linux-x64.tar.gz
+rove-win-x64.zip
 
 # ── NuGet ──
 *.nupkg
