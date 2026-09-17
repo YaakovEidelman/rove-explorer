@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Rove.Core.Services;
 using Rove.UI.Services;
 using System.Collections.ObjectModel;
+using System.Runtime.Versioning;
 
 namespace Rove.UI.ViewModels;
 
@@ -19,12 +20,15 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly CommandRegistry _registry;
     private readonly SettingsStore _store;
     private readonly FilePickerPortal? _portal;
+    private readonly ConfirmViewModel? _confirm;
 
-    public SettingsViewModel(CommandRegistry registry, SettingsStore store, FilePickerPortal? portal = null)
+    public SettingsViewModel(
+        CommandRegistry registry, SettingsStore store, FilePickerPortal? portal = null, ConfirmViewModel? confirm = null)
     {
         _registry = registry;
         _store = store;
         _portal = portal ?? (OperatingSystem.IsLinux() ? new FilePickerPortal() : null);
+        _confirm = confirm;
         RegisterBindings();
         ApplyTheme();
     }
@@ -101,13 +105,17 @@ public partial class SettingsViewModel : ViewModelBase
         if (OperatingSystem.IsLinux() && _portal is not null && SelectedIndex == Rows.Count - 1)
         {
             if (_portal.Status == PortalStatus.OwnedByRove)
+            {
                 _portal.Disable();
+                RebuildKeepingSelection();
+            }
+            else if (_confirm is not null)
+                ConfirmAndEnablePortal(_portal, _confirm);
             else
+            {
                 _portal.Enable();
-
-            int portalRowSelected = SelectedIndex;
-            Rebuild();
-            SelectedIndex = portalRowSelected;
+                RebuildKeepingSelection();
+            }
             return;
         }
 
@@ -125,10 +133,23 @@ public partial class SettingsViewModel : ViewModelBase
         if (SelectedIndex == 0)
             ApplyTheme();
 
+        RebuildKeepingSelection();
+    }
+
+    private void RebuildKeepingSelection()
+    {
         int selected = SelectedIndex;
         Rebuild();
         SelectedIndex = selected;
     }
+
+    [SupportedOSPlatform("linux")]
+    private void ConfirmAndEnablePortal(FilePickerPortal portal, ConfirmViewModel confirm) =>
+        confirm.Request(FilePickerPortal.ClaimWarning, () =>
+        {
+            portal.Enable();
+            RebuildKeepingSelection();
+        });
 
     private static string NextTheme(string theme)
     {

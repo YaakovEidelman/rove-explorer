@@ -21,4 +21,6 @@ public static class FileManagerBusInstall
         if (AtomicFileWrite.TryDelete(ServiceFilePath(dataHome)))
             SessionBus.ReloadConfig();
     }
+
+    public static void ReclaimNow() => SessionBus.KillOwner(FileManagerBusFiles.BusName);
 }

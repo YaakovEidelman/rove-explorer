@@ -221,7 +221,7 @@
                     <TextBlock DockPanel.Dock="Right" Classes="hint"
                                Text="y/Enter confirm · n/Esc cancel" />
                     <TextBlock Classes="error" Text="{Binding Confirm.Message}"
-                               TextTrimming="CharacterEllipsis" />
+                               TextWrapping="Wrap" />
                 </DockPanel>
             </Border>
 

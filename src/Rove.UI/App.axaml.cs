@@ -73,7 +73,7 @@ public partial class App : Application
             BookmarksViewModel bookmarkList = new(registry, bookmarks);
             ConfirmViewModel confirm = new(registry);
             PreviewViewModel preview = new(registry, core, new ImagePreviewLoader());
-            SettingsViewModel settingsPage = new(registry, settings);
+            SettingsViewModel settingsPage = new(registry, settings, confirm: confirm);
             ThemeFileWatcher themeWatcher = new(settingsPage.ApplyTheme);
 
             HttpClient updateHttp = new() { Timeout = TimeSpan.FromSeconds(10) };
@@ -114,9 +114,7 @@ public partial class App : Application
             return;
 
         portal.MarkAskedAboutDefault();
-        confirm.Request(
-            "Make Rove the default for opening folders and other apps' Open/Save dialogs?",
-            () => portal.Enable());
+        confirm.Request(FilePickerPortal.ClaimWarning, () => portal.Enable());
     }
 
     private static void StartPicker(IClassicDesktopStyleApplicationLifetime desktop, PickerLaunchOptions picker)

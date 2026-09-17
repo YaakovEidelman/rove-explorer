@@ -6,6 +6,10 @@ namespace Rove.UI.Services;
 [SupportedOSPlatform("linux")]
 public sealed class FilePickerPortal
 {
+    public const string ClaimWarning =
+        "Make Rove default for folders, Open/Save dialogs, and Show-in-Folder? "
+        + "This restarts the desktop portal and closes any running file manager (e.g. Nautilus).";
+
     private readonly string _dataHome;
     private readonly string _configPath;
     private readonly string _statePath;
@@ -62,7 +66,10 @@ public sealed class FilePickerPortal
             _dataHome, _configPath, _statePath, _executable, PortalFiles.PreferredName, _restartDesktopPortal);
         bool mime = DefaultFileManager.Enable(_mimeAppsPath, _mimeStatePath, _desktopFileName);
         if (mime)
+        {
             FileManagerBusInstall.Install(_dataHome, _executable);
+            FileManagerBusInstall.ReclaimNow();
+        }
         return portal || mime;
     }
 
