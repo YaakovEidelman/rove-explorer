@@ -31,7 +31,11 @@ dotnet publish src/Rove.UI/Rove.UI.csproj -c Release -r <win-x64|linux-x64>
 
 CI (`.github/workflows/dev-build.yml`) builds win-x64 and linux-x64 separately —
 native AOT compiles on the platform it targets, no cross-compiling — and
-publishes both as a single rolling `dev` prerelease on every push to `main`.
+publishes both as a single rolling `dev` prerelease. It's manual-trigger
+only (`workflow_dispatch`). For day-to-day solo dev, skip CI and run
+`./dev-release-linux.sh` (Linux) or `./dev-release-win.ps1` (Windows)
+instead — each tests, publishes, and uploads its own platform's asset to
+the `dev` release directly from a local machine.
 
 ## Architecture
 
