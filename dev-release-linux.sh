@@ -2,6 +2,11 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
+install_local=false
+for arg in "$@"; do
+  [[ "$arg" == "--install" ]] && install_local=true
+done
+
 now="$(date +%s)"
 version="0.2.$((now / 86400)).$(((now % 86400) / 60))"
 sha="$(git rev-parse --short HEAD)"
@@ -41,3 +46,8 @@ fi
 gh release upload dev rove-linux-x64.tar.gz --clobber
 
 echo "Uploaded rove-linux-x64.tar.gz $version @ $sha$dirty to the dev release."
+
+if $install_local; then
+  echo "Installing the build just published..."
+  stage/rove/Rove --install
+fi

@@ -1,4 +1,5 @@
 #!/usr/bin/env pwsh
+param([switch]$Install)
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
@@ -40,3 +41,9 @@ if ($LASTEXITCODE -ne 0) {
 gh release upload dev rove-win-x64.zip --clobber
 
 Write-Host "Uploaded rove-win-x64.zip $version @ $sha$dirty to the dev release."
+
+if ($Install) {
+  Write-Host "Installing the build just published..."
+  & stage/Rove/Rove.exe --install
+  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}

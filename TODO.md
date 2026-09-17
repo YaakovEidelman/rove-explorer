@@ -17,6 +17,7 @@ The following is in no particular order (other then that prod grade is first, bu
 2. on Windows, going to trash just opens the Windows Recycle Bin instead of showing trashed items inside Rove. Doesn't need to be in the same commit as other work. Also, on both Windows and Linux, going to trash shouldn't make you lose your place - right now on Linux it navigates you into the trash folder and you lose where you just were. Needs something better than plain folder navigation for viewing trash - maybe a palette, maybe something else, not sure yet.
 3. full drag and drop support. very large and easy to get wrong, needs its own focused pass.
 4. no single-instance enforcement - opening a second Rove instance can cause buggy behaviour, since each instance keeps its own copy of settings/bookmarks/etc. in memory and last one to save wins, silently dropping the other instance's changes. Not sure of the right fix - maybe only allow one instance open at a time.
+5. claiming the default file manager now force-kills whatever currently holds org.freedesktop.FileManager1 (e.g. Nautilus) so the claim takes effect right away. Deliberate on whether I actually want that, or whether there should at least be an option to skip the kill and only take over via normal D-Bus activation (i.e. only when nothing is currently running).
 
 ## v2
 1. I want to even support, ssh, ftp (including sftp and ftps support) and mobile devices.
