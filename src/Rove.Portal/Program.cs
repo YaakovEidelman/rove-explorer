@@ -8,7 +8,10 @@ PortalInstall.Advertise(XdgPaths.DataHome, executable);
 var connection = new DBusConnection(DBusAddress.Session!);
 await connection.ConnectAsync();
 connection.AddMethodHandler(new FileChooserHandler());
-await connection.RequestNameAsync(PortalFiles.BusName, RequestNameOptions.None);
+await connection.TryRequestNameAsync(PortalFiles.BusName, RequestNameOptions.None);
+
+connection.AddMethodHandler(new FileManagerHandler());
+await connection.TryRequestNameAsync(FileManagerBusFiles.BusName, RequestNameOptions.None);
 
 Console.WriteLine($"rove-portal listening as {PortalFiles.BusName} at {FileChooserHandler.ObjectPath}");
 

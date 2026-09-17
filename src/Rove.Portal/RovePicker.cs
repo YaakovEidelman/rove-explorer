@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Rove.Core.Services;
 
 namespace Rove.Portal;
 
@@ -91,10 +92,5 @@ internal sealed class RovePickerSession : IDisposable
         _process.Dispose();
     }
 
-    private static string ExecutablePath()
-    {
-        string installed = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin", "rove");
-        return File.Exists(installed) ? installed : "rove";
-    }
+    private static string ExecutablePath() => RoveLaunch.ExecutablePath();
 }

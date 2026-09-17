@@ -41,19 +41,19 @@ public static class PortalInstall
 
     public static void Advertise(string dataHome, string executable)
     {
-        bool changed = WriteIfDifferent(PortalFilePath(dataHome), PortalFiles.PortalFileContents());
-        changed |= WriteIfDifferent(ServiceFilePath(dataHome), PortalFiles.ServiceFileContents(executable));
+        bool changed = AtomicFileWrite.WriteIfDifferent(PortalFilePath(dataHome), PortalFiles.PortalFileContents());
+        changed |= AtomicFileWrite.WriteIfDifferent(ServiceFilePath(dataHome), PortalFiles.ServiceFileContents(executable));
         if (changed)
-            ReloadSessionBus();
+            SessionBus.ReloadConfig();
     }
 
     public static void Withdraw(string dataHome, string portalExecutable)
     {
         KillRunning(portalExecutable);
-        bool changed = TryDelete(PortalFilePath(dataHome));
-        changed |= TryDelete(ServiceFilePath(dataHome));
+        bool changed = AtomicFileWrite.TryDelete(PortalFilePath(dataHome));
+        changed |= AtomicFileWrite.TryDelete(ServiceFilePath(dataHome));
         if (changed)
-            ReloadSessionBus();
+            SessionBus.ReloadConfig();
     }
 
     public static PortalStatus CurrentStatus(string configPath, string statePath) =>
@@ -161,38 +161,6 @@ public static class PortalInstall
         }
     }
 
-    private static bool WriteIfDifferent(string path, string contents)
-    {
-        try
-        {
-            if (File.Exists(path) && File.ReadAllText(path) == contents)
-                return false;
-            if (Path.GetDirectoryName(path) is { Length: > 0 } parent)
-                Directory.CreateDirectory(parent);
-            File.WriteAllText(path, contents);
-            return true;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
-    }
-
-    private static bool TryDelete(string path)
-    {
-        try
-        {
-            if (!File.Exists(path))
-                return false;
-            File.Delete(path);
-            return true;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
-    }
-
     // xdg-desktop-portal starts rove-portal on demand and it stays running
     // afterward, so uninstalling out from under it leaves an orphaned process
     // holding its own deleted binary open.
@@ -295,36 +263,4 @@ public static class PortalInstall
         }
     }
 
-    // New service/portal files (or their removal) sit invisible to the running
-    // session bus until it rescans: it only reads them at its own startup, so
-    // an install done after login otherwise needs a logout to take effect.
-    private static void ReloadSessionBus()
-    {
-        try
-        {
-            ProcessStartInfo info = new("dbus-send")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-            };
-            info.ArgumentList.Add("--session");
-            info.ArgumentList.Add("--dest=org.freedesktop.DBus");
-            info.ArgumentList.Add("--type=method_call");
-            info.ArgumentList.Add("--print-reply");
-            info.ArgumentList.Add("/org/freedesktop/DBus");
-            info.ArgumentList.Add("org.freedesktop.DBus.ReloadConfig");
-
-            using Process? process = Process.Start(info);
-            if (process is null)
-                return;
-            process.StandardOutput.ReadToEnd();
-            process.StandardError.ReadToEnd();
-            if (!process.WaitForExit(2000))
-                process.Kill();
-        }
-        catch (Exception ex) when (ex is IOException or Win32Exception or InvalidOperationException)
-        {
-        }
-    }
 }

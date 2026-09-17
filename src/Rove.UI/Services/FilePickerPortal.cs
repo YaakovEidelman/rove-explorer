@@ -61,6 +61,8 @@ public sealed class FilePickerPortal
         bool portal = PortalInstall.Enable(
             _dataHome, _configPath, _statePath, _executable, PortalFiles.PreferredName, _restartDesktopPortal);
         bool mime = DefaultFileManager.Enable(_mimeAppsPath, _mimeStatePath, _desktopFileName);
+        if (mime)
+            FileManagerBusInstall.Install(_dataHome, _executable);
         return portal || mime;
     }
 
@@ -68,8 +70,15 @@ public sealed class FilePickerPortal
     {
         bool portal = PortalInstall.Disable(_dataHome, _configPath, _statePath, _executable, _restartDesktopPortal);
         bool mime = DefaultFileManager.Disable(_mimeAppsPath, _mimeStatePath);
+        if (mime)
+            FileManagerBusInstall.Withdraw(_dataHome);
         return portal || mime;
     }
 
-    public void AdvertiseInBackground() => PortalInstall.Advertise(_dataHome, _executable);
+    public void AdvertiseInBackground()
+    {
+        PortalInstall.Advertise(_dataHome, _executable);
+        if (DefaultFileManager.CurrentStatus(_mimeAppsPath, _mimeStatePath) == PortalStatus.OwnedByRove)
+            FileManagerBusInstall.Install(_dataHome, _executable);
+    }
 }

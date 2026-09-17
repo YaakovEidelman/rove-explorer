@@ -56,6 +56,8 @@ from Settings.
 - What Rove found there before claiming it: `~/.local/state/rove/portal-install.json`
 - The default file manager: `~/.config/mimeapps.list`'s `inode/directory` key
 - What Rove found there before claiming it: `~/.local/state/rove/mime-default.json`
+- `FileManager1` D-Bus service activation:
+  `~/.local/share/dbus-1/services/org.freedesktop.FileManager1.service`
 - Whether the first-run ask has happened: `~/.local/state/rove/portal-asked.json`
 
 All of these follow `$XDG_DATA_HOME`/`$XDG_CONFIG_HOME`/`$XDG_STATE_HOME` when
@@ -76,16 +78,36 @@ nothing, whichever they were.
 Uninstalling Rove (`rove --uninstall`, see `docs/installing.md`) also gives
 back the claim if Rove is the one holding it.
 
-## Known gap
+## `org.freedesktop.FileManager1`
 
 Some desktops (GNOME among them) resolve "Show in Folder" via the
 `org.freedesktop.FileManager1` D-Bus interface before ever consulting
 `mimeapps.list`, and Nautilus registers that interface itself. Claiming the
-`inode/directory` default fixes `xdg-open` and anything that reads
-`mimeapps.list` directly; it will not override a desktop that goes straight
-to `FileManager1`. Taking over that interface too is a larger, riskier
-change — it means owning a D-Bus well-known name another running file
-manager also claims — and hasn't been done here.
+`inode/directory` default alone fixes `xdg-open` and anything that reads
+`mimeapps.list` directly, but does nothing for a caller (Chrome's downloads
+panel, for one) that goes straight to `FileManager1`.
+
+Claiming the default-file-manager role (the same Settings row and first-run
+ask as above) also installs a D-Bus service file for
+`org.freedesktop.FileManager1`, alongside `rove-portal`'s existing
+`FileChooser` one — same file, same claim/revert lifecycle, same
+`~/.local/share/dbus-1/services` precedence trick. `rove-portal` implements
+`ShowFolders`/`ShowItems`/`ShowItemProperties` by launching `rove` at the
+requested item's folder.
+
+### Known gap
+
+D-Bus only activates a service file for a name when nobody currently owns
+it. If another file manager (Nautilus, most commonly) is already running
+and already holds `org.freedesktop.FileManager1` — because it was opened
+this session, or a desktop's "show icons on the desktop" feature keeps it
+resident — Rove's service file is never consulted, and the request goes to
+whichever process already answers to that name. This only fixes the case
+this repeatedly trips people on: no file manager running yet, and something
+(a browser's "Show in Folder") D-Bus-activates one for the first time.
+Forcibly taking the name from a process that already holds it is a larger,
+riskier change — it means preempting another running app's D-Bus name — and
+hasn't been done here.
 
 ## Known limitations
 

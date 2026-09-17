@@ -32,7 +32,7 @@ namespace Rove.UI.Services;
 [SupportedOSPlatform("linux")]
 internal static class LinuxInstall
 {
-    public const string AppId = "rove";
+    public const string AppId = RoveLaunch.AppId;
 
     private const string DesktopFileName = AppId + ".desktop";
 
@@ -47,7 +47,7 @@ internal static class LinuxInstall
         | UnixFileMode.GroupRead | UnixFileMode.GroupExecute
         | UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
 
-    public static string BinDirectory => Path.Combine(XdgPaths.Home, ".local", "bin");
+    public static string BinDirectory => RoveLaunch.BinDirectory;
 
     public static string LibDirectory => Path.Combine(XdgPaths.Home, ".local", "lib", AppId);
 
@@ -238,32 +238,8 @@ internal static class LinuxInstall
     private static bool CopyAsset(Func<string, byte[]?> asset, string name, string destination) =>
         asset(name) is { } bytes && WriteIfDifferent(destination, bytes);
 
-    private static bool WriteIfDifferent(string path, byte[] contents)
-    {
-        try
-        {
-            if (File.Exists(path) && File.ReadAllBytes(path).AsSpan().SequenceEqual(contents))
-                return false;
+    private static bool WriteIfDifferent(string path, byte[] contents) =>
+        AtomicFileWrite.WriteIfDifferent(path, contents);
 
-            if (Path.GetDirectoryName(path) is { Length: > 0 } parent)
-                Directory.CreateDirectory(parent);
-            File.WriteAllBytes(path, contents);
-            return true;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
-    }
-
-    private static void TryDelete(string path)
-    {
-        try
-        {
-            File.Delete(path);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-        }
-    }
+    private static void TryDelete(string path) => AtomicFileWrite.TryDelete(path);
 }

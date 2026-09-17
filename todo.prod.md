@@ -10,4 +10,3 @@ group no particular order)
 ## Blocking for a real release
 1. The release pipeline only produces one rolling "dev" prerelease tag, deleted and recreated on
    every push to main. No versioned/stable channel, no changelog, no "last known-good build."
-2. The Windows binary is not code signed, so first run likely trips SmartScreen/Defender.
