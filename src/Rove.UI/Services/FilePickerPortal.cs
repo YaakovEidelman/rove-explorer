@@ -14,6 +14,7 @@ public sealed class FilePickerPortal
     private readonly string _mimeStatePath;
     private readonly string _executable;
     private readonly string _desktopFileName;
+    private readonly Action? _restartDesktopPortal;
 
     public FilePickerPortal() : this(
         XdgPaths.DataHome,
@@ -23,13 +24,15 @@ public sealed class FilePickerPortal
         DefaultFileManager.MimeAppsPath(XdgPaths.ConfigHome),
         RovePaths.MimeDefaultStateFile,
         LinuxInstall.PortalBinaryPath(LinuxInstall.LibDirectory),
-        LinuxInstall.AppId + ".desktop")
+        LinuxInstall.AppId + ".desktop",
+        PortalInstall.RestartDesktopPortal)
     {
     }
 
     public FilePickerPortal(
         string dataHome, string configPath, string statePath, string askedPath,
-        string mimeAppsPath, string mimeStatePath, string executable, string desktopFileName)
+        string mimeAppsPath, string mimeStatePath, string executable, string desktopFileName,
+        Action? restartDesktopPortal = null)
     {
         _dataHome = dataHome;
         _configPath = configPath;
@@ -39,6 +42,7 @@ public sealed class FilePickerPortal
         _mimeStatePath = mimeStatePath;
         _executable = executable;
         _desktopFileName = desktopFileName;
+        _restartDesktopPortal = restartDesktopPortal;
     }
 
     /// <summary>
@@ -54,14 +58,15 @@ public sealed class FilePickerPortal
 
     public bool Enable()
     {
-        bool portal = PortalInstall.Enable(_dataHome, _configPath, _statePath, _executable, PortalFiles.PreferredName);
+        bool portal = PortalInstall.Enable(
+            _dataHome, _configPath, _statePath, _executable, PortalFiles.PreferredName, _restartDesktopPortal);
         bool mime = DefaultFileManager.Enable(_mimeAppsPath, _mimeStatePath, _desktopFileName);
         return portal || mime;
     }
 
     public bool Disable()
     {
-        bool portal = PortalInstall.Disable(_dataHome, _configPath, _statePath, _executable);
+        bool portal = PortalInstall.Disable(_dataHome, _configPath, _statePath, _executable, _restartDesktopPortal);
         bool mime = DefaultFileManager.Disable(_mimeAppsPath, _mimeStatePath);
         return portal || mime;
     }

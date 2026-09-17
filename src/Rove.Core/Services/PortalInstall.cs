@@ -77,17 +77,25 @@ public static class PortalInstall
     }
 
     public static bool Enable(
-        string dataHome, string configPath, string statePath, string executable, string preferredName)
+        string dataHome, string configPath, string statePath, string executable, string preferredName,
+        Action? restartDesktopPortal = null)
     {
         Advertise(dataHome, executable);
-        return CurrentStatus(configPath, statePath) != PortalStatus.OwnedByRove
+        bool claimed = CurrentStatus(configPath, statePath) != PortalStatus.OwnedByRove
             && ClaimNow(configPath, statePath, preferredName);
+        if (claimed)
+            restartDesktopPortal?.Invoke();
+        return claimed;
     }
 
-    public static bool Disable(string dataHome, string configPath, string statePath, string portalExecutable)
+    public static bool Disable(
+        string dataHome, string configPath, string statePath, string portalExecutable,
+        Action? restartDesktopPortal = null)
     {
         bool reverted = RevertBackend(configPath, statePath);
         Withdraw(dataHome, portalExecutable);
+        if (reverted)
+            restartDesktopPortal?.Invoke();
         return reverted;
     }
 
@@ -221,6 +229,69 @@ public static class PortalInstall
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+        }
+    }
+
+    // xdg-desktop-portal reads portals.conf/<desktop>-portals.conf once at its
+    // own startup and never notices it change afterward, so a claim or revert
+    // otherwise has no live effect until the user logs out and back in. It's
+    // D-Bus-activatable, so killing it here is enough — the next portal
+    // request from any app makes D-Bus relaunch it fresh, config and all.
+    public static void RestartDesktopPortal()
+    {
+        if (FindProcessId("org.freedesktop.portal.Desktop") is not { } pid)
+            return;
+        try
+        {
+            Process.GetProcessById(pid).Kill();
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException)
+        {
+        }
+    }
+
+    private static int? FindProcessId(string busName)
+    {
+        try
+        {
+            ProcessStartInfo info = new("dbus-send")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            };
+            info.ArgumentList.Add("--session");
+            info.ArgumentList.Add("--dest=org.freedesktop.DBus");
+            info.ArgumentList.Add("--type=method_call");
+            info.ArgumentList.Add("--print-reply=literal");
+            info.ArgumentList.Add("/org/freedesktop/DBus");
+            info.ArgumentList.Add("org.freedesktop.DBus.GetConnectionUnixProcessID");
+            info.ArgumentList.Add($"string:{busName}");
+
+            using Process? process = Process.Start(info);
+            if (process is null)
+                return null;
+            string output = process.StandardOutput.ReadToEnd();
+            process.StandardError.ReadToEnd();
+            if (!process.WaitForExit(2000))
+            {
+                process.Kill();
+                return null;
+            }
+            if (process.ExitCode != 0)
+                return null;
+
+            string[] tokens = output.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < tokens.Length - 1; i++)
+            {
+                if (tokens[i] == "uint32" && int.TryParse(tokens[i + 1], out int pid))
+                    return pid;
+            }
+            return null;
+        }
+        catch (Exception ex) when (ex is IOException or Win32Exception or InvalidOperationException)
+        {
+            return null;
         }
     }
 

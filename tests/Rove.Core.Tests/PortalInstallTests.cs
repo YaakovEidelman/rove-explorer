@@ -112,6 +112,23 @@ public class PortalInstallEnableTests
     }
 
     [Fact]
+    public void EnablingCallsRestartOnlyWhenItActuallyClaims()
+    {
+        using PortalHome home = new();
+        int restarts = 0;
+
+        bool enabled = PortalInstall.Enable(
+            home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal", "rove", () => restarts++);
+        Assert.True(enabled);
+        Assert.Equal(1, restarts);
+
+        bool enabledAgain = PortalInstall.Enable(
+            home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal", "rove", () => restarts++);
+        Assert.False(enabledAgain);
+        Assert.Equal(1, restarts);
+    }
+
+    [Fact]
     public void EnablingWhatsAlreadyOursDoesNothingFurther()
     {
         using PortalHome home = new();
@@ -146,6 +163,24 @@ public class PortalInstallDisableTests
         using PortalHome home = new();
 
         Assert.False(PortalInstall.RevertBackend(home.ConfigPath, home.StatePath));
+    }
+
+    [Fact]
+    public void DisablingCallsRestartOnlyWhenItActuallyReverts()
+    {
+        using PortalHome home = new();
+        int restarts = 0;
+
+        bool disabledWithNothingClaimed = PortalInstall.Disable(
+            home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal", () => restarts++);
+        Assert.False(disabledWithNothingClaimed);
+        Assert.Equal(0, restarts);
+
+        PortalInstall.Enable(home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal", "rove");
+        bool disabled = PortalInstall.Disable(
+            home.DataHome, home.ConfigPath, home.StatePath, "/opt/rove/rove-portal", () => restarts++);
+        Assert.True(disabled);
+        Assert.Equal(1, restarts);
     }
 
     [Fact]
