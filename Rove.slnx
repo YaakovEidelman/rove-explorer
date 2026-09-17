@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Rove.Core/Rove.Core.csproj" />
+    <Project Path="src/Rove.Portal/Rove.Portal.csproj" />
+    <Project Path="src/Rove.UI/Rove.UI.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Rove.Core.Tests/Rove.Core.Tests.csproj" />
+    <Project Path="tests/Rove.Portal.Tests/Rove.Portal.Tests.csproj" />
+    <Project Path="tests/Rove.UI.Tests/Rove.UI.Tests.csproj" />
+  </Folder>
+</Solution>

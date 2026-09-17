@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Rove.UI.ViewModels"
+             xmlns:behaviors="using:Rove.UI.Behaviors"
+             mc:Ignorable="d"
+             x:Class="Rove.UI.Views.PaletteView"
+             x:DataType="vm:PaletteViewModel">
+
+    <Panel Background="{DynamicResource OverlayDimBrush}">
+        <Border Classes="overlaycard"
+                Width="480" MaxHeight="420"
+                HorizontalAlignment="Center" VerticalAlignment="Top"
+                Margin="0,72,0,0">
+            <Grid RowDefinitions="Auto, *">
+                <TextBox Grid.Row="0"
+                         Text="{Binding PaletteSearchText}"
+                         PlaceholderText="{Binding Placeholder}"
+                         behaviors:FocusOnTrue.Focus="{Binding IsPaletteOpen}"
+                         Margin="0,0,0,6" />
+                <ListBox x:Name="palette_list"
+                         Grid.Row="1"
+                         ItemsSource="{Binding Items}"
+                         SelectedIndex="{Binding SelectedIndex}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PaletteEntry">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Right"
+                                           Text="{Binding Hint}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Command.Def.Title}"
+                                           FontSize="13"
+                                           VerticalAlignment="Center" />
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+    </Panel>
+</UserControl>

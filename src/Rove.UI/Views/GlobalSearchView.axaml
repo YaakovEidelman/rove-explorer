@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Rove.UI.ViewModels"
+             xmlns:behaviors="using:Rove.UI.Behaviors"
+             mc:Ignorable="d"
+             x:Class="Rove.UI.Views.GlobalSearchView"
+             x:DataType="vm:GlobalSearchViewModel">
+
+    <Panel Background="{DynamicResource OverlayDimBrush}">
+        <Border Classes="overlaycard"
+                Width="560" MaxHeight="480"
+                HorizontalAlignment="Center" VerticalAlignment="Top"
+                Margin="0,72,0,0">
+            <Grid RowDefinitions="Auto, *, Auto">
+                <TextBox Grid.Row="0"
+                         Text="{Binding Query}"
+                         PlaceholderText="deep fuzzy search…"
+                         behaviors:FocusOnTrue.Focus="{Binding IsOpen}"
+                         Margin="0,0,0,6" />
+                <ListBox x:Name="search_list"
+                         Grid.Row="1"
+                         ItemsSource="{Binding Results}"
+                         SelectedIndex="{Binding SelectedIndex}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SearchResultItem">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Image Source="{Binding Icon}" Width="16" Height="16"
+                                       VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}" FontSize="13"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Location}" FontSize="11"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <DockPanel Grid.Row="2" Margin="4,6,4,0">
+                    <TextBlock DockPanel.Dock="Right"
+                               Text="Searching…" FontSize="11"
+                               Foreground="{DynamicResource AccentBrush}"
+                               IsVisible="{Binding IsSearching}" />
+                    <TextBlock Text="{Binding Root, StringFormat='in {0}'}"
+                               FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+            </Grid>
+        </Border>
+    </Panel>
+</UserControl>

@@ -1,0 +1,47 @@
+name: Release
+
+# A pushed vX.Y.Z tag is a deliberate, permanent, versioned release — unlike
+# the dev-build.yml prerelease, this one is never deleted or recreated.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      number: ${{ steps.strip.outputs.number }}
+    steps:
+      - id: strip
+        run: echo "number=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: [version]
+    uses: ./.github/workflows/build.yml
+    with:
+      version: ${{ needs.version.outputs.number }}
+
+  release:
+    needs: [build, version]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.version.outputs.number }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Rove $VERSION" \
+            --generate-notes \
+            dist/rove-win-x64.zip \
+            dist/rove-linux-x64.tar.gz
