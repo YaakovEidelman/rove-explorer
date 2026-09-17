@@ -72,6 +72,11 @@ internal sealed class PickerWindowHarness : IDisposable
         ContentViewModel content = new(
             registry, core, fileClipboard, new RecordingClipboard(), new NullIconCache(), operation,
             bookmarks, undo, settings);
+        // The constructor queues a load of whatever CurrentDir is once the
+        // dispatcher gets to it; setting it to root now (before that runs)
+        // means that queued load lands on root too, instead of racing a
+        // separate navigation to it — see TabsViewModel.Open for the same fix.
+        content.DirectoryListing.CurrentDir = root;
         if (filters is { Length: > 0 })
             content.DirectoryListing.SetSelectionFilter(filters[filterIndex].Patterns);
 

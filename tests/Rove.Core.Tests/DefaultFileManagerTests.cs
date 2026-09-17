@@ -73,10 +73,10 @@ public class DefaultFileManagerEnableTests
         bool enabled = DefaultFileManager.Enable(home.MimeAppsPath, home.StatePath, "rove.desktop");
 
         Assert.True(enabled);
-        string written = File.ReadAllText(home.MimeAppsPath);
-        Assert.Contains("inode/directory=rove.desktop", written, StringComparison.Ordinal);
-        Assert.Contains("text/plain=gedit.desktop\n", written, StringComparison.Ordinal);
-        Assert.Contains("[Added Associations]", written, StringComparison.Ordinal);
+        string[] written = File.ReadAllLines(home.MimeAppsPath);
+        Assert.Contains("inode/directory=rove.desktop", written);
+        Assert.Contains("text/plain=gedit.desktop", written);
+        Assert.Contains("[Added Associations]", written);
     }
 
     [Fact]
