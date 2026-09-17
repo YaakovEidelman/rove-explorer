@@ -57,9 +57,11 @@ and run the build yourself.
 | --- | --- |
 | `rove --install` | Installs the copy you ran, newer or not |
 | `rove --uninstall` | Removes the program, the shortcut or desktop entry, the icons, and the notes |
+| `rove --dev-uninstall` | `--uninstall`, plus your config and state — bookmarks, settings, keybindings, everything |
 
 `--uninstall` leaves your keybindings file alone, and leaves whatever copy you
-ran the command from where it was.
+ran the command from where it was. `--dev-uninstall` is for testing a
+from-scratch install, not for end users — it does not hold anything back.
 
 Set `ROVE_NO_INSTALL=1` and Rove will not install itself at all — useful when
 you want to run a build from a folder and leave the machine untouched.

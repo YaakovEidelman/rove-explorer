@@ -106,6 +106,31 @@ public static class DesktopInstall
             RemoveInstalled();
     }
 
+    /// <summary>
+    /// <see cref="Uninstall"/>, plus the config and state directories it
+    /// deliberately leaves behind — bookmarks, keybindings, settings, notes
+    /// to itself. For testing a from-scratch install, not for end users.
+    /// </summary>
+    public static void DevUninstall(Action<string> say)
+    {
+        Uninstall(say);
+        TryDeleteTree(RovePaths.ConfigDirectory);
+        TryDeleteTree(RovePaths.StateDirectory);
+        say("Dev uninstall: config and state directories removed too.");
+    }
+
+    private static void TryDeleteTree(string path)
+    {
+        try
+        {
+            if (Directory.Exists(path))
+                Directory.Delete(path, recursive: true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
+    }
+
     private static void RemoveInstalled()
     {
         if (OperatingSystem.IsLinux())

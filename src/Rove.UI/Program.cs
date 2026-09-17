@@ -17,6 +17,11 @@ sealed class Program
 
         // Installing and uninstalling are the two things Rove does without
         // opening a window; Installed Apps calls the second one by name.
+        if (HasFlag(args, "--dev-uninstall"))
+        {
+            DesktopInstall.DevUninstall(Console.WriteLine);
+            return;
+        }
         if (HasFlag(args, "--uninstall"))
         {
             DesktopInstall.Uninstall(Console.WriteLine);
