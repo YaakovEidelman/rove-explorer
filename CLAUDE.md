@@ -29,10 +29,14 @@ dotnet publish src/Rove.UI/Rove.UI.csproj -c Release -r <win-x64|linux-x64>
 
 `Rove.slnx` is the solution file (the new XML-based slnx format, not `.sln`).
 
-CI (`.github/workflows/dev-build.yml`) builds win-x64 and linux-x64 separately —
-native AOT compiles on the platform it targets, no cross-compiling — and
-publishes both as a single rolling `dev` prerelease. It's manual-trigger
-only (`workflow_dispatch`). For day-to-day solo dev, skip CI and run
+CI has three workflows. `.github/workflows/build.yml` is the reusable job
+that tests and publishes win-x64 and linux-x64 separately — native AOT
+compiles on the platform it targets, no cross-compiling — and is called by
+the other two rather than duplicated. `dev-build.yml` (manual-trigger only,
+`workflow_dispatch`) calls it and replaces a single rolling `dev`
+prerelease. `release.yml` (triggered by a pushed `vX.Y.Z` tag) calls it and
+creates a permanent, versioned GitHub release with generated notes — the
+stable channel. For day-to-day solo dev, skip CI and run
 `./dev-release-linux.sh` (Linux) or `./dev-release-win.ps1` (Windows)
 instead — each tests, publishes, and uploads its own platform's asset to
 the `dev` release directly from a local machine.
@@ -57,6 +61,20 @@ can be moved out-of-process later without touching handler code. When adding
 a new backend operation, add it to `Actions` and register it in both the UI
 call site and `Dispatcher`'s constructor if it's meant to be reachable that
 way.
+
+### ContentViewModel
+
+`src/Rove.UI/ViewModels/ContentViewModel.cs` is the single-pane browse-mode
+ViewModel — the busiest command surface in the UI — split across one core
+file and same-class partials by concern, all `public partial class
+ContentViewModel`: `ContentViewModel.cs` (constructor, shared fields,
+`Targets()`/`RefusedInArchive()`, `RegisterBindings()`), `.Navigation.cs`
+(directory navigation, history, archive-as-folder, drives), `.PathBar.cs`
+(path bar edit/completion), `.View.cs` (view mode, icon size, columns, local
+search, hidden items, marks), `.Editing.cs` (rename, create), `.FileOps.cs`
+(delete, trash, clipboard, extract, compress), `.Bookmarks.cs`, `.Undo.cs`.
+Add a new browse-mode verb to whichever partial matches its concern, then
+wire it into `RegisterBindings()` in the core file.
 
 ### Command / keybinding system
 
