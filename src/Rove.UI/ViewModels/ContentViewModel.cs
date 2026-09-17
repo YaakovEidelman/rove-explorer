@@ -825,7 +825,6 @@ public partial class ContentViewModel : ViewModelBase
         if (HighlightedItem is not { } selected)
             return;
         selected.IsMarked = !selected.IsMarked;
-        ContentMoveDown(); // marking flows down the list, vim-style
     }
 
     private void ClearMarks()

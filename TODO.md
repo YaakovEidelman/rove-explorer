@@ -13,7 +13,7 @@ The following is in no particular order (other then that prod grade is first, bu
 
 ## Important but can still be published without it.
 1. the rename textbox is a tad to short. the text is crunching into the top and bottom. I don't want it to get bigger then the actual row, but I need it to look good.
-2. on Windows, going to trash just opens the Windows Recycle Bin instead of showing trashed items inside Rove. Doesn't need to be in the same commit as other work.
+2. on Windows, going to trash just opens the Windows Recycle Bin instead of showing trashed items inside Rove. Doesn't need to be in the same commit as other work. Also, on both Windows and Linux, going to trash shouldn't make you lose your place - right now on Linux it navigates you into the trash folder and you lose where you just were. Needs something better than plain folder navigation for viewing trash - maybe a palette, maybe something else, not sure yet.
 3. full drag and drop support. very large and easy to get wrong, needs its own focused pass.
 
 ## v2
