@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")"
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: ./release.sh <version>   e.g. ./release.sh 1.0.0" >&2

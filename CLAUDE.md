@@ -12,20 +12,35 @@ runtime to install, fast startup.
 
 Requires the .NET 10 SDK.
 
+All helper scripts live in `scripts/` and work from any directory. **Always use them instead of
+raw `dotnet` commands.** They pass `-p:RuntimeIdentifier=linux-x64` (a plain `dotnet test` or
+`dotnet build` fails on this machine's `arch-x64` default RID) and print only the summary and
+failures, which keeps output short.
+
 ```
 # Run the app (Linux)
-./run.sh
+scripts/run.sh
 
-# Run all tests
-dotnet test Rove.slnx
+# Run the picker window on its own (Linux)
+scripts/run_picker.sh
 
-# Run a single test (either project)
-dotnet test tests/Rove.Core.Tests/Rove.Core.Tests.csproj --filter "FullyQualifiedName~PathGuardTests"
-dotnet test tests/Rove.UI.Tests/Rove.UI.Tests.csproj --filter "FullyQualifiedName~TabKeyTests"
+# Run all tests (prints one summary line per project, plus failure details)
+scripts/test.sh
+
+# Run some tests: each argument is a class or test name to match
+scripts/test.sh PathGuardTests TabKeyTests
+
+# Build the app and portal (prints only errors and warnings)
+scripts/build.sh
+
+# Delete a finished TODO.md item, renumber, and stage only that change
+scripts/todo-done.sh "text the item starts with"
 
 # Publish a release build (AOT, native)
 dotnet publish src/Rove.UI/Rove.UI.csproj -c Release -r <win-x64|linux-x64>
 ```
+
+When you do something often by hand, add a script for it in `scripts/`.
 
 `Rove.slnx` is the solution file (the new XML-based slnx format, not `.sln`).
 
@@ -37,7 +52,7 @@ the other two rather than duplicated. `dev-build.yml` (manual-trigger only,
 prerelease. `release.yml` (triggered by a pushed `vX.Y.Z` tag) calls it and
 creates a permanent, versioned GitHub release with generated notes — the
 stable channel. For day-to-day solo dev, skip CI and run
-`./dev-release-linux.sh` (Linux) or `./dev-release-win.ps1` (Windows)
+`scripts/dev-release-linux.sh` (Linux) or `scripts/dev-release-win.ps1` (Windows)
 instead — each tests, publishes, and uploads its own platform's asset to
 the `dev` release directly from a local machine.
 

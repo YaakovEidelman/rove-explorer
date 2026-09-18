@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 param([switch]$Install)
 $ErrorActionPreference = "Stop"
-Set-Location $PSScriptRoot
+Set-Location (Join-Path $PSScriptRoot "..")
 
 $now = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 $version = "0.2.$([int]($now / 86400)).$([int](($now % 86400) / 60))"
