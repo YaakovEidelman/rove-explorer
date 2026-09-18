@@ -267,12 +267,13 @@
             </SplitView>
         </DockPanel>
 
-        <!-- ── quick access: Commands/Search/Bookmarks share one card instead
-             of three near-identical popups — whichever one's own IsOpen is
-             true picks the title and shows its content; Tab cycles between
-             them (MainWindowViewModel). No always-on tab strip — just the
-             current one's name and a quiet dot per tab, so the card still
-             reads as "the thing you asked for" rather than a 3-in-1 shell. ── -->
+        <!-- ── quick access: Commands/Search/Bookmarks/Settings share one card
+             instead of four near-identical popups — whichever one's own
+             IsOpen is true picks the title and shows its content; Tab cycles
+             between them (MainWindowViewModel). No always-on tab strip —
+             just the current one's name and a quiet dot per tab, so the card
+             still reads as "the thing you asked for" rather than a 4-in-1
+             shell. ── -->
         <Panel Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding IsQuickAccessOpen}">
             <Border Classes="overlaycard"
                     Width="540" MaxHeight="480"
@@ -285,6 +286,7 @@
                             <Ellipse Classes="qadot" Classes.active="{Binding Palette.IsPaletteOpen}" />
                             <Ellipse Classes="qadot" Classes.active="{Binding GlobalSearch.IsOpen}" />
                             <Ellipse Classes="qadot" Classes.active="{Binding Bookmarks.IsOpen}" />
+                            <Ellipse Classes="qadot" Classes.active="{Binding Settings.IsOpen}" />
                         </StackPanel>
                         <TextBlock Classes="cardtitle" Text="{Binding QuickAccessTitle}" Margin="0" />
                     </DockPanel>
@@ -294,10 +296,11 @@
                                              DataContext="{Binding GlobalSearch}" IsVisible="{Binding IsOpen}" />
                     <views:BookmarksView Grid.Row="1"
                                           DataContext="{Binding Bookmarks}" IsVisible="{Binding IsOpen}" />
+                    <views:SettingsView Grid.Row="1"
+                                         DataContext="{Binding Settings}" IsVisible="{Binding IsOpen}" />
                 </Grid>
             </Border>
         </Panel>
-        <views:SettingsView DataContext="{Binding Settings}" IsVisible="{Binding IsOpen}" />
 
         <!-- ── center: destructive-action prompt (Mode.Confirm while open) —
              was a thin bar glued to the bottom edge; centered and dimmed
@@ -309,16 +312,18 @@
                         <Path Classes="warnicon" Data="M9,1 L17,16 L1,16 Z M9,6.5 L9,11.5 M9,13.6 L9,13.7" />
                     </Border>
                     <TextBlock Classes="confirmmessage" Text="{Binding Confirm.Message}" />
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                        <Button Classes="dialogbtn" Content="Cancel" Command="{Binding Confirm.CancelCommand}" />
-                        <Button Classes="dialogbtn danger" Content="Confirm" Command="{Binding Confirm.AcceptCommand}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" IsHitTestVisible="False">
+                        <Button Classes="dialogbtn" Classes.selected="{Binding Confirm.CancelHighlighted}"
+                                Content="Cancel" Focusable="False" />
+                        <Button Classes="dialogbtn danger" Classes.selected="{Binding !Confirm.CancelHighlighted}"
+                                Content="Confirm" Focusable="False" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
-                        <Border Classes="kbd"><TextBlock Text="y/Enter" /></Border>
-                        <TextBlock Classes="hint" Text="confirm" />
+                        <Border Classes="kbd"><TextBlock Text="h/l" /></Border>
+                        <TextBlock Classes="hint" Text="choose" />
                         <TextBlock Classes="hintsep" Text="·" />
-                        <Border Classes="kbd"><TextBlock Text="n/Esc" /></Border>
-                        <TextBlock Classes="hint" Text="cancel" />
+                        <Border Classes="kbd"><TextBlock Text="y/n/Enter" /></Border>
+                        <TextBlock Classes="hint" Text="confirm/cancel" />
                     </StackPanel>
                 </StackPanel>
             </Border>

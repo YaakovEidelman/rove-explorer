@@ -392,16 +392,6 @@
             <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
         </Style>
 
-        <!-- ── settings: its own side panel, not another picker card — it's
-             a place you browse and configure, not type-and-pick ── -->
-        <Style Selector="Border.sidepanel">
-            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1,0,0,0" />
-            <Setter Property="BoxShadow" Value="-20 0 48 -12 #40000000" />
-            <Setter Property="Padding" Value="18" />
-        </Style>
-
         <!-- ── small keyboard-hint chip, used in every overlay/prompt footer ── -->
         <Style Selector="Border.kbd">
             <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
@@ -583,6 +573,13 @@
         </Style>
         <Style Selector="Button.dialogbtn.danger:pointerover /template/ ContentPresenter">
             <Setter Property="Opacity" Value="0.9" />
+        </Style>
+        <!-- ── keyboard-only: h/l move this highlight between the two
+             buttons, so it doubles as the mouse focus ring the buttons
+             no longer get. ── -->
+        <Style Selector="Button.dialogbtn.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="2" />
         </Style>
 
         <!-- ── preview pane ── -->

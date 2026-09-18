@@ -148,11 +148,13 @@ again carries on inside it.
 | `palette.move_up`    | Palette: move up       |
 | `palette.move_down`  | Palette: move down     |
 | `palette.execute`    | Palette: run selected  |
-| `quickaccess.next_tab` | Commands/Search/Bookmarks: next tab |
+| `quickaccess.next_tab` | Commands/Search/Bookmarks/Settings: next tab |
+| `quickaccess.previous_tab` | Commands/Search/Bookmarks/Settings: previous tab |
 
-The command palette, deep search, and bookmark list share one card on
-screen — whichever one you opened decides what's showing, and `Tab` moves
-to the next of the three without closing the card.
+The command palette, deep search, bookmark list, and settings share one card
+on screen — whichever one you opened decides what's showing, and `Tab` /
+`Shift+Tab` move to the next or previous of the four without closing the
+card.
 
 ### Acting on files
 
@@ -180,8 +182,11 @@ to the next of the three without closing the card.
 | `content.create_cancel`     | Cancel the create            |
 | `content.cancel_operation`  | Cancel a running copy/move/delete |
 | `content.undo`              | Undo the last action         |
-| `confirm.accept`            | Confirm: yes                 |
-| `confirm.cancel`            | Confirm: no                  |
+| `confirm.accept`            | Confirm: yes (`y`)            |
+| `confirm.cancel`            | Confirm: no (`n`/`Esc`)       |
+| `confirm.select`            | Confirm: run the highlighted button (`Enter`) |
+| `confirm.move_left`         | Confirm: highlight Cancel (`h`) |
+| `confirm.move_right`        | Confirm: highlight Confirm (`l`) |
 
 `content.toggle_hidden` (`.`) shows the items the system keeps out of the way
 — dot-files on Linux, hidden-flagged ones on Windows. It stays on until you

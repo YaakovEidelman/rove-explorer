@@ -52,17 +52,19 @@ public partial class MainWindowViewModel : ViewModelBase
     public bool IsErrorShown => StatusError.Length > 0;
 
     /// <summary>
-    /// Commands/Search/Bookmarks share one card now (Quick Access) — this is
-    /// true while any one of the three is the visible surface, so the shared
-    /// card's dim background and border know to be on screen at all.
+    /// Commands/Search/Bookmarks/Settings share one card now (Quick Access) —
+    /// this is true while any one of the four is the visible surface, so the
+    /// shared card's dim background and border know to be on screen at all.
     /// </summary>
-    public bool IsQuickAccessOpen => Palette.IsPaletteOpen || GlobalSearch.IsOpen || Bookmarks.IsOpen;
+    public bool IsQuickAccessOpen =>
+        Palette.IsPaletteOpen || GlobalSearch.IsOpen || Bookmarks.IsOpen || Settings.IsOpen;
 
-    /// <summary>The shared card's title — whichever of the three is actually open.</summary>
+    /// <summary>The shared card's title — whichever of the four is actually open.</summary>
     public string QuickAccessTitle =>
         Palette.IsPaletteOpen ? "COMMANDS"
         : GlobalSearch.IsOpen ? "SEARCH"
         : Bookmarks.IsOpen ? "BOOKMARKS"
+        : Settings.IsOpen ? "SETTINGS"
         : "";
 
     partial void OnStatusErrorChanged(string value) => RefreshStatusBar();
@@ -102,6 +104,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _registry.Register(CommandDef.MinimizeWindow, MinimizeWindow);
         _registry.Register(CommandDef.CheckForUpdates, CheckForUpdates);
         _registry.Register(CommandDef.QuickAccessNextTab, CycleQuickAccessTab);
+        _registry.Register(CommandDef.QuickAccessPreviousTab, CycleQuickAccessTabBackward);
 
         // Every one of these comes from the tab in front — the strip decides
         // which that is, so nothing here has to be unhooked and hooked up
@@ -165,7 +168,8 @@ public partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(QuickAccessTitle));
     }
 
-    private static readonly Mode[] QuickAccessTabs = [Mode.Palette, Mode.GlobalSearch, Mode.Bookmarks];
+    private static readonly Mode[] QuickAccessTabs =
+        [Mode.Palette, Mode.GlobalSearch, Mode.Bookmarks, Mode.Settings];
 
     /// <summary>
     /// Switches which of Commands/Search/Bookmarks is showing by closing
@@ -182,6 +186,15 @@ public partial class MainWindowViewModel : ViewModelBase
         OpenQuickAccessTab(QuickAccessTabs[(index + 1) % QuickAccessTabs.Length]);
     }
 
+    private void CycleQuickAccessTabBackward()
+    {
+        Mode current = GetCurrentMode();
+        int index = Array.IndexOf(QuickAccessTabs, current);
+        if (index < 0)
+            return;
+        OpenQuickAccessTab(QuickAccessTabs[(index - 1 + QuickAccessTabs.Length) % QuickAccessTabs.Length]);
+    }
+
     private void OpenQuickAccessTab(Mode target)
     {
         if (Palette.IsPaletteOpen && target != Mode.Palette)
@@ -190,12 +203,15 @@ public partial class MainWindowViewModel : ViewModelBase
             GlobalSearch.Toggle();
         if (Bookmarks.IsOpen && target != Mode.Bookmarks)
             Bookmarks.Toggle();
+        if (Settings.IsOpen && target != Mode.Settings)
+            Settings.Toggle();
 
         switch (target)
         {
             case Mode.Palette when !Palette.IsPaletteOpen: Palette.TogglePalette(); break;
             case Mode.GlobalSearch when !GlobalSearch.IsOpen: GlobalSearch.Toggle(); break;
             case Mode.Bookmarks when !Bookmarks.IsOpen: Bookmarks.Toggle(); break;
+            case Mode.Settings when !Settings.IsOpen: Settings.Toggle(); break;
         }
     }
 
@@ -263,7 +279,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Mode.GlobalSearch => "type to search · Enter jump · Tab switch tab · Esc close",
         Mode.Bookmarks =>
             "type to narrow · Ctrl+N/Ctrl+P move · Enter go · Ctrl+D forget · Tab switch tab · Esc close",
-        Mode.Settings => "j/k move · Enter/Space change · Esc close",
+        Mode.Settings => "j/k move · Enter/Space change · Tab switch tab · Esc close",
         Mode.EditPath => "type a path · Tab complete · Enter go · Esc cancel",
         Mode.PathCompletion => "Ctrl+N/Ctrl+P or Tab move · Enter take it · Esc close list",
         Mode.RenameItem => "Enter apply · Esc cancel",

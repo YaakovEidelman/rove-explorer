@@ -55,6 +55,8 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef PaletteExecute = new("palette.execute", "Palette: Run Selected", CommandKind.System);
     public static readonly CommandDef QuickAccessNextTab =
         new("quickaccess.next_tab", "Quick Access: Next Tab (Commands/Search/Bookmarks)", CommandKind.System);
+    public static readonly CommandDef QuickAccessPreviousTab =
+        new("quickaccess.previous_tab", "Quick Access: Previous Tab (Commands/Search/Bookmarks)", CommandKind.System);
 
     // Navigation
     public static readonly CommandDef ContentMoveUp = new("content.move_up", "Move Up", CommandKind.System);
@@ -157,6 +159,9 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     // Confirm surface
     public static readonly CommandDef ConfirmAccept = new("confirm.accept", "Confirm: Yes", CommandKind.System);
     public static readonly CommandDef ConfirmCancel = new("confirm.cancel", "Confirm: No", CommandKind.System);
+    public static readonly CommandDef ConfirmSelect = new("confirm.select", "Confirm: Run Highlighted Option", CommandKind.System);
+    public static readonly CommandDef ConfirmMoveLeft = new("confirm.move_left", "Confirm: Highlight Cancel", CommandKind.System);
+    public static readonly CommandDef ConfirmMoveRight = new("confirm.move_right", "Confirm: Highlight Confirm", CommandKind.System);
 
     // Long-running file operations
     public static readonly CommandDef CancelFileOperation = new("content.cancel_operation", "Cancel Running File Operation", CommandKind.User);

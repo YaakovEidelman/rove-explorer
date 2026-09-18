@@ -171,16 +171,18 @@
                         <Path Classes="warnicon" Data="M9,1 L17,16 L1,16 Z M9,6.5 L9,11.5 M9,13.6 L9,13.7" />
                     </Border>
                     <TextBlock Classes="confirmmessage" Text="{Binding Confirm.Message}" />
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                        <Button Classes="dialogbtn" Content="Cancel" Command="{Binding Confirm.CancelCommand}" />
-                        <Button Classes="dialogbtn danger" Content="Confirm" Command="{Binding Confirm.AcceptCommand}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" IsHitTestVisible="False">
+                        <Button Classes="dialogbtn" Classes.selected="{Binding Confirm.CancelHighlighted}"
+                                Content="Cancel" Focusable="False" />
+                        <Button Classes="dialogbtn danger" Classes.selected="{Binding !Confirm.CancelHighlighted}"
+                                Content="Confirm" Focusable="False" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
-                        <Border Classes="kbd"><TextBlock Text="y/Enter" /></Border>
-                        <TextBlock Classes="hint" Text="confirm" />
+                        <Border Classes="kbd"><TextBlock Text="h/l" /></Border>
+                        <TextBlock Classes="hint" Text="choose" />
                         <TextBlock Classes="hintsep" Text="·" />
-                        <Border Classes="kbd"><TextBlock Text="n/Esc" /></Border>
-                        <TextBlock Classes="hint" Text="cancel" />
+                        <Border Classes="kbd"><TextBlock Text="y/n/Enter" /></Border>
+                        <TextBlock Classes="hint" Text="confirm/cancel" />
                     </StackPanel>
                 </StackPanel>
             </Border>

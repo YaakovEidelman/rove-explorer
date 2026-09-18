@@ -7,57 +7,55 @@
              x:Class="Rove.UI.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
-    <Panel Background="{DynamicResource OverlayDimBrush}">
-        <Border Classes="sidepanel"
-                Width="360"
-                HorizontalAlignment="Right" VerticalAlignment="Stretch">
-            <Grid RowDefinitions="Auto, *, Auto">
-                <TextBlock Grid.Row="0" Classes="cardtitle" Text="SETTINGS" />
-                <ListBox x:Name="settings_list"
-                         Grid.Row="1"
-                         ItemsSource="{Binding Rows}"
-                         SelectedIndex="{Binding SelectedIndex}">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel />
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:SettingsRow">
-                            <StackPanel Spacing="2">
-                                <TextBlock Classes="settingssection" Text="{Binding Section}"
-                                           IsVisible="{Binding HasSection}" />
-                                <Border Classes="settingsrow">
-                                    <DockPanel>
-                                        <Border DockPanel.Dock="Right" Classes="toggletrack"
-                                                Classes.on="{Binding IsOn}"
-                                                IsVisible="{Binding IsToggle}">
-                                            <Ellipse Classes="togglethumb" />
-                                        </Border>
-                                        <Border DockPanel.Dock="Right" Classes="valuechip"
-                                                IsVisible="{Binding !IsToggle}">
-                                            <TextBlock Text="{Binding Value}" />
-                                        </Border>
-                                        <TextBlock Text="{Binding Label}" FontSize="13"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,10,0" />
-                                    </DockPanel>
+    <!-- ── content only: the shared Quick Access card in MainWindow.axaml
+         owns the dim background, the card, and the tab strip above this ── -->
+    <Grid RowDefinitions="*, Auto">
+        <ListBox x:Name="settings_list"
+                 Grid.Row="0"
+                 ItemsSource="{Binding Rows}"
+                 SelectedIndex="{Binding SelectedIndex}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:SettingsRow">
+                    <StackPanel Spacing="2">
+                        <TextBlock Classes="settingssection" Text="{Binding Section}"
+                                   IsVisible="{Binding HasSection}" />
+                        <Border Classes="settingsrow">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Right" Classes="toggletrack"
+                                        Classes.on="{Binding IsOn}"
+                                        IsVisible="{Binding IsToggle}">
+                                    <Ellipse Classes="togglethumb" />
                                 </Border>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0">
-                    <Border Classes="kbd"><TextBlock Text="j/k" /></Border>
-                    <TextBlock Classes="hint" Text="move" />
-                    <TextBlock Classes="hintsep" Text="·" />
-                    <Border Classes="kbd"><TextBlock Text="Enter/Space" /></Border>
-                    <TextBlock Classes="hint" Text="change" />
-                    <TextBlock Classes="hintsep" Text="·" />
-                    <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
-                    <TextBlock Classes="hint" Text="close" />
-                </StackPanel>
-            </Grid>
-        </Border>
-    </Panel>
+                                <Border DockPanel.Dock="Right" Classes="valuechip"
+                                        IsVisible="{Binding !IsToggle}">
+                                    <TextBlock Text="{Binding Value}" />
+                                </Border>
+                                <TextBlock Text="{Binding Label}" FontSize="13"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,10,0" />
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0">
+            <Border Classes="kbd"><TextBlock Text="j/k" /></Border>
+            <TextBlock Classes="hint" Text="move" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Enter/Space" /></Border>
+            <TextBlock Classes="hint" Text="change" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Tab" /></Border>
+            <TextBlock Classes="hint" Text="switch tab" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+            <TextBlock Classes="hint" Text="close" />
+        </StackPanel>
+    </Grid>
 </UserControl>

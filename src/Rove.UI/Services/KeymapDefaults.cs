@@ -132,6 +132,7 @@ public static class KeymapDefaults
                 new(K(Key.Enter), CommandDef.BookmarkExecute.Id),
                 new(K(Key.D, KeyModifiers.Control), CommandDef.RemoveBookmark.Id),
                 new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
+                new(K(Key.Tab, KeyModifiers.Shift), CommandDef.QuickAccessPreviousTab.Id),
                 new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
                 new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
                 .. BookmarkShortcuts(),
@@ -151,6 +152,8 @@ public static class KeymapDefaults
                 new(K(Key.K), CommandDef.SettingsMoveUp.Id),
                 new(K(Key.Enter), CommandDef.SettingsActivate.Id),
                 new(K(Key.Space), CommandDef.SettingsActivate.Id),
+                new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
+                new(K(Key.Tab, KeyModifiers.Shift), CommandDef.QuickAccessPreviousTab.Id),
                 new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
                 new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
             ]
@@ -166,6 +169,7 @@ public static class KeymapDefaults
                 new(K(Key.Down), CommandDef.PaletteMoveDown.Id),
                 new(K(Key.Enter), CommandDef.PaletteExecute.Id),
                 new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
+                new(K(Key.Tab, KeyModifiers.Shift), CommandDef.QuickAccessPreviousTab.Id),
                 new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
                 new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
             ]
@@ -195,6 +199,7 @@ public static class KeymapDefaults
                 new(K(Key.Down), CommandDef.GlobalSearchMoveDown.Id),
                 new(K(Key.Enter), CommandDef.GlobalSearchExecute.Id),
                 new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
+                new(K(Key.Tab, KeyModifiers.Shift), CommandDef.QuickAccessPreviousTab.Id),
                 new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
                 new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
             ]
@@ -278,10 +283,12 @@ public static class KeymapDefaults
             Mode.Confirm,
             [
                 new(K(Key.Y), CommandDef.ConfirmAccept.Id),
-                new(K(Key.Enter), CommandDef.ConfirmAccept.Id),
                 new(K(Key.N), CommandDef.ConfirmCancel.Id),
                 new(K(Key.Escape), CommandDef.ConfirmCancel.Id),
                 new(K(Key.C, KeyModifiers.Control), CommandDef.ConfirmCancel.Id),
+                new(K(Key.Enter), CommandDef.ConfirmSelect.Id),
+                new(K(Key.H), CommandDef.ConfirmMoveLeft.Id),
+                new(K(Key.L), CommandDef.ConfirmMoveRight.Id),
             ]
         },
     };
