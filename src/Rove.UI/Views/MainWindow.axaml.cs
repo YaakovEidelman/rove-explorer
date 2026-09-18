@@ -2,9 +2,12 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
 using Rove.UI.ViewModels;
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Rove.UI.Views;
 
@@ -84,6 +87,29 @@ public partial class MainWindow : Window
     {
         if (sender is Control { DataContext: FolderTab tab })
             tab.BeginRename();
+    }
+
+    private static readonly TimeSpan TabCloseFadeDuration = TimeSpan.FromMilliseconds(200);
+
+    /// <summary>
+    /// Fades the tab out before actually closing it — done here rather than in
+    /// TabsViewModel because closing there removes the tab from Items right
+    /// away, which a bunch of tests (and keyboard-driven closes) rely on
+    /// staying synchronous. This only delays the click path.
+    /// </summary>
+    private async void OnTabCloseClicked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Control { DataContext: FolderTab tab } closeButton)
+            return;
+
+        if (closeButton.GetVisualAncestors().OfType<Button>().FirstOrDefault(b => b.Classes.Contains("tab"))
+            is { } tabButton)
+        {
+            tabButton.Classes.Add("closing");
+            await Task.Delay(TabCloseFadeDuration);
+        }
+
+        tab.CloseCommand.Execute(null);
     }
 
     /// <summary>

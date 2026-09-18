@@ -90,7 +90,7 @@
                                                 chrome:WindowDecorationProperties.ElementRole="User">
                                             <DockPanel>
                                                 <Button DockPanel.Dock="Right" Classes="tabclose"
-                                                        Command="{Binding CloseCommand}"
+                                                        Click="OnTabCloseClicked"
                                                         Content="✕"
                                                         IsVisible="{Binding !IsRenaming}"
                                                         chrome:WindowDecorationProperties.ElementRole="User" />

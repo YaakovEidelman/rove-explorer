@@ -125,24 +125,29 @@
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Opacity" Value="0" />
-            <Setter Property="RenderTransform" Value="scale(0.92)" />
+            <Setter Property="RenderTransform" Value="scale(0.97)" />
             <Setter Property="Transitions">
                 <Transitions>
                     <BrushTransition Property="Background" Duration="0:0:0.12" />
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" Easing="CubicEaseOut" />
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12"
-                                                    Easing="CubicEaseOut" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="QuadraticEaseOut" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"
+                                                    Easing="QuadraticEaseOut" />
                 </Transitions>
             </Setter>
         </Style>
         <!-- ── a tab fades/pops in once it's actually attached to the strip —
              behaviors:FadeInOnLoad flips .entered a frame later, since doing
              it immediately would leave nothing for the transition to animate
-             from. Closing one is still instant: it leaves Items the moment
-             it's removed, and nothing here holds that up to fade it out. ── -->
+             from. Closing one plays the same transition in reverse: the click
+             handler (MainWindow.axaml.cs) adds .closing and waits out the
+             fade before it actually asks TabsViewModel to remove the tab. ── -->
         <Style Selector="Button.tab.entered">
             <Setter Property="Opacity" Value="1" />
             <Setter Property="RenderTransform" Value="scale(1)" />
+        </Style>
+        <Style Selector="Button.tab.closing">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransform" Value="scale(0.97)" />
         </Style>
         <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
