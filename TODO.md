@@ -12,7 +12,6 @@ The following is in no particular order (other then that prod grade is first, bu
 3. on Linux (GNOME/Nautilus at least), double-clicking the extracted `Rove` binary fails with an error like "there is no application installed for application/x-pie-executable files." `xdg-mime query default application/x-pie-executable` returns nothing — GNOME has no default-app mechanism for a raw downloaded ELF binary the way it does for documents, only for scripts with a shebang. Works fine via right-click -> "Run as a Program", or from a terminal, just not a plain double-click. docs/installing.md's "unpack it and run it" pitch doesn't hold as-is on GNOME out of the box.
 4. if an enter cannot open something in rove, display the option to "select an app to open"
 5. editing the crumbs bar needs UX work. ctrl + n/p should go up and down the list, but also fill it in. tab, should auto complete the next item. enter goes to the folder/item.
-6. global search needs MAJOR speed improvements (comparing with Nautilus which is basically instant) - it could be its just a bug in / (root) folder that's preventing the search.
 7. if a folder on linux says "Access Denied" and is enterable via sudo, we need to allow that to work.
 8. Column sorting and resizing should be blocked when in icon view mode.
 9. when picker chooses folder, ctrl + O chooses the folder in the path bar, not the highlighted. that's not expected.
@@ -30,8 +29,6 @@ The following is in no particular order (other then that prod grade is first, bu
 
 ## Important visual design stuff - last thing to do before publishing
 1. We need to work on the design, look n feel. (ultimate goal is to be able to follow a linux theme based on user input) (This is after all backend is good)
-2. I'm thinking of having the prompts and warnings in a differnt way than they are now.
-3. we need a better pallate design.
 4. we need a better way of displaying the settings.
 5. we need to allow custom color schema changes within the app.
 6. we need a nice first install show around.
