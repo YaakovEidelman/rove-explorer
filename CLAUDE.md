@@ -142,3 +142,7 @@ compile time of a `dotnet build`.
   `Press(Key)`/`Settle()` so key-routing tests exercise the same path a real
   keypress takes. Prefer extending `WindowHarness` over mocking ViewModels
   when testing keyboard behavior.
+- `tests/Rove.Portal.Tests` — xUnit against `Rove.Portal`, Linux-only (see
+  `src/Rove.Portal/TODO.md`). Skipped on Windows CI (`build.yml`'s windows
+  job runs only the other two `dotnet test` invocations directly); included
+  when running the full `Rove.slnx` solution.

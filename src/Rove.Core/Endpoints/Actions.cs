@@ -1072,10 +1072,15 @@ public class Actions
         string path, CancellationToken ct
     )
     {
-        EnumerationOptions options = new()
+        EnumerationOptions fastOptions = new()
         {
             IgnoreInaccessible = true,
             RecurseSubdirectories = true,
+            AttributesToSkip = FileAttributes.ReparsePoint,
+        };
+        EnumerationOptions flatOptions = new()
+        {
+            IgnoreInaccessible = true,
             AttributesToSkip = FileAttributes.ReparsePoint,
         };
 
@@ -1083,24 +1088,98 @@ public class Actions
         long size = 0;
         bool truncated = false;
 
-        DirectoryInfo dir = new(path);
-        foreach (FileSystemInfo entry in dir.EnumerateFileSystemInfos("*", options))
+        // Try a single fast recursive enumerator over `start`'s whole subtree
+        // first -- as cheap as the old single-enumerator walk for a healthy
+        // tree. Pseudo filesystems like /proc can throw mid-walk (e.g. a
+        // process exiting under us); the native enumerator can't be resumed
+        // after that, so drop the partial counts from this attempt and bisect
+        // into `start`'s immediate children, retrying each independently.
+        // That isolates the failure to just the offending branch instead of
+        // paying a per-directory cost across the whole, otherwise healthy,
+        // tree. A failure on `path` itself still propagates, matching prior
+        // behavior -- GetMetadata's callers classify permission_denied vs
+        // io_error.
+        void Walk(string start)
         {
-            if (ct.IsCancellationRequested || ++visited > MetadataWalkCap)
+            if (truncated || ct.IsCancellationRequested)
+                return;
+
+            int localFiles = 0, localDirs = 0, localVisited = 0;
+            long localSize = 0;
+            try
             {
-                truncated = true;
-                break;
+                foreach (FileSystemInfo entry in new DirectoryInfo(start).EnumerateFileSystemInfos("*", fastOptions))
+                {
+                    if (ct.IsCancellationRequested || visited + ++localVisited > MetadataWalkCap)
+                    {
+                        truncated = true;
+                        break;
+                    }
+                    try
+                    {
+                        if (entry is FileInfo file)
+                        {
+                            localFiles++;
+                            localSize += file.Length;
+                        }
+                        else
+                        {
+                            localDirs++;
+                        }
+                    }
+                    catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+                    {
+                    }
+                }
+                files += localFiles;
+                dirs += localDirs;
+                size += localSize;
+                visited += localVisited;
+                return;
             }
-            if (entry is FileInfo file)
+            catch (Exception ex) when (ex is (UnauthorizedAccessException or IOException) && start != path)
             {
-                files++;
-                size += file.Length;
             }
-            else
+
+            List<FileSystemInfo> children;
+            try
             {
-                dirs++;
+                children = [.. new DirectoryInfo(start).EnumerateFileSystemInfos("*", flatOptions)];
+            }
+            catch (Exception ex) when (ex is (UnauthorizedAccessException or IOException) && start != path)
+            {
+                return;
+            }
+
+            foreach (FileSystemInfo entry in children)
+            {
+                if (truncated || ct.IsCancellationRequested)
+                    break;
+                if (++visited > MetadataWalkCap)
+                {
+                    truncated = true;
+                    break;
+                }
+                try
+                {
+                    if (entry is FileInfo file)
+                    {
+                        files++;
+                        size += file.Length;
+                    }
+                    else
+                    {
+                        dirs++;
+                        Walk(entry.FullName);
+                    }
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+                {
+                }
             }
         }
+
+        Walk(path);
         return (files, dirs, size, truncated);
     }
 

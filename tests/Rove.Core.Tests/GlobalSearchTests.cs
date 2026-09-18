@@ -63,6 +63,33 @@ public class GlobalSearchTests
     }
 
     [Fact]
+    public async Task InaccessibleSubdirectory_SkipsItButFindsSiblingMatches()
+    {
+        if (OperatingSystem.IsWindows())
+            return; // chmod-based permission denial is a Unix concept
+
+        using TempDir tmp = new();
+        string blocked = tmp.Dir("blocked");
+        tmp.File("blocked/match-hidden.txt");
+        tmp.File("sibling-match.txt");
+
+        File.SetUnixFileMode(blocked, UnixFileMode.None);
+        try
+        {
+            CommandResult<SearchHit[]> result =
+                await _search.SearchAsync(tmp.Path, "match", 50, CancellationToken.None);
+
+            Assert.True(result.IsOk);
+            SearchHit hit = Assert.Single(result.Data!);
+            Assert.Equal("sibling-match.txt", hit.Item.Name);
+        }
+        finally
+        {
+            File.SetUnixFileMode(blocked, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+    }
+
+    [Fact]
     public async Task Cancellation_StopsEarlyWithoutThrowing()
     {
         using TempDir tmp = new();

@@ -476,6 +476,35 @@ public class GetMetadataTests
     }
 
     [Fact]
+    public void DirectoryMetadata_SkipsInaccessibleSubdirButCountsSiblings()
+    {
+        if (OperatingSystem.IsWindows())
+            return; // chmod-based permission denial is a Unix concept
+
+        using TempDir tmp = new();
+        string dir = tmp.Dir("stats");
+        tmp.File(@"stats\a.txt", "aa");
+        string blocked = tmp.Dir(@"stats\blocked");
+        tmp.File(@"stats\blocked\hidden.txt", "hidden");
+
+        File.SetUnixFileMode(blocked, UnixFileMode.None);
+        try
+        {
+            CommandResult<ItemMetadata?> result = _actions.GetMetadata(new(dir));
+
+            Assert.True(result.IsOk);
+            ItemMetadata m = result.Data!;
+            Assert.Equal(1, m.FileCount);
+            Assert.Equal(1, m.DirectoryCount);
+            Assert.Equal(2, m.TotalSizeBytes);
+        }
+        finally
+        {
+            File.SetUnixFileMode(blocked, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+    }
+
+    [Fact]
     public void FileMetadata_HasAUnixModeOnEveryPlatformButWindows()
     {
         using TempDir tmp = new();
