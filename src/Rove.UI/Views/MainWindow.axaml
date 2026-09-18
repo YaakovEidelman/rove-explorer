@@ -74,11 +74,11 @@
                          computed from in the code-behind. ── -->
                     <ScrollViewer x:Name="tabs_scroll"
                                   HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-                        <StackPanel x:Name="tabs_stack" Orientation="Horizontal" Spacing="4">
+                        <StackPanel x:Name="tabs_stack" Orientation="Horizontal" Spacing="6">
                             <ItemsControl x:Name="tabs_items" ItemsSource="{Binding Tabs.Items}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
