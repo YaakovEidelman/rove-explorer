@@ -15,6 +15,7 @@ The following is in no particular order (other then that prod grade is first, bu
 1. claiming the default file manager now force-kills whatever currently holds org.freedesktop.FileManager1 (e.g. Nautilus) so the claim takes effect right away. Deliberate on whether I actually want that, or whether there should at least be an option to skip the kill and only take over via normal D-Bus activation (i.e. only when nothing is currently running).
 2. we need a pallate activated context menu to give "open with", or "open dir in terminal" etc..
 3. it seems like a lot of file managers auto extract .tar.gz files on click (or double click), maybe we should do that?
+4. Add a "Move To/Copy To/etc.." option, so a user doesn't have to manually cut/copy, paste.
 
 ## Windows - doable, pushed off for a later release
 1. on Windows, going to trash just opens the Windows Recycle Bin instead of showing trashed items inside Rove. Doable - would need to read and list the $Recycle.Bin format instead of just restoring by path - but not needed for this release.
