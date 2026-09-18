@@ -11,10 +11,42 @@ namespace Rove.UI.ViewModels;
 /// how to draw it — a section header above it, and a toggle switch instead
 /// of a plain value chip when it's an on/off setting. Display only: row
 /// order/count here is what MoveUp/MoveDown/Activate index into, unchanged.
+///
+/// <para>
+/// A mutable, notifying object rather than a record Rebuild() replaces
+/// wholesale — the toggle switch's on/off transition (App.axaml) animates a
+/// property changing on a control that's still there, not a control created
+/// already in its final state because the row underneath it got swapped out.
+/// </para>
 /// </summary>
-public record SettingsRow(string Label, string Value, string? Section = null, bool IsToggle = false, bool IsOn = false)
+public partial class SettingsRow : ObservableObject
 {
+    [ObservableProperty]
+    private string _label;
+
+    [ObservableProperty]
+    private string _value;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSection))]
+    private string? _section;
+
+    [ObservableProperty]
+    private bool _isToggle;
+
+    [ObservableProperty]
+    private bool _isOn;
+
     public bool HasSection => Section is not null;
+
+    public SettingsRow(string label, string value, string? section = null, bool isToggle = false, bool isOn = false)
+    {
+        _label = label;
+        _value = value;
+        _section = section;
+        _isToggle = isToggle;
+        _isOn = isOn;
+    }
 }
 
 /// <summary>
@@ -70,35 +102,46 @@ public partial class SettingsViewModel : ViewModelBase
     private void Rebuild()
     {
         AppSettings s = _store.Current;
-        List<SettingsRow> rows =
-        [
-            new("Theme", s.Theme, Section: "Appearance"),
-            new("Show hidden files by default", s.ShowHiddenByDefault ? "On" : "Off",
-                Section: "Behavior", IsToggle: true, IsOn: s.ShowHiddenByDefault),
-            new("Default view", s.DefaultView),
-            new("Sort the Downloads folder by time", s.SortDownloadsByTime ? "On" : "Off",
-                IsToggle: true, IsOn: s.SortDownloadsByTime),
-            new("Auto-update", s.AutoUpdate ? "On" : "Off",
-                Section: "Updates", IsToggle: true, IsOn: s.AutoUpdate),
-        ];
+        int count = 0;
+        SetRow(count++, "Theme", s.Theme, section: "Appearance");
+        SetRow(count++, "Show hidden files by default", s.ShowHiddenByDefault ? "On" : "Off",
+            section: "Behavior", isToggle: true, isOn: s.ShowHiddenByDefault);
+        SetRow(count++, "Default view", s.DefaultView);
+        SetRow(count++, "Sort the Downloads folder by time", s.SortDownloadsByTime ? "On" : "Off",
+            isToggle: true, isOn: s.SortDownloadsByTime);
+        SetRow(count++, "Auto-update", s.AutoUpdate ? "On" : "Off",
+            section: "Updates", isToggle: true, isOn: s.AutoUpdate);
         if (OperatingSystem.IsLinux() && _portal is not null)
-            rows.Add(new("Default for opening files and folders", PortalStatusLabel(_portal.Status),
-                Section: "Integration"));
+            SetRow(count++, "Default for opening files and folders", PortalStatusLabel(_portal.Status),
+                section: "Integration");
 
-        // Update the existing collection in place rather than assigning a new
-        // one: reassigning made the ListBox drop and rebuild every container
-        // on every single toggle, which — combined with rows of differing
-        // height (section headers, toggle switches) — made the card visibly
-        // shrink and snap back each press instead of just refreshing values.
-        for (int i = 0; i < rows.Count; i++)
-        {
-            if (i < Rows.Count)
-                Rows[i] = rows[i];
-            else
-                Rows.Add(rows[i]);
-        }
-        while (Rows.Count > rows.Count)
+        while (Rows.Count > count)
             Rows.RemoveAt(Rows.Count - 1);
+    }
+
+    /// <summary>
+    /// Updates the row already at <paramref name="index"/> in place rather than
+    /// replacing it — same reasoning as keeping <see cref="Rows"/> itself
+    /// stable (see git history): a fresh object at that slot is a fresh
+    /// control underneath it, and a toggle switch's on/off transition
+    /// (App.axaml) needs the same control to animate from.
+    /// </summary>
+    private void SetRow(int index, string label, string value, string? section = null, bool isToggle = false,
+        bool isOn = false)
+    {
+        if (index < Rows.Count)
+        {
+            SettingsRow row = Rows[index];
+            row.Label = label;
+            row.Value = value;
+            row.Section = section;
+            row.IsToggle = isToggle;
+            row.IsOn = isOn;
+        }
+        else
+        {
+            Rows.Add(new SettingsRow(label, value, section, isToggle, isOn));
+        }
     }
 
     private static string PortalStatusLabel(PortalStatus status) => status switch

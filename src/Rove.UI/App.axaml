@@ -140,7 +140,8 @@
              it immediately would leave nothing for the transition to animate
              from. Closing one plays the same transition in reverse: the click
              handler (MainWindow.axaml.cs) adds .closing and waits out the
-             fade before it actually asks TabsViewModel to remove the tab. ── -->
+             fade before it actually asks TabsViewModel to remove the tab —
+             mouse-only; see that handler for why Ctrl+W stays instant. ── -->
         <Style Selector="Button.tab.entered">
             <Setter Property="Opacity" Value="1" />
             <Setter Property="RenderTransform" Value="scale(1)" />

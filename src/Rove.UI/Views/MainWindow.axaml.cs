@@ -92,10 +92,14 @@ public partial class MainWindow : Window
     private static readonly TimeSpan TabCloseFadeDuration = TimeSpan.FromMilliseconds(200);
 
     /// <summary>
-    /// Fades the tab out before actually closing it — done here rather than in
-    /// TabsViewModel because closing there removes the tab from Items right
-    /// away, which a bunch of tests (and keyboard-driven closes) rely on
-    /// staying synchronous. This only delays the click path.
+    /// Fades the tab out before actually closing it — done here, at the click,
+    /// rather than as a delay inside TabsViewModel.CloseTabItem, since that
+    /// delay would apply to every close including Ctrl+W's, and this repo's
+    /// headless test harness has no way to fast-forward a real-time delay: it
+    /// can only drain jobs already queued, not make one fire early (verified
+    /// against a plain DispatcherTimer, not just this code). A handful of
+    /// tests assert a tab is gone immediately after Ctrl+W, so keyboard-driven
+    /// closes stay instant; this only touches the click path.
     /// </summary>
     private async void OnTabCloseClicked(object? sender, RoutedEventArgs e)
     {
