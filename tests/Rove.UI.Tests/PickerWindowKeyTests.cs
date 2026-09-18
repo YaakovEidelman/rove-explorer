@@ -82,7 +82,7 @@ public class PickerWindowKeyTests : HeadlessTest
     });
 
     [Fact]
-    public Task CtrlOInDirectoryModeChoosesTheCurrentFolder() => OnUiThread(() =>
+    public Task CtrlOInDirectoryModeChoosesTheCurrentFolderWhenNoFolderIsHighlighted() => OnUiThread(() =>
     {
         using PickerWindowHarness harness = PickerWindowHarness.Open(
             root => Directory.CreateDirectory(Path.Combine(root, "Photos")), directory: true);
@@ -91,6 +91,51 @@ public class PickerWindowKeyTests : HeadlessTest
         harness.Press(Key.O, RawInputModifiers.Control);
 
         Assert.Equal([0], harness.ExitCodes);
+        Assert.Equal([Path.Combine(harness.Root, "Photos")], harness.OutputLines());
+    });
+
+    [Fact]
+    public Task CtrlOInDirectoryModeChoosesTheHighlightedFolder() => OnUiThread(() =>
+    {
+        using PickerWindowHarness harness = PickerWindowHarness.Open(root =>
+        {
+            Directory.CreateDirectory(Path.Combine(root, "Photos"));
+            Directory.CreateDirectory(Path.Combine(root, "Music"));
+        }, directory: true);
+        harness.Highlight("Music");
+
+        harness.Press(Key.O, RawInputModifiers.Control);
+
+        Assert.Equal([0], harness.ExitCodes);
+        Assert.Equal([Path.Combine(harness.Root, "Music")], harness.OutputLines());
+    });
+
+    [Fact]
+    public Task CtrlOInDirectoryModeIgnoresAHighlightedFile() => OnUiThread(() =>
+    {
+        using PickerWindowHarness harness = PickerWindowHarness.Open(
+            root => File.WriteAllText(Path.Combine(root, "report.txt"), ""), directory: true);
+        harness.Highlight("report.txt");
+
+        harness.Press(Key.O, RawInputModifiers.Control);
+
+        Assert.Equal([harness.Root], harness.OutputLines());
+    });
+
+    [Fact]
+    public Task CtrlOPrefersMarkedFoldersOverTheHighlightedOne() => OnUiThread(() =>
+    {
+        using PickerWindowHarness harness = PickerWindowHarness.Open(root =>
+        {
+            Directory.CreateDirectory(Path.Combine(root, "Photos"));
+            Directory.CreateDirectory(Path.Combine(root, "Music"));
+        }, directory: true, multiple: true);
+        harness.Highlight("Photos");
+        harness.Press(Key.V);
+        harness.Highlight("Music");
+
+        harness.Press(Key.O, RawInputModifiers.Control);
+
         Assert.Equal([Path.Combine(harness.Root, "Photos")], harness.OutputLines());
     });
 

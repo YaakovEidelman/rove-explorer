@@ -192,8 +192,8 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef CheckForUpdates = new("app.update_now", "Check for Updates Now", CommandKind.User);
 
     // Picker (the --picker launch mode)
-    public static readonly CommandDef PickerSelectCurrentFolder =
-        new("picker.select_current_folder", "Choose the Current Folder", CommandKind.System);
+    public static readonly CommandDef PickerSelectFolder =
+        new("picker.select_folder", "Choose the Folder", CommandKind.System);
     public static readonly CommandDef PickerCycleFilter =
         new("picker.cycle_filter", "Switch File Type Filter", CommandKind.System);
 

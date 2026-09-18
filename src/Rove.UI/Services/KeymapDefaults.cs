@@ -114,7 +114,7 @@ public static class KeymapDefaults
                 new(K(Key.Tab, KeyModifiers.Control), CommandDef.NextTab.Id),
                 new(K(Key.Tab, KeyModifiers.Control | KeyModifiers.Shift), CommandDef.PreviousTab.Id),
                 new(K(Key.OemComma), CommandDef.ShowSettings.Id),
-                new(K(Key.O, KeyModifiers.Control), CommandDef.PickerSelectCurrentFolder.Id),
+                new(K(Key.O, KeyModifiers.Control), CommandDef.PickerSelectFolder.Id),
                 new(K(Key.F, KeyModifiers.Control), CommandDef.PickerCycleFilter.Id),
                 .. BookmarkShortcuts(),
                 .. TabShortcuts(),

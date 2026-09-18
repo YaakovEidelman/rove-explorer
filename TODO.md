@@ -14,7 +14,6 @@ The following is in no particular order (other then that prod grade is first, bu
 5. editing the crumbs bar needs UX work. ctrl + n/p should go up and down the list, but also fill it in. tab, should auto complete the next item. enter goes to the folder/item.
 7. if a folder on linux says "Access Denied" and is enterable via sudo, we need to allow that to work.
 8. Column sorting and resizing should be blocked when in icon view mode.
-9. when picker chooses folder, ctrl + O chooses the folder in the path bar, not the highlighted. that's not expected.
 
 ## Important but can still be published without it.
 1. claiming the default file manager now force-kills whatever currently holds org.freedesktop.FileManager1 (e.g. Nautilus) so the claim takes effect right away. Deliberate on whether I actually want that, or whether there should at least be an option to skip the kill and only take over via normal D-Bus activation (i.e. only when nothing is currently running).

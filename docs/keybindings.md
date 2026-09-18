@@ -283,13 +283,15 @@ window, so `content.get_item` and `content.escape` do double duty: `Enter` on
 a file confirms the pick (on a folder it still navigates in), and `Esc`
 cancels the picker outright rather than just clearing marks.
 
-| Command                        | What it does                          |
-| ------------------------------- | -------------------------------------- |
-| `picker.select_current_folder` | Choose the folder you're looking at    |
-| `picker.cycle_filter`          | Switch to the next named file filter   |
+| Command                | What it does                                     |
+| ---------------------- | ------------------------------------------------ |
+| `picker.select_folder` | Choose the highlighted folder                    |
+| `picker.cycle_filter`  | Switch to the next named file filter             |
 
-`picker.select_current_folder` is only bound when the picker was asked for a
-folder. Default key: `ctrl+o`.
+`picker.select_folder` is only bound when the picker was asked for a folder.
+It picks the marked folders if there are any (when several may be chosen),
+otherwise the highlighted folder, otherwise the folder you're in. Default
+key: `ctrl+o`.
 
 `picker.cycle_filter` is only bound when the caller offered more than one
 named filter (the portal's `filters` option) — it steps through them in

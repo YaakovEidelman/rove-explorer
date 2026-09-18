@@ -74,7 +74,7 @@ public sealed partial class PickerWindowViewModel : ViewModelBase
         _registry.Register(CommandDef.ContentGetItem, ConfirmOrNavigate);
         _registry.Register(CommandDef.EscapeBrowse, Cancel);
         if (_directoryMode)
-            _registry.Register(CommandDef.PickerSelectCurrentFolder, ConfirmCurrentFolder);
+            _registry.Register(CommandDef.PickerSelectFolder, ConfirmFolder);
         if (_filters.Length > 1)
             _registry.Register(CommandDef.PickerCycleFilter, CycleFilter);
 
@@ -134,8 +134,8 @@ public sealed partial class PickerWindowViewModel : ViewModelBase
     {
         Mode.Browse => _directoryMode
             ? (_multiple
-                ? "j/k move · Enter open folder · v mark folders · Ctrl+O choose marked (or current) · Esc cancel"
-                : "j/k move · Enter open folder · Ctrl+O choose this folder · Esc cancel")
+                ? "j/k move · Enter open folder · v mark folders · Ctrl+O choose marked (or highlighted) · Esc cancel"
+                : "j/k move · Enter open folder · Ctrl+O choose highlighted folder · Esc cancel")
             : "j/k move · Enter choose · v mark multiple · Esc cancel" + (_filters.Length > 1
                 ? " · Ctrl+F switch filter"
                 : ""),
@@ -197,22 +197,23 @@ public sealed partial class PickerWindowViewModel : ViewModelBase
             ConfirmSelection();
     }
 
-    private void ConfirmCurrentFolder()
+    private void ConfirmFolder()
     {
-        string[] chosen = _multiple ? MarkedDirectoriesOrCurrent() : [ContentPage.DirectoryListing.CurrentDir];
-        WriteResultAndExit(chosen);
+        string[] marked = _multiple ? MarkedDirectories() : [];
+        WriteResultAndExit(marked.Length > 0 ? marked : [HighlightedFolderOrCurrent()]);
     }
 
-    private string[] MarkedDirectoriesOrCurrent()
-    {
-        string[] marked =
-        [
-            .. ContentPage.DirectoryListing.Items
-                .Where(i => i.IsMarked && i.Item.IsDirectory)
-                .Select(i => i.Item.FullPath),
-        ];
-        return marked.Length > 0 ? marked : [ContentPage.DirectoryListing.CurrentDir];
-    }
+    private string[] MarkedDirectories() =>
+    [
+        .. ContentPage.DirectoryListing.Items
+            .Where(i => i.IsMarked && i.Item.IsDirectory)
+            .Select(i => i.Item.FullPath),
+    ];
+
+    private string HighlightedFolderOrCurrent() =>
+        ContentPage.HighlightedItem is { Item.IsDirectory: true } highlighted
+            ? highlighted.Item.FullPath
+            : ContentPage.DirectoryListing.CurrentDir;
 
     private void ConfirmSelection()
     {
