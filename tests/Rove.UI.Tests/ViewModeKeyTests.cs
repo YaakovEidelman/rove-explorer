@@ -1,5 +1,6 @@
 using Avalonia.Input;
 using Rove.UI.Models;
+using Rove.UI.ViewModels;
 using Xunit;
 
 namespace Rove.UI.Tests;
@@ -120,5 +121,56 @@ public class ViewModeKeyTests : HeadlessTest
         harness.Press(Key.J);
 
         Assert.Equal("file01.txt", harness.Content.HighlightedItem!.Name);
+    });
+
+    [Fact]
+    public Task WDoesNotOpenTheWidthBarInIconView() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(Fill);
+        harness.Press(Key.I);
+
+        harness.Press(Key.W);
+
+        Assert.False(harness.Content.InResizeColumns);
+    });
+
+    [Fact]
+    public Task SwitchingToIconViewClosesTheWidthBar() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(Fill);
+        harness.Press(Key.W);
+        Assert.True(harness.Content.InResizeColumns);
+
+        harness.Content.ViewMode = ContentViewMode.Icons;
+        harness.Settle();
+
+        Assert.False(harness.Content.InResizeColumns);
+    });
+
+    [Fact]
+    public Task SortCommandsDoNothingInIconView() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(Fill);
+        harness.Press(Key.I);
+
+        harness.Press(Key.Space);
+        harness.Model.Palette.PaletteSearchText = "Sort by Size";
+        harness.Settle();
+        harness.Press(Key.Enter);
+
+        Assert.Equal(SortKey.Name, harness.Content.DirectoryListing.SortBy);
+    });
+
+    [Fact]
+    public Task SortCommandsStillWorkInListView() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(Fill);
+
+        harness.Press(Key.Space);
+        harness.Model.Palette.PaletteSearchText = "Sort by Size";
+        harness.Settle();
+        harness.Press(Key.Enter);
+
+        Assert.Equal(SortKey.Size, harness.Content.DirectoryListing.SortBy);
     });
 }

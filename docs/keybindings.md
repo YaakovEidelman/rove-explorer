@@ -254,6 +254,10 @@ bottom rather than wrapping, `h`/`l` step one item left or right. `Enter`
 still opens the highlighted item and `Backspace` still goes up a directory,
 in both views.
 
+Column widths and sorting only apply to the list view. In icon view the width
+bar won't open, the sort commands do nothing, and switching to icon view
+closes the width bar if it was up.
+
 ### Tabs
 
 | Command          | What it does                     |

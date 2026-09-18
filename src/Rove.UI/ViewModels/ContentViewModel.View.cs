@@ -40,7 +40,12 @@ public partial class ContentViewModel
     public double IconCellHeight => IconSizes.CellHeight(IconSize);
     public double IconPixelSize => IconSizes.PixelsFor(IconSize);
 
-    partial void OnViewModeChanged(ContentViewMode value) => ApplyIconSize();
+    partial void OnViewModeChanged(ContentViewMode value)
+    {
+        ApplyIconSize();
+        if (IsIconView && InResizeColumns)
+            ToggleResizeColumns();
+    }
     partial void OnIconSizeChanged(IconSize value) => ApplyIconSize();
 
     private void ApplyIconSize() =>
@@ -150,8 +155,25 @@ public partial class ContentViewModel
     private const double WidthStep = 12;
     private const double WidthStepLarge = 48;
 
+    private bool RefusedInIconView(string verb)
+    {
+        if (!IsIconView)
+            return false;
+        InfoRaised?.Invoke($"{verb} is only for the list view.");
+        return true;
+    }
+
+    private void SortBy(SortKey key)
+    {
+        if (RefusedInIconView("Sorting"))
+            return;
+        DirectoryListing.SetSort(key);
+    }
+
     private void ToggleResizeColumns()
     {
+        if (!InResizeColumns && RefusedInIconView("Resizing columns"))
+            return;
         InResizeColumns = !InResizeColumns;
         if (InResizeColumns)
             PointAt(FirstVisibleColumn());
@@ -172,7 +194,7 @@ public partial class ContentViewModel
     {
         if (_activeColumnIndex < 0 || _activeColumnIndex >= _columnSortKeys.Length)
             return;
-        DirectoryListing.SetSort(_columnSortKeys[_activeColumnIndex]);
+        SortBy(_columnSortKeys[_activeColumnIndex]);
     }
 
     private void ColumnNext() => StepActiveColumn(1);

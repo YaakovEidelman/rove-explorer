@@ -250,10 +250,10 @@ public partial class ContentViewModel : ViewModelBase
         _registry.Register(CommandDef.ColumnShrinkLarge, ColumnShrinkLarge);
         _registry.Register(CommandDef.ColumnResetWidth, ColumnResetWidth);
         _registry.Register(CommandDef.SortByActiveColumn, SortByActiveColumn);
-        _registry.Register(CommandDef.SortByName, () => DirectoryListing.SetSort(SortKey.Name));
-        _registry.Register(CommandDef.SortByType, () => DirectoryListing.SetSort(SortKey.Type));
-        _registry.Register(CommandDef.SortBySize, () => DirectoryListing.SetSort(SortKey.Size));
-        _registry.Register(CommandDef.SortByModified, () => DirectoryListing.SetSort(SortKey.Modified));
+        _registry.Register(CommandDef.SortByName, () => SortBy(SortKey.Name));
+        _registry.Register(CommandDef.SortByType, () => SortBy(SortKey.Type));
+        _registry.Register(CommandDef.SortBySize, () => SortBy(SortKey.Size));
+        _registry.Register(CommandDef.SortByModified, () => SortBy(SortKey.Modified));
         _registry.Register(CommandDef.ToggleContentView, CycleContentView);
         _registry.Register(CommandDef.ToggleMarkItem, ToggleMarkItem);
         _registry.Register(CommandDef.ClearMarks, ClearMarks);
