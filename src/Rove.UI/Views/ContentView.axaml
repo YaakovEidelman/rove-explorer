@@ -15,7 +15,7 @@
                 IsVisible="{Binding IsListView}"
                 BorderBrush="{DynamicResource AppBorderBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="14,6,4,6">
+                Padding="17,10,4,10">
             <StackPanel Orientation="Horizontal">
                 <Panel Width="{Binding Columns[0].Width}" IsVisible="{Binding Columns[0].IsVisible}">
                     <StackPanel Orientation="Horizontal" Spacing="4">

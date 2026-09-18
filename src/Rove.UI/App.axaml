@@ -107,7 +107,7 @@
              bar underneath instead of looking like a separate boxed button. -->
         <Style Selector="Border.tabstrip">
             <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
-            <Setter Property="Padding" Value="8,5,8,0" />
+            <Setter Property="Padding" Value="10,9,10,0" />
         </Style>
         <Style Selector="TextBlock.brandtext">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
@@ -119,7 +119,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="6,6,0,0" />
-            <Setter Property="Padding" Value="14,7" />
+            <Setter Property="Padding" Value="16,10" />
             <Setter Property="MinWidth" Value="130" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
@@ -180,7 +180,7 @@
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="6,6,0,0" />
             <Setter Property="Width" Value="28" />
-            <Setter Property="Height" Value="24" />
+            <Setter Property="Height" Value="32" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -371,7 +371,7 @@
         </Style>
         <Style Selector="ListBox#content_list ListBoxItem">
             <Setter Property="Padding" Value="0" />
-            <Setter Property="MinHeight" Value="27" />
+            <Setter Property="MinHeight" Value="34" />
             <Setter Property="CornerRadius" Value="4" />
         </Style>
         <Style Selector="ListBox#content_list ListBoxItem:selected /template/ ContentPresenter">
@@ -381,7 +381,7 @@
         <Style Selector="Border.row">
             <Setter Property="BorderThickness" Value="3,0,0,0" />
             <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="Padding" Value="7,3" />
+            <Setter Property="Padding" Value="10,6" />
         </Style>
         <Style Selector="TextBox.rename">
             <Setter Property="FontSize" Value="13" />
@@ -404,7 +404,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Focusable" Value="False" />
             <Setter Property="IsHitTestVisible" Value="False" />
-            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Padding" Value="12,10" />
         </Style>
         <Style Selector="ListBox#icon_list ListBoxItem">
             <Setter Property="Padding" Value="0" />
@@ -416,7 +416,7 @@
         </Style>
         <Style Selector="Border.iconcell">
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="6" />
+            <Setter Property="Padding" Value="8" />
         </Style>
         <Style Selector="Border.iconcell.marked">
             <Setter Property="Background" Value="{DynamicResource MarkBgBrush}" />
