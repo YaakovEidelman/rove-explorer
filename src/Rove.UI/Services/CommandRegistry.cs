@@ -96,6 +96,10 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef DeleteItemsPermanent = new("content.delete_permanent", "Delete Permanently…", CommandKind.User);
     public static readonly CommandDef RestoreTrashedItems =
         new("content.restore_trashed", $"Put Back (out of the {TrashService.DisplayName})", CommandKind.User);
+    public static readonly CommandDef RestoreAllTrashedItems =
+        new("content.restore_all_trashed", $"Put Everything Back (out of the {TrashService.DisplayName})", CommandKind.User);
+    public static readonly CommandDef EmptyTrash =
+        new("content.empty_trash", $"Empty the {TrashService.DisplayName}…", CommandKind.User);
     public static readonly CommandDef CopyItems = new("content.copy", "Copy Items", CommandKind.User);
     public static readonly CommandDef CutItems = new("content.cut", "Cut Items", CommandKind.User);
     public static readonly CommandDef PasteItems = new("content.paste", "Paste Items", CommandKind.User);

@@ -66,7 +66,8 @@ public partial class DirectoryListing : ObservableObject
     /// their own boxes. Derived rather than stored, so the two can never come
     /// to disagree about where you are.
     /// </summary>
-    public PathCrumb[] Crumbs => PathBreadcrumb.Of(CurrentDir);
+    public PathCrumb[] Crumbs => PathBreadcrumb.Of(CurrentDir,
+        TrashService.BrowsePath is { } trashRoot ? (trashRoot, TrashService.DisplayName) : null);
 
     partial void OnCurrentDirChanged(string value) => OnPropertyChanged(nameof(Crumbs));
 

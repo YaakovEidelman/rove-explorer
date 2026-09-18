@@ -21,8 +21,14 @@ public partial class ContentViewModel
 
     private void DeleteItems()
     {
-        if (!RefusedInArchive("Delete"))
-            _ = DeleteItemsAsync();
+        if (RefusedInArchive("Delete"))
+            return;
+        if (InTrash)
+        {
+            InfoRaised?.Invoke($"Already in the {TrashService.DisplayName} — delete permanently instead.");
+            return;
+        }
+        _ = DeleteItemsAsync();
     }
 
     private async Task DeleteItemsAsync()
@@ -121,15 +127,44 @@ public partial class ContentViewModel
             InfoRaised?.Invoke($"Opened the {TrashService.DisplayName}.");
     }
 
-    private void RestoreTrashedItems() => _ = RestoreTrashedItemsAsync();
-
-    private async Task RestoreTrashedItemsAsync()
+    private void RestoreTrashedItems()
     {
-        List<ListViewItem> targets = Targets();
-        if (targets.Count == 0)
-            return;
+        string[] paths = [.. Targets().Select(t => t.Item.FullPath)];
+        if (paths.Length > 0)
+            _ = RestoreTrashedItemsAsync(paths);
+    }
 
-        string[] paths = [.. targets.Select(t => t.Item.FullPath)];
+    private void RestoreAllTrashedItems() => _ = RestoreAllTrashedItemsAsync();
+
+    private async Task RestoreAllTrashedItemsAsync()
+    {
+        string[] paths = await TopLevelTrashPathsAsync();
+        if (paths.Length == 0)
+            return;
+        await RestoreTrashedItemsAsync(paths);
+        if (InTrash)
+            _ = SetCurrentDirectoryAsync(TrashService.BrowsePath!);
+    }
+
+    /// <summary>The immediate contents of the trash root — never wherever a nested view has drilled to.</summary>
+    private async Task<string[]> TopLevelTrashPathsAsync()
+    {
+        if (TrashService.BrowsePath is not { } root)
+        {
+            ErrorRaised?.Invoke($"The {TrashService.DisplayName} can't be listed on this system.");
+            return [];
+        }
+        CommandResult<FolderItem[]> listing = await _core.Actions.ReadDirectoryAsync(new(root));
+        if (!listing.IsOk || listing.Data is not { Length: > 0 } items)
+        {
+            InfoRaised?.Invoke($"The {TrashService.DisplayName} is empty.");
+            return [];
+        }
+        return [.. items.Select(i => i.FullPath)];
+    }
+
+    private async Task RestoreTrashedItemsAsync(string[] paths)
+    {
         string from = DirectoryListing.CurrentDir;
         ClearMarks();
 
@@ -155,6 +190,29 @@ public partial class ContentViewModel
             InfoRaised?.Invoke($"Put {Describe(undone.Count)} back.");
     }
 
+    // ── emptying the trash ───────────────────────────────────────────────
+
+    private void EmptyTrash()
+    {
+        if (TrashService.BrowsePath is null)
+        {
+            ErrorRaised?.Invoke($"The {TrashService.DisplayName} can't be emptied on this system.");
+            return;
+        }
+        ConfirmRequested?.Invoke($"Empty the {TrashService.DisplayName}? This cannot be undone.",
+            () => _ = EmptyTrashAsync());
+    }
+
+    private async Task EmptyTrashAsync()
+    {
+        string[] paths = await TopLevelTrashPathsAsync();
+        if (paths.Length == 0)
+            return;
+        await DeleteItemsPermanentAsync(paths, paths.Length, DirectoryListing.CurrentDir);
+        if (InTrash)
+            _ = SetCurrentDirectoryAsync(TrashService.BrowsePath!);
+    }
+
     // ── clipboard verbs ──────────────────────────────────────────────────
 
     private void CopyItems()
@@ -165,7 +223,7 @@ public partial class ContentViewModel
 
     private void CutItems()
     {
-        if (!RefusedInArchive("Cut"))
+        if (!RefusedInArchive("Cut") && !RefusedInTrash("Cut"))
             SetClipboard(ClipboardOp.Cut);
     }
 
@@ -184,7 +242,7 @@ public partial class ContentViewModel
 
     private void PasteItems()
     {
-        if (!RefusedInArchive("Paste"))
+        if (!RefusedInArchive("Paste") && !RefusedInTrash("Paste"))
             _ = PasteItemsAsync();
     }
 
@@ -302,7 +360,7 @@ public partial class ContentViewModel
 
     private void ExtractItems()
     {
-        if (!RefusedInArchive("Extract"))
+        if (!RefusedInArchive("Extract") && !RefusedInTrash("Extract"))
             _ = ExtractItemsAsync();
     }
 
@@ -352,7 +410,7 @@ public partial class ContentViewModel
 
     private void CompressItems()
     {
-        if (!RefusedInArchive("Compress"))
+        if (!RefusedInArchive("Compress") && !RefusedInTrash("Compress"))
             _ = CompressItemsAsync();
     }
 

@@ -21,7 +21,7 @@ public partial class ContentViewModel
 
     private void ToggleRenameItem()
     {
-        if (RefusedInArchive("Rename"))
+        if (RefusedInArchive("Rename") || RefusedInTrash("Rename"))
             return;
         if (HighlightedItem is not { } selected)
             return;
@@ -76,8 +76,11 @@ public partial class ContentViewModel
 
     private void ToggleCreate(bool isFolder)
     {
-        if (!InCreateItem && RefusedInArchive(isFolder ? "New folder" : "New file"))
+        if (!InCreateItem && (RefusedInArchive(isFolder ? "New folder" : "New file")
+                || RefusedInTrash(isFolder ? "New folder" : "New file")))
+        {
             return;
+        }
         CreateItemText = string.Empty;
         _createIsFolder = isFolder;
         CreateItemLabel = isFolder ? "New folder" : "New file";

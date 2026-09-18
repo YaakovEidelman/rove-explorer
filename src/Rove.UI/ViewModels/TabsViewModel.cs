@@ -5,7 +5,6 @@ using Rove.UI.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 
 namespace Rove.UI.ViewModels;
@@ -242,23 +241,6 @@ public partial class TabsViewModel : ViewModelBase, IDisposable
     }
 
     private void ApplyRenameTab() => Items.FirstOrDefault(t => t.IsRenaming)?.ApplyRename();
-
-    public AppSession Snapshot() =>
-        new([.. Items.Select(t => new TabSession(t.Content.DirectoryListing.CurrentDir, t.CustomTitle))], ActiveIndex);
-
-    public void Restore(AppSession session)
-    {
-        foreach (TabSession saved in session.Tabs)
-        {
-            if (!Directory.Exists(saved.Directory))
-                continue;
-            FolderTab tab = Open(saved.Directory);
-            if (saved.Title is { Length: > 0 })
-                tab.CustomTitle = saved.Title;
-        }
-        if (session.ActiveIndex >= 0 && session.ActiveIndex < Items.Count)
-            ActiveIndex = session.ActiveIndex;
-    }
 
     // ── building one ─────────────────────────────────────────────────────
 

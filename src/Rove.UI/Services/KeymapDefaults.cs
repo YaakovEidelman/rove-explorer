@@ -97,6 +97,8 @@ public static class KeymapDefaults
                 new(K(Key.G), CommandDef.ShowDrives.Id),
                 new(K(Key.T), CommandDef.ShowTrash.Id),
                 new(K(Key.U, KeyModifiers.Shift), CommandDef.RestoreTrashedItems.Id),
+                new(K(Key.U, KeyModifiers.Control | KeyModifiers.Shift), CommandDef.RestoreAllTrashedItems.Id),
+                new(K(Key.D, KeyModifiers.Control | KeyModifiers.Shift), CommandDef.EmptyTrash.Id),
                 new(K(Key.L, KeyModifiers.Control), CommandDef.ToggleEditPath.Id),
                 new(K(Key.R, KeyModifiers.Control), CommandDef.TogglePreview.Id),
                 new(K(Key.C, KeyModifiers.Control), CommandDef.CancelFileOperation.Id),

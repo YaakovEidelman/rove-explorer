@@ -103,8 +103,6 @@ public static class RovePaths
     /// <summary>What the last install put where — read at startup to skip doing it again.</summary>
     public static string InstallRecordFile => Path.Combine(StateDirectory, "installed.json");
 
-    public static string SessionFile => Path.Combine(StateDirectory, "session.json");
-
     public static string LogDirectory => Path.Combine(StateDirectory, "logs");
 
     public static string PortalInstallStateFile => Path.Combine(StateDirectory, "portal-install.json");

@@ -165,6 +165,8 @@ again carries on inside it.
 | `content.delete`            | Delete (Recycle Bin / Trash) |
 | `content.delete_permanent`  | Delete permanently           |
 | `content.restore_trashed`   | Put back, out of the trash   |
+| `content.restore_all_trashed` | Put everything back, out of the trash |
+| `content.empty_trash`       | Empty the trash               |
 | `content.rename`            | Rename item                  |
 | `content.rename_apply`      | Apply the rename             |
 | `content.create_file`       | New file                     |
@@ -188,11 +190,19 @@ Linux, out of the trash). A permanent delete is the one thing it cannot undo —
 that is what makes it permanent. Undoing a new file or folder only removes it
 while it is still empty; once you have put something in it, it is yours.
 
-`nav.trash` walks into the trash: on Linux it is an ordinary folder, so
-everything you can do elsewhere you can do there. `content.restore_trashed`
-puts the highlighted or marked items back where they were deleted from,
-reading the record the trash keeps of each. On Windows the Recycle Bin is not
-a folder anything can list, so `nav.trash` opens it in Explorer instead.
+`nav.trash` walks into the trash on Linux. The path bar shows it as "Trash"
+rather than the real folder it lives at, and most verbs that write — rename,
+cut, paste, new file/folder, compress, extract, and plain delete — are
+refused there, same idea as inside a zip. Looking around, marking, and
+copying still work, and so does putting things back or deleting them for
+good, since that is what the trash is for. `content.restore_trashed` puts
+the highlighted or marked items back where they were deleted from, reading
+the record the trash keeps of each; `content.restore_all_trashed` does the
+same for everything in the trash, regardless of how deep you have browsed
+into it. `content.empty_trash` permanently deletes everything in the trash,
+after confirming — the same one-way trip as `content.delete_permanent`. On
+Windows the Recycle Bin is not a folder anything can list, so `nav.trash`
+opens it in Explorer instead, and the other three commands do nothing there.
 
 `bookmark.toggle` (`b`) keeps the highlighted item — or, in an empty folder,
 the folder you are standing in — and pressing it again on the same thing

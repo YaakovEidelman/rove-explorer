@@ -69,4 +69,55 @@ public class PathBreadcrumbTests
         Assert.Equal(deep, crumbs[^1].FullPath);
         Assert.DoesNotContain(crumbs, crumb => crumb.Label.Contains("?"));
     }
+
+    [Fact]
+    public void CollapseFoldsTheRootIntoOneLabeledCrumb()
+    {
+        using TempDir tmp = new();
+        string root = tmp.Dir("Trash");
+        string nested = tmp.Dir(System.IO.Path.Combine("Trash", "OldProject", "src"));
+
+        PathCrumb[] crumbs = PathBreadcrumb.Of(nested, (root, "Trash"));
+
+        Assert.Equal(["Trash", "OldProject", "src"], [.. crumbs.Select(c => c.Label)]);
+        Assert.Equal(root, crumbs[0].FullPath);
+        Assert.True(crumbs[^1].IsLast);
+    }
+
+    [Fact]
+    public void CollapseAtExactlyTheRootIsASingleCrumb()
+    {
+        using TempDir tmp = new();
+        string root = tmp.Dir("Trash");
+
+        PathCrumb[] crumbs = PathBreadcrumb.Of(root, (root, "Trash"));
+
+        Assert.Equal(["Trash"], [.. crumbs.Select(c => c.Label)]);
+        Assert.True(crumbs[0].IsLast);
+    }
+
+    [Fact]
+    public void CollapseDoesNotMatchASimilarlyNamedSibling()
+    {
+        using TempDir tmp = new();
+        string root = tmp.Dir("Trash");
+        string sibling = tmp.Dir("TrashCan");
+
+        PathCrumb[] crumbs = PathBreadcrumb.Of(sibling, (root, "Trash"));
+
+        Assert.Equal(Labels(sibling), crumbs.Select(c => c.Label).ToArray());
+        Assert.DoesNotContain(crumbs, c => c.Label == "Trash");
+    }
+
+    [Fact]
+    public void CollapseIgnoresAPathThatIsNotUnderTheRoot()
+    {
+        using TempDir tmp = new();
+        string root = tmp.Dir("Trash");
+        string elsewhere = tmp.Dir("Documents");
+
+        PathCrumb[] crumbs = PathBreadcrumb.Of(elsewhere, (root, "Trash"));
+
+        Assert.Equal(Labels(elsewhere), crumbs.Select(c => c.Label).ToArray());
+    }
 }

@@ -68,4 +68,25 @@ public class PathGuardTests
         Assert.True(PathGuard.IsSameOrDescendant(sub, sub));
         Assert.False(PathGuard.IsSameOrDescendant(deeper, sub));
     }
+
+    [Fact]
+    public void IsSameOrDescendant_DoesNotMatchASimilarlyNamedSibling()
+    {
+        using TempDir tmp = new();
+        string trash = tmp.Dir("Trash");
+        string trashCan = tmp.Dir("TrashCan");
+        Assert.False(PathGuard.IsSameOrDescendant(trash, trashCan));
+        Assert.False(PathGuard.IsSameOrDescendant(trashCan, trash));
+    }
+
+    [Fact]
+    public void IsSameOrDescendant_ResolvesTraversalBeforeComparing()
+    {
+        using TempDir tmp = new();
+        string trash = tmp.Dir("Trash");
+        string sibling = tmp.Dir("Elsewhere");
+        string viaTraversal = System.IO.Path.Combine(sibling, "..", "Trash", "item");
+        Assert.True(PathGuard.IsSameOrDescendant(trash, viaTraversal));
+        Assert.False(PathGuard.IsSameOrDescendant(sibling, viaTraversal));
+    }
 }

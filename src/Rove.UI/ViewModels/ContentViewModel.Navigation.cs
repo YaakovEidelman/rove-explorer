@@ -44,6 +44,7 @@ public partial class ContentViewModel
         DirectoryListing.Load(directory, result.Data);
         DirectoryListing.CurrentDir = directory;
         InArchive = ArchivePath.IsInside(directory);
+        InTrash = TrashService.BrowsePath is { } trashRoot && PathGuard.IsSameOrDescendant(trashRoot, directory);
         RefreshCutFlags();
 
         if (!_navigatingHistory && !PathCompare.PathMatches(from, directory))

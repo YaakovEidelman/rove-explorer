@@ -121,6 +121,14 @@ public partial class ContentViewModel : ViewModelBase
     [ObservableProperty]
     private bool _inArchive;
 
+    /// <summary>
+    /// Whether what is listed is the trash (or somewhere nested inside a
+    /// trashed folder), worked out the same way and at the same point as
+    /// <see cref="InArchive"/>.
+    /// </summary>
+    [ObservableProperty]
+    private bool _inTrash;
+
     public ListViewItem? HighlightedItem => DirectoryListing.ListSelection.SelectedItem;
 
     /// <summary>Gives back what this view was holding — its watcher, and nothing else.</summary>
@@ -152,6 +160,19 @@ public partial class ContentViewModel : ViewModelBase
         if (!InArchive)
             return false;
         InfoRaised?.Invoke($"{verb} does not work inside a zip — extract it first.");
+        return true;
+    }
+
+    /// <summary>
+    /// Verbs that don't make sense on something already in the trash — most
+    /// of what a folder view normally allows, since the trash is somewhere
+    /// to look at and put back from, not somewhere to keep working.
+    /// </summary>
+    private bool RefusedInTrash(string verb)
+    {
+        if (!InTrash)
+            return false;
+        InfoRaised?.Invoke($"{verb} does not work inside the {TrashService.DisplayName}.");
         return true;
     }
 
@@ -214,6 +235,8 @@ public partial class ContentViewModel : ViewModelBase
         _registry.Register(CommandDef.ShowDrives, ShowDrives);
         _registry.Register(CommandDef.ShowTrash, GoToTrash);
         _registry.Register(CommandDef.RestoreTrashedItems, RestoreTrashedItems);
+        _registry.Register(CommandDef.RestoreAllTrashedItems, RestoreAllTrashedItems);
+        _registry.Register(CommandDef.EmptyTrash, EmptyTrash);
         _registry.Register(CommandDef.ToggleLocalSearch, ToggleLocalSearch);
         _registry.Register(CommandDef.ApplyLocalSearch, LeaveLocalSearchTyping);
         _registry.Register(CommandDef.ToggleRenameItem, ToggleRenameItem);

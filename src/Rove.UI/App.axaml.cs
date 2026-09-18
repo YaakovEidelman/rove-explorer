@@ -56,16 +56,12 @@ public partial class App : Application
             FileOperationViewModel fileOperation = new(registry);
             BookmarkStore bookmarks = new();
             SettingsStore settings = new();
-            SessionStore session = new();
 
             TabsViewModel tabs = new(
                 registry, core, fileClipboard, systemClipboard, iconCache, fileOperation, bookmarks, settings);
 
             string? explicitTarget = StartLocation.ExplicitTarget(desktop.Args, Directory.Exists, File.Exists);
-            if (explicitTarget is null && session.Load() is { Tabs.Length: > 0 } saved)
-                tabs.Restore(saved);
-            if (tabs.Items.Count == 0)
-                tabs.Open(explicitTarget ?? PathCompare.DefaultStartDirectory());
+            tabs.Open(explicitTarget ?? PathCompare.DefaultStartDirectory());
 
             PaletteViewModel palette = new(registry);
             GlobalSearchViewModel globalSearch = new(registry, core, iconCache, () => tabs.Active.SearchRoot);
@@ -95,7 +91,6 @@ public partial class App : Application
 
             desktop.ShutdownRequested += (_, _) =>
             {
-                session.Save(tabs.Snapshot());
                 themeWatcher.Dispose();
                 tabs.Dispose();
                 core.Dispose();

@@ -18,6 +18,38 @@ public static class PathBreadcrumb
     private static readonly char[] _separators =
         [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
 
+    /// <summary>
+    /// Breaks the path into steps, same as always, except that when it sits
+    /// at or under <paramref name="collapse"/>'s root, the steps down to and
+    /// including that root are folded into a single crumb carrying its
+    /// label — so a place like the trash can show as "Trash" rather than the
+    /// real path it happens to live at.
+    /// </summary>
+    public static PathCrumb[] Of(string path, (string Root, string Label)? collapse = null)
+    {
+        if (string.IsNullOrWhiteSpace(path) || collapse is not { } fold
+            || !PathGuard.IsSameOrDescendant(fold.Root, path))
+        {
+            return Of(path ?? string.Empty);
+        }
+
+        string display = LongPath.Display(path).Trim();
+        if (PathCompare.PathMatches(fold.Root, display))
+            return [new(fold.Label, fold.Root, IsLast: true)];
+
+        // IsSameOrDescendant canonicalizes before comparing, so a display
+        // form that still doesn't literally start with the root (a trailing
+        // separator mismatch, say) is left alone rather than sliced wrong.
+        if (!display.StartsWith(fold.Root, PathCompare.Comparison))
+            return Of(path);
+
+        string remainder = display[fold.Root.Length..].TrimStart(_separators);
+        List<PathCrumb> crumbs = [new(fold.Label, fold.Root), .. StepsFrom(fold.Root, remainder)];
+        int last = crumbs.Count - 1;
+        crumbs[last] = crumbs[last] with { IsLast = true };
+        return [.. crumbs];
+    }
+
     public static PathCrumb[] Of(string path)
     {
         string display = LongPath.Display(path ?? string.Empty).Trim();
@@ -29,16 +61,20 @@ public static class PathBreadcrumb
         if (root.Length > 0)
             crumbs.Add(new(root, root));
 
-        string walked = root;
-        foreach (string step in display[root.Length..].Split(_separators, StringSplitOptions.RemoveEmptyEntries))
-        {
-            walked = walked.Length == 0 ? step : Path.Combine(walked, step);
-            crumbs.Add(new(step, walked));
-        }
+        crumbs.AddRange(StepsFrom(root, display[root.Length..]));
 
         int last = crumbs.Count - 1;
         crumbs[last] = crumbs[last] with { IsLast = true };
         return [.. crumbs];
+    }
+
+    private static IEnumerable<PathCrumb> StepsFrom(string walked, string remainder)
+    {
+        foreach (string step in remainder.Split(_separators, StringSplitOptions.RemoveEmptyEntries))
+        {
+            walked = walked.Length == 0 ? step : Path.Combine(walked, step);
+            yield return new(step, walked);
+        }
     }
 
     /// <summary>
