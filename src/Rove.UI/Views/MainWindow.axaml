@@ -274,8 +274,9 @@
              just the current one's name and a quiet dot per tab, so the card
              still reads as "the thing you asked for" rather than a 4-in-1
              shell. ── -->
-        <Panel Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding IsQuickAccessOpen}">
-            <Border Classes="overlaycard"
+        <Panel Classes="overlaydim" Classes.open="{Binding IsQuickAccessOpen}"
+               Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding IsQuickAccessOpen}">
+            <Border Classes="overlaycard" Classes.open="{Binding IsQuickAccessOpen}"
                     Width="540" MaxHeight="480"
                     HorizontalAlignment="Center" VerticalAlignment="Top"
                     Margin="0,72,0,0">
@@ -305,8 +306,10 @@
         <!-- ── center: destructive-action prompt (Mode.Confirm while open) —
              was a thin bar glued to the bottom edge; centered and dimmed
              like every other overlay so it can't be missed. ── -->
-        <Panel Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Confirm.IsOpen}">
-            <Border Classes="overlaycard confirmcard" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Panel Classes="overlaydim" Classes.open="{Binding Confirm.IsOpen}"
+               Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Confirm.IsOpen}">
+            <Border Classes="overlaycard confirmcard" Classes.open="{Binding Confirm.IsOpen}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="18">
                     <Border Classes="warnbadge">
                         <Path Classes="warnicon" Data="M9,1 L17,16 L1,16 Z M9,6.5 L9,11.5 M9,13.6 L9,13.7" />
