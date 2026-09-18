@@ -336,30 +336,6 @@
             <Setter Property="CornerRadius" Value="14" />
             <Setter Property="BoxShadow" Value="0 20 48 -12 #40000000, 0 2 8 0 #14000000" />
             <Setter Property="Padding" Value="14" />
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="RenderTransform" Value="scale(0.96)" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.14" Easing="CubicEaseOut" />
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.14"
-                                                    Easing="CubicEaseOut" />
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Border.overlaycard.open">
-            <Setter Property="Opacity" Value="1" />
-            <Setter Property="RenderTransform" Value="scale(1)" />
-        </Style>
-        <Style Selector="Panel.overlaydim">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" Easing="CubicEaseOut" />
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Panel.overlaydim.open">
-            <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="TextBlock.cardtitle">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
