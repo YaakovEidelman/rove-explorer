@@ -51,6 +51,20 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public bool IsErrorShown => StatusError.Length > 0;
 
+    /// <summary>
+    /// Commands/Search/Bookmarks share one card now (Quick Access) — this is
+    /// true while any one of the three is the visible surface, so the shared
+    /// card's dim background and border know to be on screen at all.
+    /// </summary>
+    public bool IsQuickAccessOpen => Palette.IsPaletteOpen || GlobalSearch.IsOpen || Bookmarks.IsOpen;
+
+    /// <summary>The shared card's title — whichever of the three is actually open.</summary>
+    public string QuickAccessTitle =>
+        Palette.IsPaletteOpen ? "COMMANDS"
+        : GlobalSearch.IsOpen ? "SEARCH"
+        : Bookmarks.IsOpen ? "BOOKMARKS"
+        : "";
+
     partial void OnStatusErrorChanged(string value) => RefreshStatusBar();
 
     partial void OnStatusInfoChanged(string value) => RefreshStatusBar();
@@ -87,6 +101,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _registry.Register(CommandDef.ToggleMaximize, ToggleMaximize);
         _registry.Register(CommandDef.MinimizeWindow, MinimizeWindow);
         _registry.Register(CommandDef.CheckForUpdates, CheckForUpdates);
+        _registry.Register(CommandDef.QuickAccessNextTab, CycleQuickAccessTab);
 
         // Every one of these comes from the tab in front — the strip decides
         // which that is, so nothing here has to be unhooked and hooked up
@@ -143,7 +158,46 @@ public partial class MainWindowViewModel : ViewModelBase
         Preview.ShowFor(ContentPage.HighlightedItem?.Item);
     }
 
-    private void OnSurfaceChanged(object? sender, PropertyChangedEventArgs e) => RefreshStatusBar();
+    private void OnSurfaceChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        RefreshStatusBar();
+        OnPropertyChanged(nameof(IsQuickAccessOpen));
+        OnPropertyChanged(nameof(QuickAccessTitle));
+    }
+
+    private static readonly Mode[] QuickAccessTabs = [Mode.Palette, Mode.GlobalSearch, Mode.Bookmarks];
+
+    /// <summary>
+    /// Switches which of Commands/Search/Bookmarks is showing by closing
+    /// whichever is open and opening the next in line — each still owns its
+    /// own IsOpen flag (DESIGN.md invariant #3: mode is derived, never
+    /// stored), this just drives two of those flags in sequence.
+    /// </summary>
+    private void CycleQuickAccessTab()
+    {
+        Mode current = GetCurrentMode();
+        int index = Array.IndexOf(QuickAccessTabs, current);
+        if (index < 0)
+            return;
+        OpenQuickAccessTab(QuickAccessTabs[(index + 1) % QuickAccessTabs.Length]);
+    }
+
+    private void OpenQuickAccessTab(Mode target)
+    {
+        if (Palette.IsPaletteOpen && target != Mode.Palette)
+            Palette.TogglePalette();
+        if (GlobalSearch.IsOpen && target != Mode.GlobalSearch)
+            GlobalSearch.Toggle();
+        if (Bookmarks.IsOpen && target != Mode.Bookmarks)
+            Bookmarks.Toggle();
+
+        switch (target)
+        {
+            case Mode.Palette when !Palette.IsPaletteOpen: Palette.TogglePalette(); break;
+            case Mode.GlobalSearch when !GlobalSearch.IsOpen: GlobalSearch.Toggle(); break;
+            case Mode.Bookmarks when !Bookmarks.IsOpen: Bookmarks.Toggle(); break;
+        }
+    }
 
     // ── keyboard entry point ─────────────────────────────────────────────
 
@@ -204,10 +258,11 @@ public partial class MainWindowViewModel : ViewModelBase
     public string ModeHint => GetCurrentMode() switch
     {
         Mode.Browse => "j/k move · Enter open · h up · v mark · Space palette",
-        Mode.Palette => "type to filter · Enter run · Esc close",
+        Mode.Palette => "type to filter · Enter run · Tab switch tab · Esc close",
         Mode.LocalSearch => "type to filter · Enter keeps filter, back to browsing · Esc clears",
-        Mode.GlobalSearch => "type to search · Enter jump · Esc close",
-        Mode.Bookmarks => "type to narrow · Ctrl+N/Ctrl+P move · Enter go · Ctrl+D forget · Esc close",
+        Mode.GlobalSearch => "type to search · Enter jump · Tab switch tab · Esc close",
+        Mode.Bookmarks =>
+            "type to narrow · Ctrl+N/Ctrl+P move · Enter go · Ctrl+D forget · Tab switch tab · Esc close",
         Mode.Settings => "j/k move · Enter/Space change · Esc close",
         Mode.EditPath => "type a path · Tab complete · Enter go · Esc cancel",
         Mode.PathCompletion => "Ctrl+N/Ctrl+P or Tab move · Enter take it · Esc close list",

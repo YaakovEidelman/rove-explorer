@@ -8,35 +8,55 @@
              x:DataType="vm:SettingsViewModel">
 
     <Panel Background="{DynamicResource OverlayDimBrush}">
-        <Border Classes="overlaycard"
-                Width="480" MaxHeight="420"
-                HorizontalAlignment="Center" VerticalAlignment="Top"
-                Margin="0,72,0,0">
+        <Border Classes="sidepanel"
+                Width="360"
+                HorizontalAlignment="Right" VerticalAlignment="Stretch">
             <Grid RowDefinitions="Auto, *, Auto">
-                <TextBlock Grid.Row="0" Classes="inputlabel" Text="Settings" Margin="0,0,0,6" />
+                <TextBlock Grid.Row="0" Classes="cardtitle" Text="SETTINGS" />
                 <ListBox x:Name="settings_list"
                          Grid.Row="1"
                          ItemsSource="{Binding Rows}"
                          SelectedIndex="{Binding SelectedIndex}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:SettingsRow">
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Right"
-                                           Text="{Binding Value}"
-                                           FontSize="12"
-                                           FontWeight="SemiBold"
-                                           VerticalAlignment="Center"
-                                           Margin="8,0,0,0" />
-                                <TextBlock Text="{Binding Label}" FontSize="13" VerticalAlignment="Center" />
-                            </DockPanel>
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="settingssection" Text="{Binding Section}"
+                                           IsVisible="{Binding HasSection}" />
+                                <Border Classes="settingsrow">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Right" Classes="toggletrack"
+                                                Classes.on="{Binding IsOn}"
+                                                IsVisible="{Binding IsToggle}">
+                                            <Ellipse Classes="togglethumb" />
+                                        </Border>
+                                        <Border DockPanel.Dock="Right" Classes="valuechip"
+                                                IsVisible="{Binding !IsToggle}">
+                                            <TextBlock Text="{Binding Value}" />
+                                        </Border>
+                                        <TextBlock Text="{Binding Label}" FontSize="13"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,10,0" />
+                                    </DockPanel>
+                                </Border>
+                            </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <TextBlock Grid.Row="2"
-                           Text="j/k move · Enter/Space change · Esc close"
-                           Foreground="{DynamicResource TextSecondaryBrush}"
-                           FontSize="11"
-                           Margin="2,6,2,0" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0">
+                    <Border Classes="kbd"><TextBlock Text="j/k" /></Border>
+                    <TextBlock Classes="hint" Text="move" />
+                    <TextBlock Classes="hintsep" Text="·" />
+                    <Border Classes="kbd"><TextBlock Text="Enter/Space" /></Border>
+                    <TextBlock Classes="hint" Text="change" />
+                    <TextBlock Classes="hintsep" Text="·" />
+                    <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+                    <TextBlock Classes="hint" Text="close" />
+                </StackPanel>
             </Grid>
         </Border>
     </Panel>

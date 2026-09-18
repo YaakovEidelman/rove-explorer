@@ -8,54 +8,61 @@
              x:Class="Rove.UI.Views.BookmarksView"
              x:DataType="vm:BookmarksViewModel">
 
-    <Panel Background="{DynamicResource OverlayDimBrush}">
-        <Border Classes="overlaycard"
-                Width="480" MaxHeight="420"
-                HorizontalAlignment="Center" VerticalAlignment="Top"
-                Margin="0,72,0,0">
-            <Grid RowDefinitions="Auto, *, Auto">
-                <TextBox Grid.Row="0"
-                         Text="{Binding SearchText}"
-                         PlaceholderText="go to a bookmark…"
-                         behaviors:FocusOnTrue.Focus="{Binding IsOpen}"
-                         Margin="0,0,0,6" />
-                <ListBox x:Name="bookmark_list"
-                         Grid.Row="1"
-                         ItemsSource="{Binding Items}"
-                         SelectedIndex="{Binding SelectedIndex}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:BookmarkEntry">
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Right"
-                                           Text="{Binding Shortcut}"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                           VerticalAlignment="Center"
-                                           Margin="8,0,0,0" />
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Bookmark.Name}" FontSize="13" />
-                                    <TextBlock Text="{Binding Bookmark.Path}"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource TextSecondaryBrush}"
-                                               TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                            </DockPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-                <TextBlock Grid.Row="1"
-                           Text="No bookmarks yet — press b on something to keep it."
-                           Foreground="{DynamicResource TextSecondaryBrush}"
-                           FontSize="12"
-                           HorizontalAlignment="Center"
-                           Margin="0,10"
-                           IsVisible="{Binding IsEmpty}" />
-                <TextBlock Grid.Row="2"
-                           Text="Ctrl+N/Ctrl+P move · Enter go · Ctrl+D forget · Esc close"
-                           Foreground="{DynamicResource TextSecondaryBrush}"
-                           FontSize="11"
-                           Margin="2,6,2,0" />
-            </Grid>
-        </Border>
-    </Panel>
+    <!-- ── content only: the shared Quick Access card in MainWindow.axaml
+         owns the dim background, the card, and the tab strip above this ── -->
+    <Grid RowDefinitions="Auto, *, Auto">
+        <TextBox Grid.Row="0"
+                 Text="{Binding SearchText}"
+                 PlaceholderText="go to a bookmark…"
+                 behaviors:FocusOnTrue.Focus="{Binding IsOpen}"
+                 Margin="0,0,0,8">
+            <TextBox.InnerLeftContent>
+                <Path Classes="overlayicon" Data="M2,1 L12,1 L12,16 L7,12 L2,16 Z" />
+            </TextBox.InnerLeftContent>
+        </TextBox>
+        <ListBox x:Name="bookmark_list"
+                 Grid.Row="1"
+                 ItemsSource="{Binding Items}"
+                 SelectedIndex="{Binding SelectedIndex}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:BookmarkEntry">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right"
+                                   Text="{Binding Shortcut}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,0,0" />
+                        <StackPanel>
+                            <TextBlock Text="{Binding Bookmark.Name}" FontSize="13" />
+                            <TextBlock Text="{Binding Bookmark.Path}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </DockPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock Grid.Row="1"
+                   Text="No bookmarks yet — press b on something to keep it."
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   FontSize="12"
+                   HorizontalAlignment="Center"
+                   Margin="0,10"
+                   IsVisible="{Binding IsEmpty}" />
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0">
+            <Border Classes="kbd"><TextBlock Text="Ctrl+N/P" /></Border>
+            <TextBlock Classes="hint" Text="move" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Enter" /></Border>
+            <TextBlock Classes="hint" Text="go" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Ctrl+D" /></Border>
+            <TextBlock Classes="hint" Text="forget" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+            <TextBlock Classes="hint" Text="close" />
+        </StackPanel>
+    </Grid>
 </UserControl>

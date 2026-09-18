@@ -148,6 +148,11 @@ again carries on inside it.
 | `palette.move_up`    | Palette: move up       |
 | `palette.move_down`  | Palette: move down     |
 | `palette.execute`    | Palette: run selected  |
+| `quickaccess.next_tab` | Commands/Search/Bookmarks: next tab |
+
+The command palette, deep search, and bookmark list share one card on
+screen — whichever one you opened decides what's showing, and `Tab` moves
+to the next of the three without closing the card.
 
 ### Acting on files
 

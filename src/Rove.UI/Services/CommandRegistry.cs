@@ -53,6 +53,8 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef PaletteMoveUp = new("palette.move_up", "Palette: Move Up", CommandKind.System);
     public static readonly CommandDef PaletteMoveDown = new("palette.move_down", "Palette: Move Down", CommandKind.System);
     public static readonly CommandDef PaletteExecute = new("palette.execute", "Palette: Run Selected", CommandKind.System);
+    public static readonly CommandDef QuickAccessNextTab =
+        new("quickaccess.next_tab", "Quick Access: Next Tab (Commands/Search/Bookmarks)", CommandKind.System);
 
     // Navigation
     public static readonly CommandDef ContentMoveUp = new("content.move_up", "Move Up", CommandKind.System);

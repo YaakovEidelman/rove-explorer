@@ -6,8 +6,16 @@ using System.Runtime.Versioning;
 
 namespace Rove.UI.ViewModels;
 
-/// <summary>One row of the settings list: what it's called, and its current value.</summary>
-public record SettingsRow(string Label, string Value);
+/// <summary>
+/// One row of the settings list: what it's called, its current value, and
+/// how to draw it — a section header above it, and a toggle switch instead
+/// of a plain value chip when it's an on/off setting. Display only: row
+/// order/count here is what MoveUp/MoveDown/Activate index into, unchanged.
+/// </summary>
+public record SettingsRow(string Label, string Value, string? Section = null, bool IsToggle = false, bool IsOn = false)
+{
+    public bool HasSection => Section is not null;
+}
 
 /// <summary>
 /// The settings list, which only exists while it is on screen — the same
@@ -64,15 +72,33 @@ public partial class SettingsViewModel : ViewModelBase
         AppSettings s = _store.Current;
         List<SettingsRow> rows =
         [
-            new("Theme", s.Theme),
-            new("Show hidden files by default", s.ShowHiddenByDefault ? "On" : "Off"),
+            new("Theme", s.Theme, Section: "Appearance"),
+            new("Show hidden files by default", s.ShowHiddenByDefault ? "On" : "Off",
+                Section: "Behavior", IsToggle: true, IsOn: s.ShowHiddenByDefault),
             new("Default view", s.DefaultView),
-            new("Sort the Downloads folder by time", s.SortDownloadsByTime ? "On" : "Off"),
-            new("Auto-update", s.AutoUpdate ? "On" : "Off"),
+            new("Sort the Downloads folder by time", s.SortDownloadsByTime ? "On" : "Off",
+                IsToggle: true, IsOn: s.SortDownloadsByTime),
+            new("Auto-update", s.AutoUpdate ? "On" : "Off",
+                Section: "Updates", IsToggle: true, IsOn: s.AutoUpdate),
         ];
         if (OperatingSystem.IsLinux() && _portal is not null)
-            rows.Add(new("Default for opening files and folders", PortalStatusLabel(_portal.Status)));
-        Rows = new(rows);
+            rows.Add(new("Default for opening files and folders", PortalStatusLabel(_portal.Status),
+                Section: "Integration"));
+
+        // Update the existing collection in place rather than assigning a new
+        // one: reassigning made the ListBox drop and rebuild every container
+        // on every single toggle, which — combined with rows of differing
+        // height (section headers, toggle switches) — made the card visibly
+        // shrink and snap back each press instead of just refreshing values.
+        for (int i = 0; i < rows.Count; i++)
+        {
+            if (i < Rows.Count)
+                Rows[i] = rows[i];
+            else
+                Rows.Add(rows[i]);
+        }
+        while (Rows.Count > rows.Count)
+            Rows.RemoveAt(Rows.Count - 1);
     }
 
     private static string PortalStatusLabel(PortalStatus status) => status switch

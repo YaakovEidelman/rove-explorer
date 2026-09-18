@@ -122,10 +122,16 @@
         <!-- ── bottom: confirm surface (Mode.Confirm while visible) ── -->
         <Border DockPanel.Dock="Bottom" Classes="confirmbar" IsVisible="{Binding Confirm.IsOpen}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Right" Classes="hint"
-                           Text="y/Enter confirm · n/Esc cancel" />
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+                    <Border Classes="kbd"><TextBlock Text="y/Enter" /></Border>
+                    <TextBlock Classes="hint" Text="confirm" />
+                    <TextBlock Classes="hintsep" Text="·" />
+                    <Border Classes="kbd"><TextBlock Text="n/Esc" /></Border>
+                    <TextBlock Classes="hint" Text="cancel" />
+                </StackPanel>
+                <Path Classes="warnicon" Data="M9,1 L17,16 L1,16 Z M9,6.5 L9,11.5 M9,13.6 L9,13.7" />
                 <TextBlock Classes="error" Text="{Binding Confirm.Message}"
-                           TextWrapping="Wrap" />
+                           TextWrapping="Wrap" VerticalAlignment="Center" />
             </DockPanel>
         </Border>
 

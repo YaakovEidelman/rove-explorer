@@ -131,6 +131,7 @@ public static class KeymapDefaults
                 new(K(Key.Down), CommandDef.BookmarkMoveDown.Id),
                 new(K(Key.Enter), CommandDef.BookmarkExecute.Id),
                 new(K(Key.D, KeyModifiers.Control), CommandDef.RemoveBookmark.Id),
+                new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
                 new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
                 new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
                 .. BookmarkShortcuts(),
@@ -164,6 +165,7 @@ public static class KeymapDefaults
                 new(K(Key.Up), CommandDef.PaletteMoveUp.Id),
                 new(K(Key.Down), CommandDef.PaletteMoveDown.Id),
                 new(K(Key.Enter), CommandDef.PaletteExecute.Id),
+                new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
                 new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
                 new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
             ]
@@ -192,6 +194,7 @@ public static class KeymapDefaults
                 new(K(Key.Up), CommandDef.GlobalSearchMoveUp.Id),
                 new(K(Key.Down), CommandDef.GlobalSearchMoveDown.Id),
                 new(K(Key.Enter), CommandDef.GlobalSearchExecute.Id),
+                new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
                 new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
                 new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
             ]

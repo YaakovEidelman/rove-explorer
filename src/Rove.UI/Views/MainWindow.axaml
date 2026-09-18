@@ -218,10 +218,16 @@
             <!-- ── bottom: confirm surface (Mode.Confirm while visible) ── -->
             <Border DockPanel.Dock="Bottom" Classes="confirmbar" IsVisible="{Binding Confirm.IsOpen}">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Right" Classes="hint"
-                               Text="y/Enter confirm · n/Esc cancel" />
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4">
+                        <Border Classes="kbd"><TextBlock Text="y/Enter" /></Border>
+                        <TextBlock Classes="hint" Text="confirm" />
+                        <TextBlock Classes="hintsep" Text="·" />
+                        <Border Classes="kbd"><TextBlock Text="n/Esc" /></Border>
+                        <TextBlock Classes="hint" Text="cancel" />
+                    </StackPanel>
+                    <Path Classes="warnicon" Data="M9,1 L17,16 L1,16 Z M9,6.5 L9,11.5 M9,13.6 L9,13.7" />
                     <TextBlock Classes="error" Text="{Binding Confirm.Message}"
-                               TextWrapping="Wrap" />
+                               TextWrapping="Wrap" VerticalAlignment="Center" />
                 </DockPanel>
             </Border>
 
@@ -277,10 +283,36 @@
             </SplitView>
         </DockPanel>
 
-        <!-- ── overlays ── -->
-        <views:PaletteView DataContext="{Binding Palette}" IsVisible="{Binding IsPaletteOpen}" />
-        <views:GlobalSearchView DataContext="{Binding GlobalSearch}" IsVisible="{Binding IsOpen}" />
-        <views:BookmarksView DataContext="{Binding Bookmarks}" IsVisible="{Binding IsOpen}" />
+        <!-- ── quick access: Commands/Search/Bookmarks share one card instead
+             of three near-identical popups — whichever one's own IsOpen is
+             true picks the title and shows its content; Tab cycles between
+             them (MainWindowViewModel). No always-on tab strip — just the
+             current one's name and a quiet dot per tab, so the card still
+             reads as "the thing you asked for" rather than a 3-in-1 shell. ── -->
+        <Panel Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding IsQuickAccessOpen}">
+            <Border Classes="overlaycard"
+                    Width="540" MaxHeight="480"
+                    HorizontalAlignment="Center" VerticalAlignment="Top"
+                    Margin="0,72,0,0">
+                <Grid RowDefinitions="Auto, *">
+                    <DockPanel Grid.Row="0" Margin="4,0,4,10">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="5"
+                                    VerticalAlignment="Center">
+                            <Ellipse Classes="qadot" Classes.active="{Binding Palette.IsPaletteOpen}" />
+                            <Ellipse Classes="qadot" Classes.active="{Binding GlobalSearch.IsOpen}" />
+                            <Ellipse Classes="qadot" Classes.active="{Binding Bookmarks.IsOpen}" />
+                        </StackPanel>
+                        <TextBlock Classes="cardtitle" Text="{Binding QuickAccessTitle}" Margin="0" />
+                    </DockPanel>
+                    <views:PaletteView Grid.Row="1"
+                                        DataContext="{Binding Palette}" IsVisible="{Binding IsPaletteOpen}" />
+                    <views:GlobalSearchView Grid.Row="1"
+                                             DataContext="{Binding GlobalSearch}" IsVisible="{Binding IsOpen}" />
+                    <views:BookmarksView Grid.Row="1"
+                                          DataContext="{Binding Bookmarks}" IsVisible="{Binding IsOpen}" />
+                </Grid>
+            </Border>
+        </Panel>
         <views:SettingsView DataContext="{Binding Settings}" IsVisible="{Binding IsOpen}" />
     </Panel>
 </Window>

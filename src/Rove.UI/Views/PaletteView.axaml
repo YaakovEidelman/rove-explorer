@@ -8,37 +8,36 @@
              x:Class="Rove.UI.Views.PaletteView"
              x:DataType="vm:PaletteViewModel">
 
-    <Panel Background="{DynamicResource OverlayDimBrush}">
-        <Border Classes="overlaycard"
-                Width="480" MaxHeight="420"
-                HorizontalAlignment="Center" VerticalAlignment="Top"
-                Margin="0,72,0,0">
-            <Grid RowDefinitions="Auto, *">
-                <TextBox Grid.Row="0"
-                         Text="{Binding PaletteSearchText}"
-                         PlaceholderText="{Binding Placeholder}"
-                         behaviors:FocusOnTrue.Focus="{Binding IsPaletteOpen}"
-                         Margin="0,0,0,6" />
-                <ListBox x:Name="palette_list"
-                         Grid.Row="1"
-                         ItemsSource="{Binding Items}"
-                         SelectedIndex="{Binding SelectedIndex}">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:PaletteEntry">
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Right"
-                                           Text="{Binding Hint}"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding Command.Def.Title}"
-                                           FontSize="13"
-                                           VerticalAlignment="Center" />
-                            </DockPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-        </Border>
-    </Panel>
+    <!-- ── content only: the shared Quick Access card in MainWindow.axaml
+         owns the dim background, the card, and the tab strip above this ── -->
+    <Grid RowDefinitions="Auto, *">
+        <TextBox Grid.Row="0"
+                 Text="{Binding PaletteSearchText}"
+                 PlaceholderText="{Binding Placeholder}"
+                 behaviors:FocusOnTrue.Focus="{Binding IsPaletteOpen}"
+                 Margin="0,0,0,8">
+            <TextBox.InnerLeftContent>
+                <Path Classes="overlayicon" Data="M10,1 L3,11 L8,11 L7,17 L15,7 L9,7 Z" />
+            </TextBox.InnerLeftContent>
+        </TextBox>
+        <ListBox x:Name="palette_list"
+                 Grid.Row="1"
+                 ItemsSource="{Binding Items}"
+                 SelectedIndex="{Binding SelectedIndex}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:PaletteEntry">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right"
+                                   Text="{Binding Hint}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Command.Def.Title}"
+                                   FontSize="13"
+                                   VerticalAlignment="Center" />
+                    </DockPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
 </UserControl>
