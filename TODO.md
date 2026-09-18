@@ -22,13 +22,12 @@ The following is in no particular order (other then that prod grade is first, bu
 3. Rove can't register itself as the default file manager on Windows the way it does on Linux over D-Bus. Doable through the registry, but not needed for this release.
 
 ## Important visual design stuff - last thing to do before publishing
-1. the rename textbox is a tad to short. the text is crunching into the top and bottom. I don't want it to get bigger then the actual row, but I need it to look good.
-2. We need to work on the design, look n feel. (ultimate goal is to be able to follow a linux theme based on user input) (This is after all backend is good)
-3. I'm thinking of having the prompts and warnings in a differnt way than they are now.
-4. we need a better pallate design.
-5. we need a better way of displaying the settings.
-6. we need to allow custom color schema changes within the app.
-7. we need a nice first install show around.
+1. We need to work on the design, look n feel. (ultimate goal is to be able to follow a linux theme based on user input) (This is after all backend is good)
+2. I'm thinking of having the prompts and warnings in a differnt way than they are now.
+3. we need a better pallate design.
+4. we need a better way of displaying the settings.
+5. we need to allow custom color schema changes within the app.
+6. we need a nice first install show around.
 
 ## v2
 1. I want to even support, ssh, ftp (including sftp and ftps support) and mobile devices.
