@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Rove.UI.Services;
 using System;
 
@@ -32,6 +33,7 @@ public partial class ConfirmViewModel : ViewModelBase
         IsOpen = true;
     }
 
+    [RelayCommand]
     public void Accept()
     {
         Action? pending = _pending;
@@ -39,6 +41,7 @@ public partial class ConfirmViewModel : ViewModelBase
         pending?.Invoke();
     }
 
+    [RelayCommand]
     public void Cancel() => Close();
 
     private void Close()

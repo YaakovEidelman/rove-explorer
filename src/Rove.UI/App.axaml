@@ -531,29 +531,58 @@
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
-        <!-- ── confirm bar: was a flat red strip: same elevated-sheet
-             background as every other prompt now, with the warning color
-             carried by a top accent stripe, the warning icon, and the
-             message text — reads as "this app's warning", not a different
-             app's error banner. ── -->
-        <Style Selector="Border.confirmbar">
-            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}" />
-            <Setter Property="BorderThickness" Value="0,3,0,0" />
-            <Setter Property="Padding" Value="14,10" />
-            <Setter Property="BoxShadow" Value="0 -10 24 -10 #33000000" />
+        <!-- ── confirm dialog: was a flat red strip glued to the bottom edge —
+             barely noticeable, easy to miss. Destructive prompts now land as
+             a centered card, dimmed behind like every other overlay, so it
+             reads as "the app needs an answer" rather than a status update. ── -->
+        <Style Selector="Border.confirmcard">
+            <Setter Property="Width" Value="380" />
+        </Style>
+        <Style Selector="Border.warnbadge">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="Background" Value="{DynamicResource ErrorSubtleBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
         </Style>
         <Style Selector="Path.warnicon">
-            <Setter Property="Width" Value="16" />
-            <Setter Property="Height" Value="16" />
+            <Setter Property="Width" Value="18" />
+            <Setter Property="Height" Value="18" />
             <Setter Property="Stretch" Value="Uniform" />
             <Setter Property="Fill" Value="Transparent" />
             <Setter Property="Stroke" Value="{DynamicResource ErrorBrush}" />
             <Setter Property="StrokeThickness" Value="1.6" />
             <Setter Property="StrokeLineCap" Value="Round" />
             <Setter Property="StrokeJoin" Value="Round" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Margin" Value="0,0,10,0" />
+        </Style>
+        <Style Selector="TextBlock.confirmmessage">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="LineHeight" Value="20" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="Button.dialogbtn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16,8" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.dialogbtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
+        </Style>
+        <Style Selector="Button.dialogbtn.danger">
+            <Setter Property="Background" Value="{DynamicResource ErrorBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+        </Style>
+        <Style Selector="Button.dialogbtn.danger:pointerover /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="0.9" />
         </Style>
 
         <!-- ── preview pane ── -->
