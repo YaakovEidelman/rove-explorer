@@ -29,11 +29,14 @@ public partial class ContentView : UserControl
     {
         if (!list.IsVisible || list.SelectedIndex < 0)
             return;
+        // Loaded runs after layout so the row exists to scroll to, but ahead
+        // of the next input event — Background sits behind input, so held
+        // j/k starved it until key-up and then caught up in one jump.
         Dispatcher.UIThread.Post(() =>
         {
             if (list.SelectedIndex >= 0)
                 list.ScrollIntoView(list.SelectedIndex);
-        }, DispatcherPriority.Background);
+        }, DispatcherPriority.Loaded);
     }
 
     private void BindViewModel()
