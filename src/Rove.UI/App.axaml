@@ -124,6 +124,25 @@
             <Setter Property="MinWidth" Value="150" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransform" Value="scale(0.92)" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" Easing="CubicEaseOut" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12"
+                                                    Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <!-- ── a tab fades/pops in once it's actually attached to the strip —
+             behaviors:FadeInOnLoad flips .entered a frame later, since doing
+             it immediately would leave nothing for the transition to animate
+             from. Closing one is still instant: it leaves Items the moment
+             it's removed, and nothing here holds that up to fade it out. ── -->
+        <Style Selector="Button.tab.entered">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="RenderTransform" Value="scale(1)" />
         </Style>
         <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
@@ -336,6 +355,33 @@
             <Setter Property="CornerRadius" Value="14" />
             <Setter Property="BoxShadow" Value="0 20 48 -12 #40000000, 0 2 8 0 #14000000" />
             <Setter Property="Padding" Value="14" />
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="RenderTransform" Value="scale(0.96)" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.14" Easing="CubicEaseOut" />
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.14"
+                                                    Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <!-- ── only the card's overall open/close state drives this — never a
+             tab switch inside it (MainWindowViewModel.OnSurfaceChanged only
+             renotifies IsQuickAccessOpen when it actually flips). ── -->
+        <Style Selector="Border.overlaycard.open">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="RenderTransform" Value="scale(1)" />
+        </Style>
+        <Style Selector="Panel.overlaydim">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" Easing="CubicEaseOut" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Panel.overlaydim.open">
+            <Setter Property="Opacity" Value="1" />
         </Style>
         <Style Selector="TextBlock.cardtitle">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
@@ -387,6 +433,11 @@
             <Setter Property="Width" Value="5" />
             <Setter Property="Height" Value="5" />
             <Setter Property="Fill" Value="{DynamicResource AppBorderBrush}" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Fill" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="Ellipse.qadot.active">
             <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
@@ -562,6 +613,12 @@
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                    <ThicknessTransition Property="BorderThickness" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="Button.dialogbtn:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />

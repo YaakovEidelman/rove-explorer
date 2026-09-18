@@ -161,10 +161,24 @@ public partial class MainWindowViewModel : ViewModelBase
         Preview.ShowFor(ContentPage.HighlightedItem?.Item);
     }
 
+    private bool _lastQuickAccessOpen;
+
+    /// <summary>
+    /// Raises <see cref="IsQuickAccessOpen"/> only when its actual value moves —
+    /// four sources feed it, so an unrelated change on one (typing in the search
+    /// box, say) would otherwise renotify it with the same value it already had.
+    /// A binding-driven open/close animation on the card treats every
+    /// notification as a fresh transition, so a spurious one plays it again.
+    /// </summary>
     private void OnSurfaceChanged(object? sender, PropertyChangedEventArgs e)
     {
         RefreshStatusBar();
-        OnPropertyChanged(nameof(IsQuickAccessOpen));
+        bool nowOpen = IsQuickAccessOpen;
+        if (nowOpen != _lastQuickAccessOpen)
+        {
+            _lastQuickAccessOpen = nowOpen;
+            OnPropertyChanged(nameof(IsQuickAccessOpen));
+        }
         OnPropertyChanged(nameof(QuickAccessTitle));
     }
 
@@ -197,6 +211,18 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void OpenQuickAccessTab(Mode target)
     {
+        // Opens the next tab before closing whichever was open, not after — so
+        // at least one of the four IsOpen flags is true for the whole swap and
+        // IsQuickAccessOpen never dips to false in between. Nothing renders
+        // mid-method either way, so this never shows two tabs at once.
+        switch (target)
+        {
+            case Mode.Palette when !Palette.IsPaletteOpen: Palette.TogglePalette(); break;
+            case Mode.GlobalSearch when !GlobalSearch.IsOpen: GlobalSearch.Toggle(); break;
+            case Mode.Bookmarks when !Bookmarks.IsOpen: Bookmarks.Toggle(); break;
+            case Mode.Settings when !Settings.IsOpen: Settings.Toggle(); break;
+        }
+
         if (Palette.IsPaletteOpen && target != Mode.Palette)
             Palette.TogglePalette();
         if (GlobalSearch.IsOpen && target != Mode.GlobalSearch)
@@ -205,14 +231,6 @@ public partial class MainWindowViewModel : ViewModelBase
             Bookmarks.Toggle();
         if (Settings.IsOpen && target != Mode.Settings)
             Settings.Toggle();
-
-        switch (target)
-        {
-            case Mode.Palette when !Palette.IsPaletteOpen: Palette.TogglePalette(); break;
-            case Mode.GlobalSearch when !GlobalSearch.IsOpen: GlobalSearch.Toggle(); break;
-            case Mode.Bookmarks when !Bookmarks.IsOpen: Bookmarks.Toggle(); break;
-            case Mode.Settings when !Settings.IsOpen: Settings.Toggle(); break;
-        }
     }
 
     // ── keyboard entry point ─────────────────────────────────────────────
