@@ -126,7 +126,7 @@
                             <Path Classes="navarrow" Data="M1.5,1 L6.5,5 L1.5,9" />
                         </Button>
                     </StackPanel>
-                    <Panel ClipToBounds="True">
+                    <Panel ClipToBounds="True" Height="30" VerticalAlignment="Center">
                         <!-- ── where you are, a box to each step of the path ── -->
                         <ItemsControl ItemsSource="{Binding ContentPage.DirectoryListing.Crumbs}"
                                       IsVisible="{Binding !ContentPage.InEditPath}"
