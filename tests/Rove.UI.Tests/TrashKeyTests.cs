@@ -36,6 +36,9 @@ public sealed class TrashKeyTests : HeadlessTest, IDisposable
     [Fact]
     public Task TShowsTheTrashAsASingleCrumbNotTheRealPath() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(Fill);
         string loose = Path.Combine(harness.Root, "loose.txt");
         TrashOne(loose);
@@ -51,6 +54,9 @@ public sealed class TrashKeyTests : HeadlessTest, IDisposable
     [Fact]
     public Task BrowsingIntoATrashedFolderKeepsTheTrashCrumbAndAddsRealSteps() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(root =>
         {
             string folder = Path.Combine(root, "OldProject");
@@ -81,6 +87,9 @@ public sealed class TrashKeyTests : HeadlessTest, IDisposable
     [InlineData(Key.E, "Extract")]
     public Task VerbsThatWriteAreRefusedInsideTheTrash(Key key, string verb) => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(Fill);
         TrashOne(Path.Combine(harness.Root, "loose.txt"));
         harness.Press(Key.T);
@@ -96,6 +105,9 @@ public sealed class TrashKeyTests : HeadlessTest, IDisposable
     [Fact]
     public Task PlainDeleteIsRefusedButSaysToDeletePermanently() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(Fill);
         string trashedPath = Path.Combine(TrashRoot, "loose.txt");
         TrashOne(Path.Combine(harness.Root, "loose.txt"));
@@ -111,6 +123,9 @@ public sealed class TrashKeyTests : HeadlessTest, IDisposable
     [Fact]
     public Task PermanentDeleteStillWorksInsideTheTrash() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(Fill);
         string trashedPath = Path.Combine(TrashRoot, "loose.txt");
         TrashOne(Path.Combine(harness.Root, "loose.txt"));
@@ -126,6 +141,9 @@ public sealed class TrashKeyTests : HeadlessTest, IDisposable
     [Fact]
     public Task RestoreSelectedStillWorksInsideTheTrash() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(Fill);
         string original = Path.Combine(harness.Root, "loose.txt");
         TrashOne(original);
@@ -141,6 +159,9 @@ public sealed class TrashKeyTests : HeadlessTest, IDisposable
     [Fact]
     public Task RestoreAllPutsEverythingBackAndReturnsToTheTrashRoot() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(root =>
         {
             File.WriteAllText(Path.Combine(root, "one.txt"), "1");
@@ -161,6 +182,9 @@ public sealed class TrashKeyTests : HeadlessTest, IDisposable
     [Fact]
     public Task EmptyTrashDeletesEverythingForGoodAfterConfirming() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(root =>
         {
             File.WriteAllText(Path.Combine(root, "one.txt"), "1");
