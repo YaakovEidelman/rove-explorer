@@ -11,17 +11,39 @@ The following is in no particular order (other then that prod grade is first, bu
 2. allow apps own binary, to download, install, and update itself, by default, not auto, but with an option for auto.
 3. on Linux (GNOME/Nautilus at least), double-clicking the extracted `Rove` binary fails with an error like "there is no application installed for application/x-pie-executable files." `xdg-mime query default application/x-pie-executable` returns nothing — GNOME has no default-app mechanism for a raw downloaded ELF binary the way it does for documents, only for scripts with a shebang. Works fine via right-click -> "Run as a Program", or from a terminal, just not a plain double-click. docs/installing.md's "unpack it and run it" pitch doesn't hold as-is on GNOME out of the box.
 4. if a folder on linux says "Access Denied" and is enterable via sudo, we need to allow that to work.
+5. Remove every comment from the code (the no-comments rule). The code should explain itself.
+6. Split the oversized files into focused ones (Actions.cs is 1300+ lines, several ViewModels 400+).
+7. Group files into folders that match what they do, one type (class, interface, etc.) per file.
+8. Redo Open With properly. It is Linux only and needs a real pass on behaviour and tests.
+9. Hand-test the published AOT builds on real Wayland and Windows, not only the headless tests.
 
 ## Important but can still be published without it.
 1. claiming the default file manager now force-kills whatever currently holds org.freedesktop.FileManager1 (e.g. Nautilus) so the claim takes effect right away. Deliberate on whether I actually want that, or whether there should at least be an option to skip the kill and only take over via normal D-Bus activation (i.e. only when nothing is currently running).
 2. we need a pallate activated context menu to give "open with", or "open dir in terminal" etc..
 3. it seems like a lot of file managers auto extract .tar.gz files on click (or double click), maybe we should do that?
 4. Add a "Move To/Copy To/etc.." option, so a user doesn't have to manually cut/copy, paste.
+5. Add a right-click context menu, so the mouse reaches the same commands as the palette.
+6. Add a properties view for the highlighted item: folder size, owner, dates, permissions.
+7. Browse, extract and compress more archive types: tar, tar.gz, 7z and rar (only zip today).
+8. Add select all, and range select (marks are one at a time today).
+9. Add a "Duplicate" command that copies an item next to itself under a new name.
+10. Show thumbnails for images in icon view (there is only the preview pane today).
+11. Accessibility: name and describe controls (AutomationProperties) so screen readers work.
 
 ### Admin stuff
 1. Copy out of an admin folder: copy things from an admin folder into a normal folder. Rove reads as root and writes as you.
 2. Write actions in an admin folder: create, rename, paste in and delete, all done by the root helper. This is the riskiest step.
 3. Admin polish: a clear way to leave admin mode, how long the password stays valid, and what delete means for root (no user trash).
+
+### Command palette
+1. Give every command a category and a fixed order, so the empty palette is grouped, not A to Z.
+2. Decide the layout: section headers when empty, or a "File: Rename" style title prefix.
+3. Give every command keywords (Delete: remove, trash) and a short, consistent "Verb Object" title.
+4. Search by words in any order across title, category and keywords ("new tab" finds "tab new").
+5. Show a Recent group of the last few commands run when the box is empty, saved in settings.
+6. Hide commands that can't run here (Put Back outside the trash, Extract on a non-archive).
+7. Show a category tag and the matched letters on each row. Update docs/keybindings.md.
+8. Test that every user command has a category, plus tests for the new search and the ordering.
 
 ## Windows - doable, pushed off for a later release
 1. on Windows, going to trash just opens the Windows Recycle Bin instead of showing trashed items inside Rove. Doable - would need to read and list the $Recycle.Bin format instead of just restoring by path - but not needed for this release.
