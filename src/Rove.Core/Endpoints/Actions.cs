@@ -14,8 +14,6 @@ public class Actions
         _fetcher = IconFetcherChooser.CreateForHost();
     }
 
-    // ── READ_DIR ─────────────────────────────────────────────────────────
-
     public CommandResult<FolderItem[]> ReadDirectory(ReadDirectoryArgs args)
     {
         if (ArchivePath.TryParse(args.Path, out ArchivePath inside))
@@ -49,11 +47,6 @@ public class Actions
     public Task<CommandResult<FolderItem[]>> ReadDirectoryAsync(ReadDirectoryArgs args) =>
         Task.Run(() => ReadDirectory(args));
 
-    /// <summary>
-    /// A folder inside a zip lists like any other folder. What can go wrong
-    /// is different, though: the archive can be gone, or damaged, which no
-    /// amount of reading a real directory ever produces.
-    /// </summary>
     private static CommandResult<FolderItem[]> ReadInsideArchive(ArchivePath location)
     {
         try
@@ -83,12 +76,8 @@ public class Actions
         }
     }
 
-    // ── GET_PARENT ───────────────────────────────────────────────────────
-
     public CommandResult<FolderItem?> GetParent(GetParentArgs args)
     {
-        // Inside a zip, "up" walks back out through the archive first, and
-        // only leaves it once there is nothing left above.
         if (ArchivePath.TryParse(args.Path, out ArchivePath inside))
         {
             return inside.Parent is { } above
@@ -104,7 +93,7 @@ public class Actions
         {
             DirectoryInfo? parent = Directory.GetParent(LongPath.ForIo(path));
             if (parent is null)
-                return CommandResult<FolderItem?>.Ok(null); // already at a root
+                return CommandResult<FolderItem?>.Ok(null);
             return CommandResult<FolderItem?>.Ok(FolderItem.From(parent));
         }
         catch (UnauthorizedAccessException)
@@ -112,10 +101,6 @@ public class Actions
             return CommandResult<FolderItem?>.Fail("permission_denied", $"Access denied: {path}");
         }
     }
-
-    // ── RESOLVE_PATH ─────────────────────────────────────────────────────
-    // What the path bar hands back: the item a typed path names, whether that
-    // is a folder to open or a file to point at.
 
     public CommandResult<FolderItem?> ResolvePath(ResolvePathArgs args)
     {
@@ -129,8 +114,6 @@ public class Actions
                 return CommandResult<FolderItem?>.Ok(FolderItem.From(new DirectoryInfo(io)));
             if (File.Exists(io))
                 return CommandResult<FolderItem?>.Ok(FolderItem.From(new FileInfo(io)));
-            // Nothing on disk goes by that name, but it may still name
-            // something real inside a zip along the way.
             if (ArchivePath.TryParse(path, out ArchivePath inside)
                 && ArchiveBrowser.Describe(inside) is { } entry)
             {
@@ -155,11 +138,6 @@ public class Actions
             return CommandResult<FolderItem?>.Fail("io_error", ex.Message);
         }
     }
-
-    // ── LIST_DRIVES ──────────────────────────────────────────────────────
-    // Every mounted volume, so the app is never pinned to the drive it
-    // started on. A drive that isn't ready (empty card reader, disconnected
-    // network share) is left out rather than offered and then failing.
 
     public CommandResult<DriveEntry[]> ListDrives(ListDrivesArgs args)
     {
@@ -195,16 +173,11 @@ public class Actions
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // Went away, or won't answer, between listing and asking.
             }
         }
         return CommandResult<DriveEntry[]>.Ok(DriveFilter.Deduplicate(drives));
     }
 
-    /// <summary>
-    /// Linux has no volume labels, and hands back the mount point instead —
-    /// "Go to Drive /home (/home)" says nothing twice.
-    /// </summary>
     private static string SafeVolumeLabel(DriveInfo drive, string root)
     {
         try
@@ -219,7 +192,6 @@ public class Actions
         }
     }
 
-    /// <summary>A mount can refuse to name its filesystem; that alone is no reason to drop it.</summary>
     private static string SafeDriveFormat(DriveInfo drive)
     {
         try
@@ -231,12 +203,6 @@ public class Actions
             return string.Empty;
         }
     }
-
-    // ── COPY_OUT_OF_ARCHIVE ──────────────────────────────────────────────
-    // Nothing outside Rove can open a file that is still inside a zip, so
-    // opening one means taking a copy out to a scratch folder and pointing
-    // the program at that. The copy is read-only in the sense that matters:
-    // whatever is written to it never finds its way back into the archive.
 
     public CommandResult<string?> CopyOutOfArchive(CopyOutOfArchiveArgs args)
     {
@@ -273,8 +239,6 @@ public class Actions
     public Task<CommandResult<string?>> CopyOutOfArchiveAsync(CopyOutOfArchiveArgs args) =>
         Task.Run(() => CopyOutOfArchive(args));
 
-    // ── LAUNCH_FILE ──────────────────────────────────────────────────────
-
     public CommandResult<string?> LaunchFile(LaunchFileArgs args)
     {
         if (ArchivePath.IsInside(args.Path))
@@ -290,12 +254,6 @@ public class Actions
             : CommandResult<string?>.Fail("launch_failed", error);
     }
 
-    /// <summary>
-    /// Same, and then waits to hear whether the opener actually took the
-    /// file. Worth the wait: on Linux "nothing here opens this kind of file"
-    /// arrives as an exit code, so without it the user presses Enter and
-    /// nothing happens, with nothing said about why.
-    /// </summary>
     public async Task<CommandResult<string?>> LaunchFileAsync(
         LaunchFileArgs args, CancellationToken ct = default
     )
@@ -355,8 +313,6 @@ public class Actions
             : CommandResult<string?>.Fail("launch_refused", error);
     }
 
-    // ── Icons ────────────────────────────────────────────────────────────
-
     public async Task<CommandResult<byte[]?>> GetItemIcon(GetIconArgs args)
     {
         try
@@ -369,10 +325,6 @@ public class Actions
             return CommandResult<byte[]?>.Fail("icon_error", null);
         }
     }
-
-    // ── RENAME_ITEM ──────────────────────────────────────────────────────
-    // Rename keeps the item in its directory: it takes a bare new name and
-    // never overwrites. A destination collision is an error, not a delete.
 
     public CommandResult<FolderItem?> RenameItem(RenameItemArgs args)
     {
@@ -419,11 +371,6 @@ public class Actions
         }
     }
 
-    // ── MOVE_ITEMS ───────────────────────────────────────────────────────
-    // Moves N items *into* a target directory, each keeping its own name.
-    // Per-item results; a failure never touches anything already at the
-    // destination.
-
     public CommandResult<OpResult[]> MoveItems(MoveItemsArgs args) =>
         MoveItems(args, null, CancellationToken.None);
 
@@ -451,7 +398,7 @@ public class Actions
         string dest = LongPath.ForIo(destPath);
 
         if (PathCompare.PathMatches(Path.GetFullPath(source), Path.GetFullPath(dest)))
-            return OpResult.Success(sourcePath, null); // already there — nothing to do
+            return OpResult.Success(sourcePath, null);
 
         try
         {
@@ -494,8 +441,6 @@ public class Actions
         }
     }
 
-    /// <summary>Directory.Move can't cross volumes; fall back to copy-then-delete,
-    /// and only delete the source after the copy fully succeeded.</summary>
     private static void MoveDirectory(string source, string dest, ProgressTicker ticker, int index, CancellationToken ct)
     {
         if (string.Equals(Path.GetPathRoot(Path.GetFullPath(source)), Path.GetPathRoot(Path.GetFullPath(dest)),
@@ -507,8 +452,6 @@ public class Actions
         CopyDirectory(source, dest, overwriteFiles: false, "Moving", ticker, index, ct);
         Directory.Delete(source, recursive: true);
     }
-
-    // ── COPY_ITEMS ───────────────────────────────────────────────────────
 
     public CommandResult<OpResult[]> CopyItems(CopyItemsArgs args) =>
         CopyItems(args, null, CancellationToken.None);
@@ -551,8 +494,6 @@ public class Actions
                 }
                 catch (OperationCanceledException)
                 {
-                    // The destination did not exist before this call, so the
-                    // half-written tree is ours to clean up.
                     TryDeleteTree(dest);
                     throw;
                 }
@@ -611,9 +552,6 @@ public class Actions
         {
             ct.ThrowIfCancellationRequested();
             string subDest = LongPath.ForIo(Path.Combine(LongPath.Display(dest), sub.Name));
-            // A junction or symlink is recreated as a link, not followed: following
-            // one that points back into its own tree would copy forever, and this
-            // is what most file explorers do with a link inside a copied folder.
             if (sub.LinkTarget is { } dirLink)
             {
                 ticker.Report(verb, index, -1, sub.Name);
@@ -625,10 +563,6 @@ public class Actions
             }
         }
     }
-
-    // ── EXTRACT_ARCHIVES ─────────────────────────────────────────────────
-    // Each archive is unpacked into a new folder of its own beside it, so an
-    // extract can never overwrite what is already in the directory.
 
     public CommandResult<OpResult[]> ExtractArchives(ExtractArchivesArgs args) =>
         ExtractArchives(args, null, CancellationToken.None);
@@ -694,11 +628,6 @@ public class Actions
         }
     }
 
-    // ── COMPRESS_ITEMS ───────────────────────────────────────────────────
-    // The other direction: N items in, one zip out, beside them, under a name
-    // nothing else in the folder has. Never overwrites, so it cannot lose
-    // anything; a run that stops halfway takes its half-written zip with it.
-
     public CommandResult<OpResult[]> CompressItems(CompressItemsArgs args) =>
         CompressItems(args, null, CancellationToken.None);
 
@@ -760,11 +689,6 @@ public class Actions
         }
     }
 
-    // ── DELETE_ITEMS ─────────────────────────────────────────────────────
-    // Everyday delete goes to the Recycle Bin, or the trash on Linux
-    // (recoverable either way). Permanent
-    // delete is a separate verb the UI must confirm.
-
     public CommandResult<OpResult[]> DeleteItems(DeleteItemsArgs args)
     {
         CommandResult<string?> trash = TrashService.MoveToTrash(args.Paths);
@@ -775,11 +699,6 @@ public class Actions
         return CommandResult<OpResult[]>.Ok(results);
     }
 
-    /// <summary>
-    /// The shell's Recycle Bin call is one atomic batch that can't be
-    /// interrupted, so this reports that it started and then blocks off the
-    /// UI thread — the window stays live even though Cancel can't reach it.
-    /// </summary>
     public Task<CommandResult<OpResult[]>> DeleteItemsAsync(
         DeleteItemsArgs args,
         IProgress<FileOpProgress>? progress = null,
@@ -844,17 +763,6 @@ public class Actions
         }
     }
 
-    // ── UNDO SUPPORT ─────────────────────────────────────────────────────
-    // Taking an action back is the ordinary verbs run backwards, with two
-    // exceptions that need their own rules: things that were never there
-    // before must go away quietly, and things that were trashed have to come
-    // back out of the Recycle Bin.
-
-    /// <summary>
-    /// Removes items an undo is taking back. Anything already gone is not a
-    /// failure — the point is to end up with them not there. Prefers the
-    /// trash, so an undo of an undo is still possible.
-    /// </summary>
     public Task<CommandResult<OpResult[]>> RemoveItemsAsync(
         RestoreItemsArgs args,
         IProgress<FileOpProgress>? progress = null,
@@ -874,11 +782,6 @@ public class Actions
             : DeleteItemsPermanentAsync(new(present), progress, ct);
     }
 
-    /// <summary>
-    /// Undo of "new file" / "new folder". It only removes what the create
-    /// actually made: an empty file or an empty folder. Once there is
-    /// something inside, the item is the user's, not ours to delete.
-    /// </summary>
     public CommandResult<string?> DeleteIfEmpty(DeleteIfEmptyArgs args)
     {
         string path = LongPath.ForIo(args.Path);
@@ -915,8 +818,6 @@ public class Actions
         }
     }
 
-    // ── RESTORE_ITEMS ────────────────────────────────────────────────────
-
     public CommandResult<OpResult[]> RestoreItems(RestoreItemsArgs args)
     {
         CommandResult<string[]> restore = TrashService.RestoreFromTrash(args.Paths);
@@ -931,10 +832,6 @@ public class Actions
         return Summarize(results);
     }
 
-    /// <summary>
-    /// Like the delete it reverses, this reports that it started and then
-    /// gets on with it — it shows movement and nothing finer.
-    /// </summary>
     public Task<CommandResult<OpResult[]>> RestoreItemsAsync(
         RestoreItemsArgs args,
         IProgress<FileOpProgress>? progress = null,
@@ -947,12 +844,6 @@ public class Actions
         return result;
     }, CancellationToken.None);
 
-    // ── THE TRASH AS A PLACE ─────────────────────────────────────────────
-    // On Linux the trash is an ordinary folder, so Rove can walk into it and
-    // put things back from inside it. On Windows it is a shell folder that
-    // cannot be listed, so this hands it to Explorer instead.
-
-    /// <summary>The folder to open, or null when the trash was opened elsewhere.</summary>
     public CommandResult<string?> OpenTrash(OpenTrashArgs args)
     {
         if (OperatingSystem.IsWindows())
@@ -982,7 +873,6 @@ public class Actions
         return CommandResult<string?>.Ok(path);
     }
 
-    /// <summary>Puts items back out of the trash, named by where they sit in it.</summary>
     public CommandResult<OpResult[]> RestoreTrashedItems(RestoreItemsArgs args)
     {
         CommandResult<OpResult[]> restored = TrashService.RestoreTrashedPaths(args.Paths);
@@ -1002,10 +892,6 @@ public class Actions
         progress?.Report(new FileOpProgress("Restoring", args.Paths.Length, args.Paths.Length, ""));
         return result;
     }, CancellationToken.None);
-
-    // ── CREATE_ITEM ──────────────────────────────────────────────────────
-    // Validates the bare name (no traversal) and refuses to clobber an
-    // existing item — File.Create would have truncated it.
 
     public CommandResult<FolderItem?> CreateItem(CreateItemArgs args)
     {
@@ -1040,8 +926,6 @@ public class Actions
             return CommandResult<FolderItem?>.Fail("io_error", ex.Message);
         }
     }
-
-    // ── GET_METADATA ─────────────────────────────────────────────────────
 
     private const int MetadataWalkCap = 100_000;
 
@@ -1127,17 +1011,6 @@ public class Actions
         long size = 0;
         bool truncated = false;
 
-        // Try a single fast recursive enumerator over `start`'s whole subtree
-        // first -- as cheap as the old single-enumerator walk for a healthy
-        // tree. Pseudo filesystems like /proc can throw mid-walk (e.g. a
-        // process exiting under us); the native enumerator can't be resumed
-        // after that, so drop the partial counts from this attempt and bisect
-        // into `start`'s immediate children, retrying each independently.
-        // That isolates the failure to just the offending branch instead of
-        // paying a per-directory cost across the whole, otherwise healthy,
-        // tree. A failure on `path` itself still propagates, matching prior
-        // behavior -- GetMetadata's callers classify permission_denied vs
-        // io_error.
         void Walk(string start)
         {
             if (truncated || ct.IsCancellationRequested)
@@ -1222,13 +1095,6 @@ public class Actions
         return (files, dirs, size, truncated);
     }
 
-    // ── helpers ──────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// One item at a time, reporting before each and stopping early when the
-    /// token is tripped — everything left over comes back as "cancelled" so
-    /// the caller always gets a result per requested path.
-    /// </summary>
     private static CommandResult<OpResult[]> RunBatch(
         string verb,
         string[] paths,
@@ -1275,8 +1141,6 @@ public class Actions
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Best effort — a leftover partial copy beats throwing over the
-            // cancellation the user actually asked for.
         }
     }
 
@@ -1288,8 +1152,6 @@ public class Actions
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Best effort, same as a half-written copy: what the user asked
-            // for was to stop, not to be told about the leftovers.
         }
     }
 

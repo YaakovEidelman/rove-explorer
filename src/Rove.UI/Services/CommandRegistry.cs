@@ -9,10 +9,8 @@ namespace Rove.UI.Services;
 
 public enum CommandKind
 {
-    /// <summary>Plumbing (list navigation, apply/cancel) — hidden from the palette.</summary>
     System,
 
-    /// <summary>A verb the user can invoke from the palette.</summary>
     User,
 }
 
@@ -48,7 +46,6 @@ public readonly record struct Command(CommandDef Def, Action Method);
 
 public readonly record struct CommandDef(string Id, string Title, CommandKind CommandKind, int Order = 0)
 {
-    // Palette
     public static readonly CommandDef TogglePalette = new("palette.toggle", "Command Palette", CommandKind.System);
     public static readonly CommandDef PaletteMoveUp = new("palette.move_up", "Palette: Move Up", CommandKind.System);
     public static readonly CommandDef PaletteMoveDown = new("palette.move_down", "Palette: Move Down", CommandKind.System);
@@ -58,7 +55,6 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef QuickAccessPreviousTab =
         new("quickaccess.previous_tab", "Quick Access: Previous Tab (Commands/Search/Bookmarks)", CommandKind.System);
 
-    // Navigation
     public static readonly CommandDef ContentMoveUp = new("content.move_up", "Move Up", CommandKind.System);
     public static readonly CommandDef ContentMoveDown = new("content.move_down", "Move Down", CommandKind.System);
     public static readonly CommandDef ContentMoveTop = new("content.move_top", "Jump to Top", CommandKind.System);
@@ -79,7 +75,6 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef PathCompleteMoveDown = new("content.path_complete_down", "Completions: Move Down", CommandKind.System);
     public static readonly CommandDef PathCompleteDismiss = new("content.path_complete_dismiss", "Completions: Close List", CommandKind.System);
 
-    // Search
     public static readonly CommandDef ToggleLocalSearch = new("content.search_local", "Filter This Folder", CommandKind.User);
     public static readonly CommandDef ApplyLocalSearch = new("content.search_local_apply", "Filter: Show Results", CommandKind.System);
     public static readonly CommandDef ToggleGlobalSearch = new("search.global", "Search From Here (Deep)", CommandKind.User);
@@ -87,7 +82,6 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef GlobalSearchMoveDown = new("search.move_down", "Search: Move Down", CommandKind.System);
     public static readonly CommandDef GlobalSearchExecute = new("search.execute", "Search: Open Selected", CommandKind.System);
 
-    // Item verbs
     public static readonly CommandDef ToggleRenameItem = new("content.rename", "Rename Item", CommandKind.User);
     public static readonly CommandDef ApplyRename = new("content.rename_apply", "Apply Rename", CommandKind.System);
     public static readonly CommandDef ToggleMarkItem = new("content.toggle_mark", "Mark/Unmark Item", CommandKind.User);
@@ -114,10 +108,8 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef ApplyCreate = new("content.create_apply", "Apply Create", CommandKind.System);
     public static readonly CommandDef CancelCreate = new("content.create_cancel", "Cancel Create", CommandKind.System);
 
-    // Undo
     public static readonly CommandDef UndoLastAction = new("content.undo", "Undo Last Action", CommandKind.User);
 
-    // Columns
     public static readonly CommandDef ToggleResizeColumns = new("content.resize_columns", "Resize Columns", CommandKind.User);
     public static readonly CommandDef ColumnNext = new("content.column_next", "Columns: Next Column", CommandKind.System);
     public static readonly CommandDef ColumnPrev = new("content.column_prev", "Columns: Previous Column", CommandKind.System);
@@ -128,16 +120,13 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef ColumnResetWidth = new("content.column_reset", "Columns: Reset Width", CommandKind.System);
     public static readonly CommandDef SortByActiveColumn = new("content.sort_active_column", "Columns: Sort by This Column", CommandKind.System);
 
-    // Sort
     public static readonly CommandDef SortByName = new("content.sort_name", "Sort by Name", CommandKind.User);
     public static readonly CommandDef SortByType = new("content.sort_type", "Sort by Type", CommandKind.User);
     public static readonly CommandDef SortBySize = new("content.sort_size", "Sort by Size", CommandKind.User);
     public static readonly CommandDef SortByModified = new("content.sort_modified", "Sort by Date Modified", CommandKind.User);
 
-    // View
     public static readonly CommandDef ToggleContentView = new("content.toggle_view", "Cycle List/Icon View", CommandKind.User);
 
-    // Drives — one command per mounted drive, registered as they come and go.
     public const string DriveIdPrefix = "nav.drive:";
     public const string OpenWithIdPrefix = "open.with:";
     public const string OpenWithOthersId = OpenWithIdPrefix + "other-apps";
@@ -149,7 +138,6 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef ShowDrives = new("nav.drives", "Go to Drive…", CommandKind.User);
     public static readonly CommandDef ShowTrash = new("nav.trash", $"Go to the {TrashService.DisplayName}", CommandKind.User);
 
-    // Bookmarks — the list itself is never on screen except as this surface.
     public const string BookmarkGoIdPrefix = "bookmark.go:";
     public static readonly CommandDef ToggleBookmark = new("bookmark.toggle", "Bookmark / Remove Bookmark", CommandKind.User);
     public static readonly CommandDef ShowBookmarks = new("bookmark.show", "Bookmarks…", CommandKind.User);
@@ -158,24 +146,19 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef BookmarkExecute = new("bookmark.execute", "Bookmarks: Go to Selected", CommandKind.System);
     public static readonly CommandDef RemoveBookmark = new("bookmark.remove", "Bookmarks: Remove Selected", CommandKind.System);
 
-    /// <summary>The command that goes to the nth bookmark, counting from zero.</summary>
     public static CommandDef BookmarkGo(int index) =>
         new($"{BookmarkGoIdPrefix}{index}", $"Go to Bookmark {index + 1}", CommandKind.System);
 
-    // Confirm surface
     public static readonly CommandDef ConfirmAccept = new("confirm.accept", "Confirm: Yes", CommandKind.System);
     public static readonly CommandDef ConfirmCancel = new("confirm.cancel", "Confirm: No", CommandKind.System);
     public static readonly CommandDef ConfirmSelect = new("confirm.select", "Confirm: Run Highlighted Option", CommandKind.System);
     public static readonly CommandDef ConfirmMoveLeft = new("confirm.move_left", "Confirm: Highlight Cancel", CommandKind.System);
     public static readonly CommandDef ConfirmMoveRight = new("confirm.move_right", "Confirm: Highlight Confirm", CommandKind.System);
 
-    // Long-running file operations
     public static readonly CommandDef CancelFileOperation = new("content.cancel_operation", "Cancel Running File Operation", CommandKind.User);
 
-    // Tabs — one folder view each, with the keymap pointed at whichever is in front.
     public const string TabGoIdPrefix = "tab.go:";
 
-    /// <summary>How many tabs a number key can reach.</summary>
     public const int TabShortcutCount = 9;
     public static readonly CommandDef NewTab = new("tab.new", "New Tab", CommandKind.User);
     public static readonly CommandDef OpenInNewTab = new("tab.open_here", "Open in a New Tab", CommandKind.User);
@@ -185,11 +168,9 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef ToggleRenameTab = new("tab.rename", "Rename Tab", CommandKind.User);
     public static readonly CommandDef ApplyRenameTab = new("tab.rename_apply", "Apply Tab Rename", CommandKind.System);
 
-    /// <summary>The command that goes to the nth tab, counting from zero.</summary>
     public static CommandDef TabGo(int index) =>
         new($"{TabGoIdPrefix}{index}", $"Go to Tab {index + 1}", CommandKind.System);
 
-    // App
     public static readonly CommandDef TogglePreview = new("app.toggle_preview", "Toggle Preview Pane", CommandKind.User);
     public static readonly CommandDef ToggleTheme = new("app.toggle_theme", "Toggle Light/Dark Theme", CommandKind.User);
     public static readonly CommandDef ToggleMaximize = new("app.toggle_maximize", "Toggle Maximize/Restore Window", CommandKind.User);
@@ -197,13 +178,11 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef CloseApp = new("app.close", "Quit Rove", CommandKind.User);
     public static readonly CommandDef CheckForUpdates = new("app.update_now", "Check for Updates Now", CommandKind.User);
 
-    // Picker (the --picker launch mode)
     public static readonly CommandDef PickerSelectFolder =
         new("picker.select_folder", "Choose the Folder", CommandKind.System);
     public static readonly CommandDef PickerCycleFilter =
         new("picker.cycle_filter", "Switch File Type Filter", CommandKind.System);
 
-    // Settings
     public static readonly CommandDef ShowSettings = new("app.settings", "Settings…", CommandKind.User);
     public static readonly CommandDef SettingsMoveUp = new("settings.move_up", "Settings: Move Up", CommandKind.System);
     public static readonly CommandDef SettingsMoveDown = new("settings.move_down", "Settings: Move Down", CommandKind.System);
@@ -219,17 +198,6 @@ public class CommandRegistry : ICommandTarget
     {
     }
 
-    /// <summary>
-    /// Built-in defaults first, then whatever the user's keybindings file
-    /// says on top — so a config only has to mention what it changes.
-    ///
-    /// <para>
-    /// Giving a command a key of your own <em>moves</em> it: the keys that
-    /// command had built in stop working, so binding "ctrl+j" to move-down
-    /// does not leave plain "j" doing it as well. Keys belonging to commands
-    /// the file never mentions are untouched.
-    /// </para>
-    /// </summary>
     public CommandRegistry(KeymapLoad keymap)
     {
         foreach (Mode mode in Enum.GetValues<Mode>())
@@ -255,7 +223,6 @@ public class CommandRegistry : ICommandTarget
 
     public void Bind(Mode mode, KommandShortcut ks) => _modeBindings[mode].TryAdd(ks.Stroke, ks.Action);
 
-    /// <summary>Replaces (or, with a null action, removes) one binding.</summary>
     public void Rebind(KeymapOverride entry)
     {
         if (entry.Action is { Length: > 0 } action)
@@ -266,7 +233,6 @@ public class CommandRegistry : ICommandTarget
 
     public void Register(CommandDef def, Action method) => _commands[def.Id] = new(def, method);
 
-    /// <summary>Drops a command again — for entries that come and go, like one per drive.</summary>
     public void Unregister(string commandId) => _commands.Remove(commandId);
 
     public IEnumerable<string> CommandIdsStartingWith(string prefix) =>
@@ -286,7 +252,6 @@ public class CommandRegistry : ICommandTarget
         return true;
     }
 
-    /// <summary>Keyboard hint shown next to a palette entry (Browse binding wins).</summary>
     public string HintFor(string commandId)
     {
         foreach (Mode mode in Enum.GetValues<Mode>())

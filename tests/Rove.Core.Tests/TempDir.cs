@@ -2,7 +2,6 @@ using Rove.Core.Services;
 
 namespace Rove.Core.Tests;
 
-/// <summary>Disposable scratch directory for filesystem tests.</summary>
 public sealed class TempDir : IDisposable
 {
     public string Path { get; }
@@ -35,10 +34,6 @@ public sealed class TempDir : IDisposable
         .Replace('\\', System.IO.Path.DirectorySeparatorChar)
         .Replace('/', System.IO.Path.DirectorySeparatorChar);
 
-    /// <summary>
-    /// Nested folders until the path is past what Windows takes without the
-    /// extended prefix — the shape that used to break every verb.
-    /// </summary>
     public string DeepDir(int minLength = LongPath.WindowsMaxPath + 40)
     {
         string p = Path;
@@ -56,7 +51,6 @@ public sealed class TempDir : IDisposable
         }
         catch
         {
-            // best effort — leave orphans in %TEMP% rather than fail the test
         }
     }
 }

@@ -19,8 +19,6 @@
 
     <Panel>
         <DockPanel>
-
-            <!-- ── top: where you are ── -->
             <Border DockPanel.Dock="Top" Classes="topbar">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="2" Margin="0,0,6,0">
@@ -84,8 +82,6 @@
                     </Panel>
                 </DockPanel>
             </Border>
-
-            <!-- ── bottom: status bar ── -->
             <Border DockPanel.Dock="Bottom" Classes="statusbar">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="14">
@@ -104,8 +100,6 @@
                     </Panel>
                 </DockPanel>
             </Border>
-
-            <!-- ── bottom: running copy/move/delete, with its own cancel ── -->
             <Border DockPanel.Dock="Bottom" Classes="opbar" IsVisible="{Binding FileOperation.IsRunning}">
                 <DockPanel>
                     <TextBlock Classes="optitle" Text="{Binding FileOperation.Title}" />
@@ -119,8 +113,6 @@
                                TextTrimming="CharacterEllipsis" />
                 </DockPanel>
             </Border>
-
-            <!-- ── bottom: input surfaces (filter / create) ── -->
             <Border DockPanel.Dock="Bottom" Classes="inputrow"
                     IsVisible="{Binding ContentPage.DirectoryListing.InLocalSearch}">
                 <DockPanel>
@@ -139,8 +131,6 @@
                              PlaceholderText="name…" />
                 </DockPanel>
             </Border>
-
-            <!-- ── bottom: column width bar (Mode.ResizeColumns while visible) ── -->
             <Border DockPanel.Dock="Bottom" Classes="inputrow"
                     IsVisible="{Binding ContentPage.InResizeColumns}">
                 <DockPanel>
@@ -156,14 +146,8 @@
                     </StackPanel>
                 </DockPanel>
             </Border>
-
-            <!-- ── center: file list ── -->
             <views:ContentView DataContext="{Binding ContentPage}" />
         </DockPanel>
-
-        <!-- ── center: destructive-action prompt (Mode.Confirm while open) —
-             was a thin bar glued to the bottom edge; centered and dimmed
-             like every other overlay so it can't be missed. ── -->
         <Panel Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Confirm.IsOpen}">
             <Border Classes="overlaycard confirmcard" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="18">

@@ -1,11 +1,5 @@
 namespace Rove.Core.Services;
 
-/// <summary>
-/// Small fzf-style subsequence matcher shared by local search, global search
-/// and the command palette. Every query character must appear in order in the
-/// candidate; the score rewards prefix matches, word-boundary hits and
-/// consecutive runs, and penalizes gaps.
-/// </summary>
 public static class FuzzyMatcher
 {
     private const int WordBoundaryBonus = 8;
@@ -13,11 +7,6 @@ public static class FuzzyMatcher
     private const int PrefixBonus = 10;
     private const int GapPenalty = 1;
 
-    /// <summary>
-    /// Returns true when every char of <paramref name="query"/> appears in
-    /// order (case-insensitive) in <paramref name="candidate"/>. An empty
-    /// query matches everything with score 0.
-    /// </summary>
     public static bool TryMatch(string query, string candidate, out int score)
     {
         score = 0;
@@ -55,7 +44,6 @@ public static class FuzzyMatcher
             score = 0;
             return false;
         }
-        // Slightly prefer shorter candidates when everything else ties.
         score -= Math.Min(candidate.Length / 8, 6);
         return true;
     }

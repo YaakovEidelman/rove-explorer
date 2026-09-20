@@ -4,11 +4,6 @@ using Xunit;
 
 namespace Rove.Core.Tests;
 
-/// <summary>
-/// The trash is a directory layout, not a system call, so these run
-/// anywhere: point XDG_DATA_HOME at a scratch folder and the whole thing
-/// is ordinary file IO.
-/// </summary>
 [Collection(XdgEnvironment.Name)]
 public sealed class LinuxTrashTests : IDisposable
 {
@@ -74,7 +69,6 @@ public sealed class LinuxTrashTests : IDisposable
         Assert.Equal([path], restored.Data!);
         Assert.Equal("keep me", File.ReadAllText(path));
 
-        // Nothing of it is left behind in the trash.
         Assert.False(File.Exists(Path.Combine(TrashFiles, "notes.txt")));
         Assert.False(File.Exists(InfoFor("notes.txt")));
     }
@@ -146,8 +140,6 @@ public sealed class LinuxTrashTests : IDisposable
         Assert.False(result.IsOk);
         Assert.Equal("not_found", result.Reason);
     }
-
-    // ── the trash as a place you can walk into ───────────────────────────
 
     [Fact]
     public void TheTrashIsBrowsedAtItsFilesDirectory()

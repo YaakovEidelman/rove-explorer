@@ -3,12 +3,6 @@ using Rove.Core.Protocol;
 
 namespace Rove.Core.Services;
 
-/// <summary>
-/// Rate-limits progress reports. A recursive copy touches thousands of files
-/// a second and the UI can't paint that fast, so anything arriving inside the
-/// interval is dropped — except a report marked important, which always gets
-/// through so the last state the user sees is the true one.
-/// </summary>
 internal sealed class ProgressTicker
 {
     private static readonly TimeSpan _interval = TimeSpan.FromMilliseconds(60);

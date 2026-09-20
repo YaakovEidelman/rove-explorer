@@ -6,9 +6,6 @@
              mc:Ignorable="d"
              x:Class="Rove.UI.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
-
-    <!-- ── content only: the shared Quick Access card in MainWindow.axaml
-         owns the dim background, the card, and the tab strip above this ── -->
     <Grid RowDefinitions="*, Auto">
         <ListBox x:Name="settings_list"
                  Grid.Row="0"

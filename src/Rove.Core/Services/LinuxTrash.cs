@@ -4,23 +4,6 @@ using Rove.Core.Protocol;
 
 namespace Rove.Core.Services;
 
-/// <summary>
-/// The desktop trash on Linux, as every file manager there implements it
-/// (the freedesktop.org Trash specification). There is no system call for
-/// it: a trash is a plain directory holding <c>files/</c> — the items
-/// themselves, moved in under a name that is free — and <c>info/</c>, one
-/// small text file per item saying where it came from and when it went.
-/// That pairing is what lets anything, Rove included, put an item back.
-///
-/// <para>
-/// An item is only ever <em>moved</em>, never copied, so the trash used has
-/// to sit on the same disk as the item. Things in the home directory go to
-/// the trash under <c>~/.local/share</c>; something on a USB stick or a
-/// second drive goes to a trash at the top of that disk instead. When
-/// neither is possible this says so rather than quietly copying gigabytes
-/// across a cable.
-/// </para>
-/// </summary>
 [SupportedOSPlatform("linux")]
 public static class LinuxTrash
 {
@@ -28,10 +11,7 @@ public static class LinuxTrash
     private const string InfoDir = "info";
     private const string InfoSuffix = ".trashinfo";
 
-    /// <summary>Enough tries at a free name that a real collision run is covered.</summary>
     private const int MaxNameAttempts = 1024;
-
-    // ── trashing ─────────────────────────────────────────────────────────
 
     public static CommandResult<string?> MoveToTrash(string[] paths)
     {
@@ -64,9 +44,6 @@ public static class LinuxTrash
             return CommandResult<string?>.Fail("trash_failed", $"Could not open the trash at {trash} ({ex.Message}).");
         }
 
-        // The path recorded is relative to the disk's own trash, absolute in
-        // the home one — that way a removable disk's trash still makes sense
-        // wherever it is next plugged in.
         string recorded = topDir is null ? full : Path.GetRelativePath(topDir, full);
 
         return MoveIntoTrash(full, trash, recorded);
@@ -84,14 +61,9 @@ public static class LinuxTrash
             string infoPath = Path.Combine(trash, InfoDir, candidate + InfoSuffix);
             string filePath = Path.Combine(trash, FilesDir, candidate);
 
-            // Something already parked under that name, with no info file to
-            // go with it — leave it alone and take the next name.
             if (File.Exists(filePath) || Directory.Exists(filePath))
                 continue;
 
-            // The info file is written first, and only if the name is still
-            // free: creating it is what claims the name, so two file managers
-            // trashing at once cannot land on the same one.
             try
             {
                 using (FileStream claim = new(infoPath, FileMode.CreateNew, FileAccess.Write))
@@ -102,7 +74,7 @@ public static class LinuxTrash
             }
             catch (IOException) when (File.Exists(infoPath))
             {
-                continue; // taken in the meantime
+                continue;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -116,7 +88,7 @@ public static class LinuxTrash
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                TryDelete(infoPath); // nothing moved, so leave no record saying it did
+                TryDelete(infoPath);
                 return CommandResult<string?>.Fail("trash_failed", $"Could not move {name} to the trash ({ex.Message}).");
             }
         }
@@ -124,17 +96,9 @@ public static class LinuxTrash
         return CommandResult<string?>.Fail("trash_failed", $"The trash already holds too many things named {name}.");
     }
 
-    /// <summary>The body of a .trashinfo file — plain text, in the order the spec gives.</summary>
     internal static string InfoContents(string recordedPath, DateTime deletedAt) =>
         $"[Trash Info]\nPath={EncodePath(recordedPath)}\nDeletionDate={deletedAt:yyyy-MM-ddTHH:mm:ss}\n";
 
-    // ── putting things back ──────────────────────────────────────────────
-
-    /// <summary>
-    /// Moves items back to where they were trashed from. Returns the paths
-    /// that actually came back; anything no longer in a trash is simply not
-    /// among them.
-    /// </summary>
     public static CommandResult<string[]> RestoreFromTrash(string[] paths)
     {
         List<string> restored = [];
@@ -158,7 +122,7 @@ public static class LinuxTrash
     private static bool RestoreOne(string filePath, string infoPath, string destination)
     {
         if (File.Exists(destination) || Directory.Exists(destination))
-            return false; // something took the name back; do not clobber it
+            return false;
 
         try
         {
@@ -175,7 +139,6 @@ public static class LinuxTrash
         return true;
     }
 
-    /// <summary>The item in <paramref name="trash"/> that came from <paramref name="original"/>.</summary>
     private static (string FilePath, string InfoPath)? FindInTrash(string trash, string original)
     {
         string infoRoot = Path.Combine(trash, InfoDir);
@@ -213,7 +176,6 @@ public static class LinuxTrash
         return null;
     }
 
-    /// <summary>The <c>Path=</c> line of a .trashinfo file, decoded.</summary>
     internal static string? ReadRecordedPath(string infoPath)
     {
         try
@@ -230,7 +192,6 @@ public static class LinuxTrash
         return null;
     }
 
-    /// <summary>Home trash first, then the trash on the item's own disk.</summary>
     private static IEnumerable<string> TrashesToSearch(string full)
     {
         yield return HomeTrash();
@@ -241,19 +202,8 @@ public static class LinuxTrash
             yield return candidate;
     }
 
-    // ── browsing the trash ───────────────────────────────────────────────
-    // A trash is a folder, so Rove can simply walk into it. What sits in
-    // files/ is the items themselves; the record saying where each came from
-    // is the matching file in info/, which is what "put this back" reads.
-
-    /// <summary>The folder holding the trashed items themselves.</summary>
     public static string BrowsePath() => Path.Combine(HomeTrash(), FilesDir);
 
-    /// <summary>
-    /// Puts items that are sitting in a trash right now back where they came
-    /// from, named by where they are in the trash rather than by where they
-    /// used to live.
-    /// </summary>
     public static OpResult[] RestoreTrashedPaths(string[] paths) =>
         [.. paths.Select(RestoreTrashedPath)];
 
@@ -295,10 +245,6 @@ public static class LinuxTrash
         return OpResult.Success(path, FolderItem.FromPath(destination));
     }
 
-    /// <summary>
-    /// Drops the record for something that was in the trash and has now been
-    /// deleted outright — an info file with nothing to describe is litter.
-    /// </summary>
     public static void ForgetRecord(string path)
     {
         string full = Path.GetFullPath(path);
@@ -308,11 +254,6 @@ public static class LinuxTrash
         TryDelete(Path.Combine(trash, InfoDir, name + InfoSuffix));
     }
 
-    /// <summary>
-    /// The trash a path is an item of, or null. Only a direct child of
-    /// <c>files/</c> counts: something further in is part of a trashed folder,
-    /// and only the folder as a whole has a record of where it came from.
-    /// </summary>
     private static string? TrashHolding(string fullPath)
     {
         if (Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(fullPath)) is not { Length: > 0 } filesDir)
@@ -324,14 +265,8 @@ public static class LinuxTrash
         return Directory.Exists(Path.Combine(trash, InfoDir)) ? trash : null;
     }
 
-    // ── where the trash lives ────────────────────────────────────────────
-
     private static string HomeTrash() => Path.Combine(XdgPaths.DataHome, "Trash");
 
-    /// <summary>
-    /// Picks the trash an item belongs in, and tells the caller which disk it
-    /// is at the top of (null for the home trash, whose records are absolute).
-    /// </summary>
     private static string? ResolveTrashDirectory(string full, out string? topDir, out string? problem)
     {
         topDir = null;
@@ -354,11 +289,6 @@ public static class LinuxTrash
         return null;
     }
 
-    /// <summary>
-    /// The two places the spec allows on a disk that is not the home one: a
-    /// shared <c>.Trash</c> the administrator set up, which must be sticky and
-    /// a real directory, and otherwise a private <c>.Trash-1000</c> of our own.
-    /// </summary>
     private static IEnumerable<string> VolumeTrashCandidates(string volume)
     {
         string shared = Path.Combine(volume, ".Trash");
@@ -376,7 +306,7 @@ public static class LinuxTrash
                 return false;
             DirectoryInfo info = new(shared);
             if (info.LinkTarget is not null)
-                return false; // a symlink here is the classic way to get a trash redirected somewhere it should not be
+                return false;
             return !OperatingSystem.IsLinux()
                 || File.GetUnixFileMode(shared).HasFlag(UnixFileMode.StickyBit);
         }
@@ -389,10 +319,6 @@ public static class LinuxTrash
     private static bool IsHomeVolume(string volume) =>
         VolumeOf(XdgPaths.DataHome) is { } home && PathCompare.PathMatches(home, volume);
 
-    /// <summary>
-    /// The mount point a path sits on: the deepest mounted directory it lives
-    /// under. Two paths with the same one can be moved between without a copy.
-    /// </summary>
     private static string? VolumeOf(string fullPath)
     {
         string? best = null;
@@ -424,11 +350,8 @@ public static class LinuxTrash
         return best;
     }
 
-    /// <summary>The trash's own disk, for reading records stored relative to it.</summary>
     private static string? TopDirectoryOfTrash(string trash)
     {
-        // ".../.Trash-1000" and ".../.Trash/1000" both sit at the top of the
-        // disk they serve; the home trash keeps absolute paths and needs none.
         DirectoryInfo? dir = new DirectoryInfo(trash).Parent;
         if (dir is null)
             return null;
@@ -454,9 +377,6 @@ public static class LinuxTrash
     [DllImport("libc", SetLastError = true)]
     private static extern uint getuid();
 
-    // ── odds and ends ────────────────────────────────────────────────────
-
-    /// <summary>Stored the way a URL stores a path: each part escaped, the slashes left alone.</summary>
     internal static string EncodePath(string path) =>
         string.Join('/', path.Split('/').Select(Uri.EscapeDataString));
 

@@ -10,34 +10,17 @@ using System.Text.Json;
 
 namespace Rove.UI.Services;
 
-/// <summary>One line of the user's keybindings file. A null action unbinds the key.</summary>
 public readonly record struct KeymapOverride(Mode Mode, KeyStroke Stroke, string? Action);
 
-/// <summary>What a load attempt produced: the overrides plus anything unusable.</summary>
 public sealed record KeymapLoad(IReadOnlyList<KeymapOverride> Overrides, IReadOnlyList<string> Problems)
 {
     public static KeymapLoad Empty { get; } = new([], []);
 
-    /// <summary>One short line for the status bar, or null when the file was clean.</summary>
     public string? Summary => Problems.Count == 0
         ? null
         : $"keybindings.json: {Problems[0]}" + (Problems.Count > 1 ? $" (+{Problems.Count - 1} more)" : "");
 }
 
-/// <summary>
-/// Reads keybinding overrides from the user's config file. The file is
-/// optional: when it isn't there, or can't be read, the built-in defaults
-/// stand on their own.
-///
-/// <para>
-/// Shape — one object per mode, mapping a key to a command id:
-/// <code>
-/// { "browse": { "ctrl+j": "content.move_down", "d": null } }
-/// </code>
-/// A key that isn't listed keeps its default. A null (or empty) action
-/// removes the default binding for that key.
-/// </para>
-/// </summary>
 public static class KeymapConfig
 {
     public static string DefaultPath => RovePaths.KeybindingsFile;
@@ -146,34 +129,21 @@ public static class KeymapConfig
             problems.Add(problem);
     }
 
-    // ── command ids ──────────────────────────────────────────────────────
-
     private static readonly Lazy<HashSet<string>> _knownCommands = new(() =>
         [.. typeof(CommandDef)
             .GetFields(BindingFlags.Public | BindingFlags.Static)
             .Where(f => f.FieldType == typeof(CommandDef))
             .Select(f => ((CommandDef)f.GetValue(null)!).Id),
-          // The bookmark and tab shortcuts are made rather than declared — one
-          // id per slot, with which bookmark or tab a slot leads to left
-          // until it is pressed.
           .. Enumerable.Range(0, BookmarkStore.ShortcutCount).Select(i => CommandDef.BookmarkGo(i).Id),
           .. Enumerable.Range(0, CommandDef.TabShortcutCount).Select(i => CommandDef.TabGo(i).Id)]);
 
-    /// <summary>Every id the app defines, sorted — the list a config file can use.</summary>
     public static IEnumerable<string> KnownCommandIds() =>
         _knownCommands.Value.OrderBy(id => id, StringComparer.Ordinal);
 
     private static bool IsKnownCommand(string id) =>
         _knownCommands.Value.Contains(id)
-        // One command per mounted drive, so the ids only exist at runtime.
         || id.StartsWith(CommandDef.DriveIdPrefix, StringComparison.Ordinal);
 
-    // ── key strokes ──────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Parses "ctrl+shift+p" style text. Modifiers come first in any order,
-    /// the last part is the key itself.
-    /// </summary>
     public static bool TryParseStroke(string text, out KeyStroke stroke)
     {
         stroke = default;
@@ -181,7 +151,6 @@ public static class KeymapConfig
             return false;
 
         string[] parts = text.Split('+', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        // "ctrl++" means Ctrl plus the plus key, which Split just ate.
         if (parts.Length == 0 || text.TrimEnd().EndsWith("++", StringComparison.Ordinal))
             parts = [.. parts, "+"];
 
@@ -210,7 +179,6 @@ public static class KeymapConfig
         _ => null,
     };
 
-    /// <summary>The names in here are the ones the app itself prints in hints.</summary>
     private static readonly Dictionary<string, Key> _keyAliases = new(StringComparer.OrdinalIgnoreCase)
     {
         ["/"] = Key.OemQuestion,

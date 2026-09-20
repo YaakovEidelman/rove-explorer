@@ -8,11 +8,6 @@ namespace Rove.Core.Protocol;
 public record RequestEnvelope(string CommandId, string Command, JsonElement Args);
 public record ResponseEnvelope(string CommandId, string Command, CommandResult Result);
 
-/// <summary>
-/// Verb-name → handler router for a JSON transport. The Avalonia UI calls
-/// Actions directly; this stays as the protocol boundary so the backend can
-/// be lifted out of process without touching handlers.
-/// </summary>
 public class Dispatcher
 {
     private readonly Actions _actions;
@@ -73,8 +68,6 @@ public class Dispatcher
     {
         DispatcherDict[command] = async (JsonElement json) =>
         {
-            // The reader for these arguments is generated at compile time; a
-            // type nobody listed in ProtocolJson has none, and cannot be read.
             if (ProtocolJson.Default.GetTypeInfo(typeof(TArgs)) is not JsonTypeInfo<TArgs> shape)
                 return CommandResult.Fail("bad_arguments", $"{typeof(TArgs).Name} is not a known argument shape.");
 

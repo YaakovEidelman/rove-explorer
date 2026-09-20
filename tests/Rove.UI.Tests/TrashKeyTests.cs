@@ -4,11 +4,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>
-/// Browsing the trash inside Rove: the path bar hides where it really lives,
-/// and most verbs that write are refused there — you look and put back, or
-/// delete for good, and nothing else.
-/// </summary>
 public sealed class TrashKeyTests : HeadlessTest, IDisposable
 {
     private readonly string? _previousDataHome;
@@ -66,8 +61,6 @@ public sealed class TrashKeyTests : HeadlessTest, IDisposable
         TrashOne(Path.Combine(harness.Root, "OldProject"));
         harness.Press(Key.T);
 
-        // Trash isn't the harness's root, so Highlight (root-relative) can't
-        // reach into it — select the trashed folder by its real path instead.
         harness.Content.DirectoryListing.ListSelection.SelectPath(
             Path.Combine(TrashRoot, "OldProject"));
         harness.Press(Key.Enter);

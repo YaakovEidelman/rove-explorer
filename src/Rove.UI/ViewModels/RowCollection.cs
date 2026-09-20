@@ -5,12 +5,6 @@ using System.ComponentModel;
 
 namespace Rove.UI.ViewModels;
 
-/// <summary>
-/// The visible rows. Same as an ordinary observable list, except it can be
-/// replaced wholesale in one go: every listener (the list control, the status
-/// bar) is told once instead of once per row, which is the difference between
-/// opening a 50,000-item folder in a moment and in several seconds.
-/// </summary>
 public sealed class RowCollection : ObservableCollection<ListViewItem>
 {
     private static readonly PropertyChangedEventArgs _countChanged = new(nameof(Count));

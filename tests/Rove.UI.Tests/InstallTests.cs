@@ -4,7 +4,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>A scratch home to install into, thrown away after each test.</summary>
 public sealed class InstallHome : IDisposable
 {
     public string Root { get; } = Path.Combine(Path.GetTempPath(), "rove-install-" + Guid.NewGuid().ToString("N"));
@@ -19,10 +18,6 @@ public sealed class InstallHome : IDisposable
 
     public string Sub(params string[] parts) => Path.Combine([Root, .. parts]);
 
-    /// <summary>
-    /// A downloaded build: the program and the native libraries beside it,
-    /// the way a published one looks, with debug symbols nobody ships.
-    /// </summary>
     public string Build(string folder, string content = "a binary", string executable = "Rove")
     {
         string dir = Path.Combine(Root, folder);
@@ -44,7 +39,6 @@ public sealed class InstallHome : IDisposable
         }
         catch
         {
-            // best effort — a leftover temp folder beats a failing test
         }
     }
 }
@@ -293,7 +287,6 @@ public class LinuxInstallTests
         Assert.Contains("StartupWMClass=rove", entry, StringComparison.Ordinal);
     }
 
-    /// <summary>Windows only makes links for an administrator, so this is Linux's to prove.</summary>
     [Fact]
     public void TheNameOnPathLeadsToTheInstalledProgram()
     {
@@ -335,7 +328,6 @@ public class LinuxInstallTests
 
         foreach (string file in LinuxInstall.SupportFiles(home.DataHome, home.BinDir))
         {
-            // The link is the one thing Windows will not make for a test.
             if (!OperatingSystem.IsLinux() && file == LinuxInstall.LinkPath(home.BinDir))
                 continue;
             Assert.True(File.Exists(file), file);

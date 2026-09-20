@@ -4,12 +4,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>
-/// Tab in the path bar, driven through the real window. The list it puts up
-/// is a mode of its own, so these also guard the thing that mode has to get
-/// right: Enter and Escape mean one thing while it is showing and another
-/// once it is gone.
-/// </summary>
 public class PathCompletionKeyTests : HeadlessTest
 {
     private static void Fill(string root)
@@ -20,7 +14,6 @@ public class PathCompletionKeyTests : HeadlessTest
         File.WriteAllText(Path.Combine(root, "notes.txt"), "hello");
     }
 
-    /// <summary>Opens the path bar holding <paramref name="typed"/>.</summary>
     private static void TypePath(WindowHarness harness, string typed)
     {
         harness.Press(Key.L, RawInputModifiers.Control);

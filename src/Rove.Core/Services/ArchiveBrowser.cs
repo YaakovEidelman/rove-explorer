@@ -5,29 +5,10 @@ using Rove.Core.Protocol;
 
 namespace Rove.Core.Services;
 
-/// <summary>
-/// Reading a zip as though it were a folder. A zip does not really have
-/// folders in it — it has a flat list of entries with slashes in their names —
-/// so the folders a listing shows are worked out from those names rather than
-/// read out of the file. An archive written without a single directory entry
-/// in it, which is common, browses exactly like one written with them.
-///
-/// <para>
-/// Nothing here writes into an archive. Rove browses one and takes things out
-/// of it; putting things back in is what <see cref="ArchiveService"/> does,
-/// and it does it by making a new zip rather than editing one.
-/// </para>
-/// </summary>
 public static class ArchiveBrowser
 {
-    /// <summary>Where a file opened out of a zip is put so a program can read it.</summary>
     private const string TempFolderName = "rove-archives";
 
-    /// <summary>
-    /// Everything sitting directly at <paramref name="location"/> — the files
-    /// whose names have no slash left in them once this place is taken off
-    /// the front, and one folder for each distinct name that still does.
-    /// </summary>
     public static FolderItem[] Children(ArchivePath location)
     {
         using ZipArchive zip = ZipFile.OpenRead(LongPath.ForIo(location.Archive));
@@ -54,9 +35,6 @@ public static class ArchiveBrowser
             if (folder.Length == 0)
                 continue;
 
-            // "sub/" is the folder itself written down, and is the only entry
-            // that can say when it was last touched — so it replaces the
-            // stand-in a file underneath it would otherwise have left here.
             FolderItem item = Folder(location.Down(folder), rest.Length == slash + 1 ? entry.LastWriteTime.LocalDateTime : fallback);
             if (rest.Length == slash + 1)
                 children[folder] = item;
@@ -66,10 +44,6 @@ public static class ArchiveBrowser
         return [.. children.Values];
     }
 
-    /// <summary>
-    /// What sits at <paramref name="location"/>, or null when nothing does —
-    /// the answer the path bar needs before it will go somewhere.
-    /// </summary>
     public static FolderItem? Describe(ArchivePath location)
     {
         if (location.IsRoot)
@@ -90,7 +64,6 @@ public static class ArchiveBrowser
         return null;
     }
 
-    /// <summary>A folder inside an archive, described without opening it.</summary>
     public static FolderItem Folder(ArchivePath location) =>
         Folder(location, ArchiveWriteTime(location.Archive));
 
@@ -110,18 +83,6 @@ public static class ArchiveBrowser
             Path.GetExtension(at.Name));
     }
 
-    /// <summary>
-    /// Puts one entry somewhere a program can open it, and says where that
-    /// is. A zip is not a folder a program can be pointed at, so opening
-    /// something inside one means taking a copy out first — the same copy
-    /// each time, replaced whenever the archive it came from is newer than
-    /// it.
-    ///
-    /// <para>
-    /// The copy is exactly that: nothing written to it goes back into the
-    /// zip. Whoever calls this is expected to say so.
-    /// </para>
-    /// </summary>
     public static string CopyOut(ArchivePath location)
     {
         if (location.IsRoot)
@@ -179,10 +140,6 @@ public static class ArchiveBrowser
         }
     }
 
-    /// <summary>
-    /// A short, stable, filename-safe stand-in for an archive's path, so two
-    /// zips of the same name from different folders never share a copy.
-    /// </summary>
     private static string Fingerprint(string archive)
     {
         string key = LongPath.Display(archive);

@@ -1,10 +1,5 @@
 namespace Rove.Core.Services;
 
-/// <summary>
-/// Validates user-supplied item names before they are combined with a
-/// directory path. Blocks path traversal (`..\foo`), separators, reserved
-/// device names and other names the filesystem would reject or misplace.
-/// </summary>
 public static class PathGuard
 {
     private static readonly char[] _invalidChars = Path.GetInvalidFileNameChars();
@@ -16,7 +11,6 @@ public static class PathGuard
         "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
     };
 
-    /// <summary>Returns null when the name is safe, otherwise a stable reason code.</summary>
     public static string? Validate(string? name)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -25,8 +19,6 @@ public static class PathGuard
             return "invalid_name";
         if (name.IndexOfAny(_invalidChars) >= 0)
             return "invalid_characters";
-        // GetInvalidFileNameChars covers '\\', '/', ':' on Windows, but only '/'
-        // elsewhere — check explicitly so behavior is identical cross-platform.
         if (name.Contains('/') || name.Contains('\\') || name.Contains(':'))
             return "invalid_characters";
         if (OperatingSystem.IsWindows())
@@ -40,10 +32,6 @@ public static class PathGuard
         return null;
     }
 
-    /// <summary>
-    /// Combines directory + validated name and verifies the result stays
-    /// inside the directory. Returns null and sets reason on failure.
-    /// </summary>
     public static string? SafeCombine(string directory, string name, out string? reason)
     {
         reason = Validate(name);
@@ -65,7 +53,6 @@ public static class PathGuard
         return combined;
     }
 
-    /// <summary>True when <paramref name="candidate"/> is the same path as, or nested under, <paramref name="ancestor"/>.</summary>
     public static bool IsSameOrDescendant(string ancestor, string candidate)
     {
         StringComparison cmp = OperatingSystem.IsWindows()

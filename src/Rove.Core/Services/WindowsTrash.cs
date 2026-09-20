@@ -4,20 +4,6 @@ using System.Text;
 
 namespace Rove.Core.Services;
 
-/// <summary>
-/// The Windows Recycle Bin, read the way it is actually stored. A deleted
-/// item does not go anywhere clever: it is moved to <c>$Recycle.Bin</c> at the
-/// top of its own volume, under a folder named for the account that deleted
-/// it, as a pair of files. <c>$R…</c> is the item itself; <c>$I…</c> beside it
-/// is a small record saying where it came from, how big it was and when it
-/// went — the same arrangement the Linux trash uses, under different names.
-///
-/// <para>
-/// Deleting still goes through the shell, which is the only way to get an
-/// entry the Recycle Bin recognises. Putting one back is this: find the
-/// record naming the path, move the item to it, drop the record.
-/// </para>
-/// </summary>
 [SupportedOSPlatform("windows")]
 internal static class WindowsTrash
 {
@@ -25,17 +11,11 @@ internal static class WindowsTrash
     private const string RecordPrefix = "$I";
     private const string ItemPrefix = "$R";
 
-    /// <summary>Version 1 keeps a fixed 260-character path; version 2 writes its length first.</summary>
     private const long LegacyVersion = 1;
 
     private const int HeaderLength = 24;
     private const int LegacyPathChars = 260;
 
-    /// <summary>
-    /// Moves items back to where they were deleted from, and returns the ones
-    /// that actually made it. Anything already emptied out of the bin, or
-    /// whose old name is taken again, is simply not among them.
-    /// </summary>
     public static string[] Restore(string[] paths) =>
         Restore(paths, BinRootsFor(paths));
 
@@ -63,7 +43,7 @@ internal static class WindowsTrash
         string target = LongPath.ForIo(destination);
 
         if (File.Exists(target) || Directory.Exists(target))
-            return false; // something took the name back; do not clobber it
+            return false;
 
         try
         {
@@ -84,7 +64,6 @@ internal static class WindowsTrash
         return true;
     }
 
-    /// <summary>The record naming <paramref name="original"/>, and the item it belongs to.</summary>
     private static (string ItemPath, string RecordPath)? Find(IEnumerable<string> binRoots, string original)
     {
         foreach (string root in binRoots)
@@ -107,7 +86,6 @@ internal static class WindowsTrash
         return null;
     }
 
-    /// <summary>$I2AB3CD.txt describes $R2AB3CD.txt beside it.</summary>
     private static string ItemFor(string recordPath)
     {
         string name = Path.GetFileName(recordPath);
@@ -115,10 +93,6 @@ internal static class WindowsTrash
         return Path.Combine(directory, ItemPrefix + name[RecordPrefix.Length..]);
     }
 
-    /// <summary>
-    /// The path a record names, or null when the file is not one — the bin
-    /// holds other bookkeeping, and a half-written record is possible too.
-    /// </summary>
     internal static string? ReadRecordedPath(string recordPath)
     {
         byte[] bytes;
@@ -161,12 +135,6 @@ internal static class WindowsTrash
         return path.Length == 0 ? null : path;
     }
 
-    // ── where the bins are ───────────────────────────────────────────────
-
-    /// <summary>
-    /// One <c>$Recycle.Bin</c> per volume: an item is only ever moved, never
-    /// copied, so it is still on the disk it was deleted from.
-    /// </summary>
     private static IEnumerable<string> BinRootsFor(IEnumerable<string> paths)
     {
         HashSet<string> roots = new(PathCompare.Comparer);
@@ -194,7 +162,7 @@ internal static class WindowsTrash
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            return []; // another account's corner of the bin
+            return [];
         }
     }
 

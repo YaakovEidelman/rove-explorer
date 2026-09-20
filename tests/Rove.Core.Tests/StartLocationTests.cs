@@ -5,12 +5,6 @@ namespace Rove.Core.Tests;
 
 public class StartLocationTests
 {
-    /// <summary>
-    /// The same imaginary place, spelled the way the running system spells an
-    /// absolute path. Which argument wins is the same rule everywhere; only
-    /// the shape of a root differs, and a test that writes one root by hand
-    /// is a test of one system.
-    /// </summary>
     private static string Abs(string path) =>
         OperatingSystem.IsWindows() ? "C:" + path.Replace('/', Path.DirectorySeparatorChar) : path;
 

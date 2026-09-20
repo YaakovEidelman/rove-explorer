@@ -4,7 +4,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>Tabs, from the keys that open, close and move between them.</summary>
 public class TabKeyTests : HeadlessTest
 {
     private static void Fill(string root)
@@ -146,7 +145,6 @@ public class TabKeyTests : HeadlessTest
         Assert.Equal(Path.Combine(harness.Root, "beta"), harness.Content.DirectoryListing.CurrentDir);
         Assert.Equal(["c.txt"], harness.Names());
 
-        // The tab it was opened from has not moved.
         Assert.Equal(harness.Root, harness.Tabs.Items[0].Content.DirectoryListing.CurrentDir);
     });
 
@@ -177,11 +175,6 @@ public class TabKeyTests : HeadlessTest
         Assert.Equal(harness.Root, harness.Content.DirectoryListing.CurrentDir);
     });
 
-    /// <summary>
-    /// Closing one in the middle leaves the index where it was but a
-    /// different tab under it, which is the case a strip is easiest to get
-    /// wrong on.
-    /// </summary>
     [Fact]
     public Task ClosingATabInTheMiddleBringsTheOneAfterItForward() => OnUiThread(() =>
     {
@@ -268,11 +261,6 @@ public class TabKeyTests : HeadlessTest
         Assert.Contains("4 items", harness.Model.ItemSummary);
     });
 
-    /// <summary>
-    /// The undo history belongs to the app: what was done was done to the
-    /// disk, not to a tab, and the tab it was done from is rarely what a
-    /// person has in mind when they reach for undo.
-    /// </summary>
     [Fact]
     public Task UndoReachesBackToWhatAnotherTabDid() => OnUiThread(() =>
     {
@@ -313,7 +301,6 @@ public class TabKeyTests : HeadlessTest
         Assert.False(harness.Tabs.Items[1].IsActive);
     });
 
-    /// <summary>The x closes whichever tab it is on, not just the one in front.</summary>
     [Fact]
     public Task TheXOnATabClosesItEvenWhenItIsNotInFront() => OnUiThread(() =>
     {
@@ -460,8 +447,6 @@ public class TabKeyTests : HeadlessTest
     {
         using WindowHarness harness = WindowHarness.Open(Fill);
 
-        // Nothing to assert about shutting down under a headless lifetime;
-        // what matters is that the key is bound and nothing throws on it.
         harness.Press(Key.Q, RawInputModifiers.Control);
 
         Assert.Single(harness.Tabs.Items);

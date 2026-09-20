@@ -9,10 +9,6 @@ public enum ClipboardOp
     Cut,
 }
 
-/// <summary>
-/// Rove's internal file clipboard for copy/cut/paste of items.
-/// (Text-path copies go to the system clipboard instead.)
-/// </summary>
 public class FileClipboard
 {
     public ClipboardOp Op { get; private set; } = ClipboardOp.Copy;

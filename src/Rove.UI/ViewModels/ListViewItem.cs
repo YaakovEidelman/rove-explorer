@@ -25,11 +25,9 @@ public partial class ListViewItem : ObservableObject
     [ObservableProperty]
     private bool _isRenaming;
 
-    /// <summary>Marked for a multi-item verb (delete/copy/cut). Visibly indicated.</summary>
     [ObservableProperty]
     private bool _isMarked;
 
-    /// <summary>In the cut clipboard — rendered dimmed until pasted or cleared.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RowOpacity))]
     private bool _isCut;
@@ -70,10 +68,6 @@ public partial class ListViewItem : ObservableObject
 
     public void SetIconSize(int size) => RequestIcon(size);
 
-    /// <summary>
-    /// Takes the icon straight off the cache when it is already there — no
-    /// task, no thread hop. Only the first row of each kind pays for a fetch.
-    /// </summary>
     private void RequestIcon(int size)
     {
         if (_cache.TryGetIcon(Item, size, out IImage? cached))
@@ -84,10 +78,6 @@ public partial class ListViewItem : ObservableObject
         _ = LoadIconAsync(size);
     }
 
-    /// <summary>
-    /// The icon arrives on whatever thread the fetch finished on; the row's
-    /// binding only picks the change up from the UI thread, so hand it over.
-    /// </summary>
     private async Task LoadIconAsync(int size)
     {
         IImage? icon = await _cache.GetIconAsync(Item, size).ConfigureAwait(false);

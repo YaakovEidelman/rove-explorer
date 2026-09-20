@@ -5,22 +5,10 @@ using System.IO;
 
 namespace Rove.UI.Services;
 
-/// <summary>
-/// Removes an installed build once the program using it has gone. A program
-/// cannot delete the folder it is running from — Windows will not delete a
-/// file that is open, and the libraries beside it are open too — so the last
-/// step is handed to a small command that waits for this process to end and
-/// then does it.
-/// </summary>
 internal static class SelfDelete
 {
     private static readonly TimeSpan _grace = TimeSpan.FromSeconds(2);
 
-    /// <summary>
-    /// Removes <paramref name="folder"/> and everything in it, shortly. It
-    /// has to be a named folder with a parent — never a drive, and never a
-    /// home directory.
-    /// </summary>
     public static void After(string folder)
     {
         if (!IsSafeToRemove(folder))
@@ -42,11 +30,9 @@ internal static class SelfDelete
         }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or FileNotFoundException)
         {
-            // Nothing left to try; the folder stays and can be removed by hand.
         }
     }
 
-    /// <summary>A folder with no parent is a drive or a root, and is nobody's to remove.</summary>
     private static bool IsSafeToRemove(string folder)
     {
         if (string.IsNullOrWhiteSpace(folder))
@@ -62,6 +48,5 @@ internal static class SelfDelete
         }
     }
 
-    /// <summary>Single quotes around it, and any single quote inside broken out.</summary>
     private static string ShellQuote(string path) => "'" + path.Replace("'", "'\\''") + "'";
 }

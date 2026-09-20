@@ -9,13 +9,6 @@ using Rove.UI.Views;
 
 namespace Rove.UI.Tests;
 
-/// <summary>
-/// A real <see cref="PickerWindow"/> on the headless backend, showing a real
-/// folder. Confirming or cancelling would normally call
-/// <c>Environment.Exit</c> straight out from under the test process — both
-/// the window's own <c>Closed</c> handler and the view model's exit calls
-/// are disarmed here, with the exit code recorded instead.
-/// </summary>
 internal sealed class PickerWindowHarness : IDisposable
 {
     public string Root { get; }
@@ -72,10 +65,6 @@ internal sealed class PickerWindowHarness : IDisposable
         ContentViewModel content = new(
             registry, core, fileClipboard, new RecordingClipboard(), new NullIconCache(), operation,
             bookmarks, undo, settings);
-        // The constructor queues a load of whatever CurrentDir is once the
-        // dispatcher gets to it; setting it to root now (before that runs)
-        // means that queued load lands on root too, instead of racing a
-        // separate navigation to it — see TabsViewModel.Open for the same fix.
         content.DirectoryListing.CurrentDir = root;
         if (filters is { Length: > 0 })
             content.DirectoryListing.SetSelectionFilter(filters[filterIndex].Patterns);

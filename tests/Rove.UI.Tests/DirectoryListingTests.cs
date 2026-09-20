@@ -8,7 +8,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>No real icons: the rows only need something that answers.</summary>
 internal sealed class NullIconCache : IIconCache
 {
     public Task<IImage?> GetIconAsync(FolderItem item, int size) => Task.FromResult<IImage?>(null);
@@ -16,13 +15,12 @@ internal sealed class NullIconCache : IIconCache
     public bool TryGetIcon(FolderItem item, int size, out IImage? icon)
     {
         icon = null;
-        return true; // "already resolved, to nothing" — keeps rows off the async path
+        return true;
     }
 }
 
 public class DirectoryListingTests
 {
-    /// <summary>The folder these rows live in, spelled the way this OS spells one.</summary>
     private static readonly string _root = OperatingSystem.IsWindows() ? @"C:\test" : "/test";
 
     private static string At(string name) => Path.Combine(_root, name);
@@ -162,10 +160,6 @@ public class DirectoryListingTests
         Assert.Equal(["nope.md", "notes.txt"], Names(listing).Order());
     }
 
-    /// <summary>
-    /// Each extra character filters what survived the last one instead of the
-    /// whole folder; the answer has to be the same either way.
-    /// </summary>
     [Fact]
     public void TypingOneCharacterAtATimeMatchesFilteringInOneGo()
     {
@@ -209,8 +203,6 @@ public class DirectoryListingTests
         listing.SearchCurrentDirectoryText = "a";
         Assert.Single(listing.Items);
 
-        // Leaving the box (InLocalSearch off) is not the same as clearing
-        // the query — the filtered view stays up.
         listing.InLocalSearch = false;
         listing.ApplyView();
         Assert.Single(listing.Items);
@@ -347,11 +339,6 @@ public class DirectoryListingTests
         Assert.Equal(["keep.txt", "new.txt", "renamed.txt"], Names(listing).Order());
     }
 
-    /// <summary>
-    /// Guards the fix for a folder that chokes when it changes fast: a big
-    /// batch has to cost one resort and one rebuild, not one apiece, so this
-    /// has to stay fast even as the batch grows.
-    /// </summary>
     [Fact]
     public void ABigBatchOfWatcherEventsStaysFast()
     {
@@ -444,8 +431,6 @@ public class DirectoryListingTests
         listing.Load(downloads, [Item("a.zip"), Item("b.zip")]);
         listing.SetSort(SortKey.Name);
 
-        // Real navigation, the way ContentViewModel drives it: Load the new
-        // folder first, then move CurrentDir to match.
         listing.Load(_root, [Item("c.txt")]);
         listing.CurrentDir = _root;
 

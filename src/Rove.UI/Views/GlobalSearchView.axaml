@@ -7,9 +7,6 @@
              mc:Ignorable="d"
              x:Class="Rove.UI.Views.GlobalSearchView"
              x:DataType="vm:GlobalSearchViewModel">
-
-    <!-- ── content only: the shared Quick Access card in MainWindow.axaml
-         owns the dim background, the card, and the tab strip above this ── -->
     <Grid RowDefinitions="Auto, *, Auto">
         <TextBox Grid.Row="0"
                  Text="{Binding Query}"

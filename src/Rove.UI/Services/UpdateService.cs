@@ -11,14 +11,6 @@ using System.Threading.Tasks;
 
 namespace Rove.UI.Services;
 
-/// <summary>
-/// Checks GitHub for a newer stable release and, when asked, downloads it,
-/// unpacks it, and hands it to the same <c>--install</c> path a person
-/// launching a newer downloaded build would take (<see cref="Rove.UI.Program"/>) —
-/// so a self-update reuses <see cref="DesktopInstall"/>'s existing
-/// install/replace logic exactly, rather than teaching it about a build that
-/// isn't the one currently running.
-/// </summary>
 public sealed class UpdateService
 {
     private const string Owner = "YaakovEidelman";
@@ -32,11 +24,9 @@ public sealed class UpdateService
         _client = client;
     }
 
-    /// <summary>One-line notices for the status bar: an update is available, one finished, or a step failed.</summary>
     public event Action<string>? InfoRaised;
     public event Action<string>? ErrorRaised;
 
-    /// <summary>The daily background check. With auto-update on, a release it finds is installed on the spot.</summary>
     public async Task CheckInBackgroundAsync(bool autoUpdate, CancellationToken ct)
     {
         UpdateCheckState? state = UpdateCheckState.Read(RovePaths.UpdateCheckStateFile);
@@ -55,7 +45,6 @@ public sealed class UpdateService
             InfoRaised?.Invoke($"Rove {release.Version} is available — Ctrl+U to update.");
     }
 
-    /// <summary>What "Check for Updates Now" runs — skips the daily throttle and any skipped version.</summary>
     public async Task CheckNowAsync(CancellationToken ct)
     {
         InfoRaised?.Invoke("Checking for updates…");
@@ -73,7 +62,6 @@ public sealed class UpdateService
         await DownloadAndInstallAsync(release, progress: null, ct).ConfigureAwait(false);
     }
 
-    /// <summary>Downloads, unpacks, and installs the given release — what the "update now" command runs.</summary>
     public async Task DownloadAndInstallAsync(GitHubRelease release, IProgress<double>? progress, CancellationToken ct)
     {
         if (_busy)

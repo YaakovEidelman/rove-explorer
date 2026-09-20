@@ -131,10 +131,6 @@ public class RenameItemTests
         Assert.True(File.Exists(tmp.Sub("newdir", "inner.txt")));
     }
 
-    /// <summary>
-    /// Regression for the original data-loss bug: renaming a file to the name
-    /// of an existing folder must fail cleanly and MUST NOT delete the folder.
-    /// </summary>
     [Fact]
     public void RenameOntoExistingFolder_FailsAndFolderSurvives()
     {
@@ -149,7 +145,7 @@ public class RenameItemTests
         Assert.Equal("already_exists", result.Reason);
         Assert.True(Directory.Exists(tmp.Sub("target")));
         Assert.Equal("do not lose me", File.ReadAllText(tmp.Sub("target", "important.txt")));
-        Assert.True(File.Exists(file)); // source untouched too
+        Assert.True(File.Exists(file));
     }
 
     [Fact]
@@ -197,10 +193,6 @@ public class MoveItemsTests
         Assert.False(File.Exists(f1));
     }
 
-    /// <summary>
-    /// Regression for the original multi-move bug: two items no longer race
-    /// for one destination path — each lands under its own name.
-    /// </summary>
     [Fact]
     public void Collision_FailsThatItemOnly_AndDestinationSurvives()
     {
@@ -212,12 +204,12 @@ public class MoveItemsTests
 
         CommandResult<OpResult[]> result = _actions.MoveItems(new([source, ok], target, Overwrite: false));
 
-        Assert.False(result.IsOk); // partial failure reported
+        Assert.False(result.IsOk);
         OpResult clash = Assert.Single(result.Data!, r => !r.Ok);
         Assert.Equal("already_exists", clash.Reason);
-        Assert.Equal("existing", File.ReadAllText(tmp.Sub("dest", "clash.txt"))); // untouched
-        Assert.True(File.Exists(source)); // failed source stays put
-        Assert.True(File.Exists(tmp.Sub("dest", "fine.txt"))); // other item still moved
+        Assert.Equal("existing", File.ReadAllText(tmp.Sub("dest", "clash.txt")));
+        Assert.True(File.Exists(source));
+        Assert.True(File.Exists(tmp.Sub("dest", "fine.txt")));
     }
 
     [Fact]
@@ -283,7 +275,7 @@ public class CopyItemsTests
         Assert.True(result.IsOk);
         Assert.Equal("s", File.ReadAllText(tmp.Sub("dest", "solo.txt")));
         Assert.Equal("green", File.ReadAllText(tmp.Sub("dest", "tree", "branch", "leaf.txt")));
-        Assert.True(File.Exists(file)); // copy keeps the source
+        Assert.True(File.Exists(file));
     }
 
     [Fact]
@@ -312,12 +304,6 @@ public class CopyItemsTests
         Assert.Equal("invalid_target", result.Data![0].Reason);
     }
 
-    /// <summary>
-    /// Creating a link needs a privilege this test process may not hold on
-    /// Windows without Developer Mode or an elevated prompt. Every symlink
-    /// test tries for real and skips itself rather than fail on a machine
-    /// that simply won't grant it — Linux always grants it.
-    /// </summary>
     private static bool TryLinkDir(string path, string target)
     {
         try
@@ -479,7 +465,7 @@ public class GetMetadataTests
     public void DirectoryMetadata_SkipsInaccessibleSubdirButCountsSiblings()
     {
         if (OperatingSystem.IsWindows())
-            return; // chmod-based permission denial is a Unix concept
+            return;
 
         using TempDir tmp = new();
         string dir = tmp.Dir("stats");

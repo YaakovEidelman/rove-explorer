@@ -110,7 +110,7 @@ public class RestoreFromTrashTests
     public void BringsADeletedFileBackToWhereItWas()
     {
         if (!TrashService.IsSupported)
-            return; // the Recycle Bin is a Windows thing
+            return;
 
         using TempDir tmp = new();
         string path = tmp.File("deleted-by-mistake.txt", "the contents");
@@ -130,7 +130,7 @@ public class RestoreFromTrashTests
     public void SomethingThatWasNeverDeletedComesBackAsNotRestored()
     {
         if (!TrashService.IsSupported)
-            return; // the Recycle Bin is a Windows thing
+            return;
 
         using TempDir tmp = new();
 

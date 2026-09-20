@@ -7,15 +7,8 @@ using System.Text.Json.Serialization;
 
 namespace Rove.UI.Services;
 
-/// <summary>
-/// Which build a file holds. Two files with the same version, the same size
-/// and the same timestamp are the same build, wherever they sit — that is
-/// what lets a launch answer "am I already installed?" without comparing a
-/// hundred megabytes byte for byte.
-/// </summary>
 public readonly record struct BuildIdentity(Version Version, long Size, DateTime ModifiedUtc)
 {
-    /// <summary>Timestamps survive a copy, but not always to the tick: FAT keeps whole seconds.</summary>
     private static readonly TimeSpan _timeSlack = TimeSpan.FromSeconds(2);
 
     public static BuildIdentity? Of(string path, Version version)
@@ -36,17 +29,12 @@ public readonly record struct BuildIdentity(Version Version, long Size, DateTime
         && Size == other.Size
         && (ModifiedUtc - other.ModifiedUtc).Duration() <= _timeSlack;
 
-    /// <summary>
-    /// A higher version wins. Failing that — every build of a version in
-    /// progress carries the same number — the one built later wins.
-    /// </summary>
     public bool IsNewerThan(BuildIdentity other) =>
         Version != other.Version
             ? Version > other.Version
             : ModifiedUtc > other.ModifiedUtc + _timeSlack;
 }
 
-/// <summary>What the last install put where. Written after the fact, read at startup.</summary>
 public sealed record InstallRecord(
     [property: JsonPropertyName("version")] string Version,
     [property: JsonPropertyName("binary")] string Binary,
@@ -63,7 +51,6 @@ public sealed record InstallRecord(
     public static InstallRecord For(string binary, BuildIdentity identity, string[] files) =>
         new(identity.Version.ToString(), binary, identity.Size, identity.ModifiedUtc, files);
 
-    /// <summary>Anything unreadable reads as "no record" — the install simply runs again.</summary>
     public static InstallRecord? Read(string path)
     {
         try
@@ -94,7 +81,6 @@ public sealed record InstallRecord(
         }
     }
 
-    /// <summary>Drops the record, and the folder holding it when nothing else is in it.</summary>
     public static void Delete(string path)
     {
         try
@@ -113,34 +99,21 @@ public sealed record InstallRecord(
     }
 }
 
-/// <summary>
-/// The record's shape, worked out at compile time: a natively compiled build
-/// cannot reflect over a type to find its properties.
-/// </summary>
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(InstallRecord))]
 internal partial class InstallJson : JsonSerializerContext
 {
 }
 
-/// <summary>What a launch has to do about the install, if anything.</summary>
 public enum InstallStep
 {
-    /// <summary>This build is the installed one and everything it needs is there.</summary>
     Nothing,
 
-    /// <summary>Nothing is installed, or what was is gone.</summary>
     Install,
 
-    /// <summary>This build is newer than the installed one.</summary>
     Update,
 
-    /// <summary>The right build is installed, but something around it went missing.</summary>
     Repair,
 
-    /// <summary>
-    /// Something newer is already installed. Running an older copy is not a
-    /// reason to put it back — the newest build stays the installed one.
-    /// </summary>
     KeepInstalled,
 }

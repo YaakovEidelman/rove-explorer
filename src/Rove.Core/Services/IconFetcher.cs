@@ -26,11 +26,6 @@ public interface IIconFetcher
     Task<byte[]?> GetIconAsync(FolderItem item, int size);
 }
 
-/// <summary>
-/// Caches by (extension|size) — icons resolve from attributes + extension,
-/// so one fetch per extension is enough. A null result is evicted so a
-/// transient miss can retry on the next request.
-/// </summary>
 public class CacheIconFetcher : IIconFetcher
 {
     private readonly IIconFetcher _inner;
@@ -56,7 +51,7 @@ public class CacheIconFetcher : IIconFetcher
         {
             byte[]? img = await _inner.GetIconAsync(item, size);
             if (img is null)
-                _cache.TryRemove(key, out _); // transient miss → allow retry
+                _cache.TryRemove(key, out _);
             return img;
         }
         catch
@@ -93,8 +88,8 @@ public class WindowsIconFetcher : IIconFetcher
     }
 
     private const uint SHGFI_ICON = 0x000000100;
-    private const uint SHGFI_LARGEICON = 0x000000000; // 32px
-    private const uint SHGFI_SMALLICON = 0x000000001; // 16px
+    private const uint SHGFI_LARGEICON = 0x000000000;
+    private const uint SHGFI_SMALLICON = 0x000000001;
     private const uint SHGFI_USEFILEATTRIBUTES = 0x000000010;
 
     private const uint FILE_ATTRIBUTE_NORMAL = 0x00000080;
@@ -114,22 +109,8 @@ public class WindowsIconFetcher : IIconFetcher
     private static extern bool DestroyIcon(IntPtr hIcon);
 
     public Task<byte[]?> GetIconAsync(FolderItem item, int size) =>
-        Task.Run(() => Fetch(item, size)); // off the UI thread
+        Task.Run(() => Fetch(item, size));
 
-    /// <summary>
-    /// One icon lookup at a time, process-wide. The shell builds its icon
-    /// list as it goes, and a request made while it is busy adding an entry
-    /// comes back empty — no error, no icon. A folder listing asks for every
-    /// icon at once, so on the first listing of a session most of them came
-    /// back blank, and nothing asks a second time once a row is on screen:
-    /// they stayed blank until the folder was left and re-entered.
-    ///
-    /// <para>
-    /// Queueing them costs almost nothing, because the layer above only ever
-    /// asks once per file extension: a few milliseconds each, on background
-    /// threads, with rows filling in as the answers land.
-    /// </para>
-    /// </summary>
     private static readonly Lock _shellLock = new();
 
     private static byte[]? Fetch(FolderItem item, int size)
@@ -137,21 +118,16 @@ public class WindowsIconFetcher : IIconFetcher
         uint flags =
             SHGFI_ICON | SHGFI_USEFILEATTRIBUTES | (size > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON);
 
-        // USEFILEATTRIBUTES => the shell never touches disk; it resolves the icon
-        // from the attributes + extension alone. Fast and stable, at the cost of
-        // generic (not embedded/custom) icons. The "lookup" string is only parsed,
-        // never opened.
         uint attributes;
         string lookup;
         if (item.IsDirectory)
         {
             attributes = FILE_ATTRIBUTE_DIRECTORY;
-            lookup = "folder"; // any name works; only the DIRECTORY flag matters
+            lookup = "folder";
         }
         else
         {
             attributes = FILE_ATTRIBUTE_NORMAL;
-            // extension is the natural cache key; fall back to the name if there's none
             lookup = string.IsNullOrEmpty(item.Extension) ? item.Name : item.Extension;
         }
 
@@ -183,7 +159,7 @@ public class WindowsIconFetcher : IIconFetcher
         }
         finally
         {
-            DestroyIcon(shinfo.hIcon); // we own the HICON — always free it
+            DestroyIcon(shinfo.hIcon);
         }
     }
 }

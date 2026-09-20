@@ -17,8 +17,6 @@ namespace Rove.UI.ViewModels;
 
 public partial class ContentViewModel
 {
-    // ── navigation ───────────────────────────────────────────────────────
-
     public async Task SetCurrentDirectoryAsync(
         string directory, string? highlightPath = null, bool asAdmin = false)
     {
@@ -69,9 +67,6 @@ public partial class ContentViewModel
 
         try
         {
-            // There is nothing to watch inside a zip: the entries are not
-            // files the system can report on, and the archive changing under
-            // us is rare enough to leave to a manual reload.
             if (InArchive || IsAdminView)
                 _watcher.Pause();
             else
@@ -79,8 +74,6 @@ public partial class ContentViewModel
         }
         catch (Exception)
         {
-            // Directory listed fine but can't be watched (rare) — degrade to
-            // manual refresh rather than failing navigation.
         }
     }
 
@@ -135,16 +128,6 @@ public partial class ContentViewModel
         _ = LaunchAsync(item);
     }
 
-    // ── zip files, which open like folders ───────────────────────────────
-    // Enter on a .zip walks into it instead of handing it to the system: a
-    // zip is somewhere to look through, and looking through one is faster
-    // than unpacking it to find out it held the wrong thing.
-
-    /// <summary>
-    /// Goes into an archive. One already inside another has to come out to a
-    /// real file first — a zip within a zip is not something that can be
-    /// read where it lies.
-    /// </summary>
     private async Task OpenArchiveAsync(FolderItem item)
     {
         string path = item.FullPath;
@@ -157,11 +140,6 @@ public partial class ContentViewModel
         await SetCurrentDirectoryAsync(path);
     }
 
-    /// <summary>
-    /// Opens a file that is inside an archive, by way of a copy taken out of
-    /// it. Said out loud, because a copy that is edited and then lost is a
-    /// worse surprise than not being able to edit it at all.
-    /// </summary>
     private async Task OpenFromArchiveAsync(FolderItem item)
     {
         if (await CopyOutAsync(item) is not { } copy)
@@ -170,11 +148,6 @@ public partial class ContentViewModel
         await LaunchAsync(FolderItem.FromPath(copy));
     }
 
-    /// <summary>
-    /// A file in an administrator view can only be read by root, and the
-    /// program that opens it runs as the user — so it gets a read-only copy
-    /// the helper made, and is told so.
-    /// </summary>
     private async Task OpenFromAdminAsync(FolderItem item)
     {
         if (_core.Admin is not { } admin)
@@ -198,11 +171,6 @@ public partial class ContentViewModel
         await LaunchAsync(FolderItem.FromPath(result.Data));
     }
 
-    /// <summary>
-    /// Extracting is real disk I/O, not the instant kind — worth the same
-    /// "Loading…" a folder read gets, and something a test can wait on
-    /// instead of racing a fire-and-forget task blind.
-    /// </summary>
     private async Task<string?> CopyOutAsync(FolderItem item)
     {
         IsLoading = true;
@@ -220,11 +188,6 @@ public partial class ContentViewModel
         }
     }
 
-    /// <summary>
-    /// Opening a file is handed off and answered for later: the program that
-    /// knows the file associations takes a moment to say it has nothing for
-    /// this kind of file, and the list should not sit still while it thinks.
-    /// </summary>
     private async Task LaunchAsync(FolderItem item)
     {
         CommandResult<string?> result = await _core.Actions.LaunchFileAsync(new(item.FullPath));
@@ -307,17 +270,11 @@ public partial class ContentViewModel
         }
         if (parent.Data is null)
         {
-            ShowDrives(); // at the top of a drive, "up" is the drive list
+            ShowDrives();
             return;
         }
-        // Highlight where we came from, so "up" keeps you oriented.
         _ = SetCurrentDirectoryAsync(parent.Data.FullPath, highlightPath: current);
     }
-
-    // ── drives ───────────────────────────────────────────────────────────
-    // Each mounted drive is an ordinary command ("Go to Drive D:\"), so the
-    // palette is the drive picker. They are rebuilt every time the palette
-    // opens: drives get plugged in and pulled out while the app runs.
 
     private void ShowDrives() => DrivePickerRequested?.Invoke();
 

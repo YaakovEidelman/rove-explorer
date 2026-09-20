@@ -8,22 +8,14 @@ using System.IO;
 
 namespace Rove.UI.ViewModels;
 
-/// <summary>
-/// One tab: a folder view, and the name the strip shows for it. The name is
-/// worked out from where the view is rather than stored, so a tab cannot end
-/// up labelled one place while showing another.
-/// </summary>
 public sealed partial class FolderTab : ObservableObject, IDisposable
 {
     public ContentViewModel Content { get; }
 
-    /// <summary>This tab's own handlers for the commands every tab answers for.</summary>
     public TabCommands Commands { get; }
 
-    /// <summary>Click on the tab itself: brings it to the front.</summary>
     public IRelayCommand ActivateCommand { get; }
 
-    /// <summary>Click on the tab's x: closes it.</summary>
     public IRelayCommand CloseCommand { get; }
 
     [ObservableProperty]
@@ -49,7 +41,6 @@ public sealed partial class FolderTab : ObservableObject, IDisposable
         CloseCommand = new RelayCommand(() => close(this));
     }
 
-    /// <summary>What the strip calls this tab: the folder's own name.</summary>
     public string Title => CustomTitle is { Length: > 0 } custom ? custom : NameOf(Content.DirectoryListing.CurrentDir);
 
     public bool IsAdmin => Content.IsAdminView;
@@ -81,10 +72,6 @@ public sealed partial class FolderTab : ObservableObject, IDisposable
 
     public void CancelRename() => IsRenaming = false;
 
-    /// <summary>
-    /// The last step of a path, which is what a person calls the place they
-    /// are in. A drive root has no last step and is its own name.
-    /// </summary>
     private static string NameOf(string directory)
     {
         string display = LongPath.Display(directory ?? string.Empty);

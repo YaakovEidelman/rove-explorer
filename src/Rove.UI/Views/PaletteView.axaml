@@ -7,9 +7,6 @@
              mc:Ignorable="d"
              x:Class="Rove.UI.Views.PaletteView"
              x:DataType="vm:PaletteViewModel">
-
-    <!-- ── content only: the shared Quick Access card in MainWindow.axaml
-         owns the dim background, the card, and the tab strip above this ── -->
     <Grid RowDefinitions="Auto, *">
         <TextBox Grid.Row="0"
                  Text="{Binding PaletteSearchText}"

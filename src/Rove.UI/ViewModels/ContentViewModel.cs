@@ -20,11 +20,6 @@ public partial class ContentViewModel : ViewModelBase
     private readonly ICommandTarget _registry;
     private readonly RoveCore _core;
 
-    /// <summary>
-    /// This view's own watcher. One per view rather than one for the app:
-    /// a watcher follows a single directory, and two tabs are hardly ever
-    /// looking at the same one.
-    /// </summary>
     private readonly FileWatchService _watcher;
     private readonly IIconCache _cache;
     private readonly FileClipboard _clipboard;
@@ -32,24 +27,14 @@ public partial class ContentViewModel : ViewModelBase
     private readonly FileOperationViewModel _operation;
     private readonly BookmarkStore _bookmarks;
     private readonly SettingsStore _settings;
-    /// <summary>
-    /// Shared by every tab. Copying in one and undoing from another is a
-    /// normal thing to want — the last thing done was done to the disk, not
-    /// to a tab, and the tab it happened to be done from is rarely what a
-    /// person is thinking about when they reach for undo.
-    /// </summary>
     private readonly UndoStack _undo;
 
-    /// <summary>Something went wrong; MainWindow shows it in the status bar.</summary>
     public event Action<string>? ErrorRaised;
 
-    /// <summary>Neutral feedback ("Sent 3 items to the Recycle Bin").</summary>
     public event Action<string>? InfoRaised;
 
-    /// <summary>A destructive verb wants a visible confirm surface before running.</summary>
     public event Action<string, Action>? ConfirmRequested;
 
-    /// <summary>Asks for the drive list to be put in front of the user.</summary>
     public event Action? DrivePickerRequested;
 
     public event Action<Task>? AppPickerRequested;
@@ -98,10 +83,6 @@ public partial class ContentViewModel : ViewModelBase
 
         RegisterBindings();
 
-        // Queued rather than started here: the constructor runs while the app
-        // is still being built, before the UI loop owns the thread, and the
-        // first listing would otherwise finish on a background thread and
-        // hand the rows their icons where no binding is listening.
         Avalonia.Threading.Dispatcher.UIThread.Post(
             () => _ = SetCurrentDirectoryAsync(DirectoryListing.CurrentDir));
     }
@@ -109,26 +90,14 @@ public partial class ContentViewModel : ViewModelBase
     [ObservableProperty]
     private DirectoryListing _directoryListing;
 
-    /// <summary>The Tab-completion list that drops out of the path bar.</summary>
     public PathCompletionViewModel Completions { get; }
 
     [ObservableProperty]
     private bool _isLoading;
 
-    /// <summary>
-    /// Whether what is listed is the inside of a zip rather than a folder on
-    /// disk. Worked out once per move, when the path is already in hand,
-    /// because answering it means asking the filesystem whether a step of
-    /// the path is really a file.
-    /// </summary>
     [ObservableProperty]
     private bool _inArchive;
 
-    /// <summary>
-    /// Whether what is listed is the trash (or somewhere nested inside a
-    /// trashed folder), worked out the same way and at the same point as
-    /// <see cref="InArchive"/>.
-    /// </summary>
     [ObservableProperty]
     private bool _inTrash;
 
@@ -137,13 +106,7 @@ public partial class ContentViewModel : ViewModelBase
 
     public ListViewItem? HighlightedItem => DirectoryListing.ListSelection.SelectedItem;
 
-    /// <summary>Gives back what this view was holding — its watcher, and nothing else.</summary>
     public void Close() => _core.ReleaseWatcher(_watcher);
-
-    // ── target resolution ────────────────────────────────────────────────
-    // Verbs act on the marked set when one exists, else on the highlight.
-    // One rule for every multi-item verb, so `d` can never delete something
-    // other than what the user is looking at.
 
     private List<ListViewItem> Targets()
     {
@@ -153,14 +116,6 @@ public partial class ContentViewModel : ViewModelBase
         return HighlightedItem is { } highlighted ? [highlighted] : [];
     }
 
-    // ── what a zip does not allow ────────────────────────────────────────
-
-    /// <summary>
-    /// Verbs that write are refused while the list is showing the inside of
-    /// a zip. Rove reads archives and takes things out of them; it does not
-    /// edit one in place, and a verb that half-worked would be worse than
-    /// one that says plainly it does not apply here.
-    /// </summary>
     private bool RefusedInArchive(string verb)
     {
         if (!InArchive)
@@ -169,11 +124,6 @@ public partial class ContentViewModel : ViewModelBase
         return true;
     }
 
-    /// <summary>
-    /// Verbs that don't make sense on something already in the trash — most
-    /// of what a folder view normally allows, since the trash is somewhere
-    /// to look at and put back from, not somewhere to keep working.
-    /// </summary>
     private bool RefusedInTrash(string verb)
     {
         if (!InTrash)
@@ -190,32 +140,17 @@ public partial class ContentViewModel : ViewModelBase
         return true;
     }
 
-    /// <summary>
-    /// Where a deep search starts. Inside a zip there is no tree on disk to
-    /// walk, so the search runs from the folder the archive itself sits in.
-    /// </summary>
     public string SearchRoot =>
         ArchivePath.TryParse(DirectoryListing.CurrentDir, out ArchivePath inside)
             ? Path.GetDirectoryName(LongPath.Display(inside.Archive)) ?? DirectoryListing.CurrentDir
             : DirectoryListing.CurrentDir;
 
-    // ── plumbing ─────────────────────────────────────────────────────────
-
     private static string Plural(int n) => n == 1 ? "" : "s";
 
     private static string Describe(int n) => $"{n} item{Plural(n)}";
 
-    /// <summary>
-    /// True when the list is still showing the folder an operation started
-    /// against. Operations run in the background now, so by the time one
-    /// finishes the user may be looking at something else entirely.
-    /// </summary>
     private bool StillIn(string directory) => PathCompare.PathMatches(DirectoryListing.CurrentDir, directory);
 
-    /// <summary>
-    /// A cancelled run is not a failure to shout about — say what got done and
-    /// leave it there. Anything else keeps the backend's own message.
-    /// </summary>
     private static string DescribeFailure(CommandResult<OpResult[]> result, string what)
     {
         int done = result.Data?.Count(r => r.Ok) ?? 0;
@@ -283,9 +218,6 @@ public partial class ContentViewModel : ViewModelBase
         _registry.Register(CommandDef.CompressItems, CompressItems);
         _registry.Register(CommandDef.ToggleBookmark, ToggleBookmark);
 
-        // One command per shortcut slot, not per bookmark: the slots are
-        // fixed, and which bookmark a slot leads to is a question asked when
-        // the key is pressed.
         for (int slot = 0; slot < BookmarkStore.ShortcutCount; slot++)
         {
             int index = slot;

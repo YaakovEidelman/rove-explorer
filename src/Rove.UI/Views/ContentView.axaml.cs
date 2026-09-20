@@ -20,11 +20,6 @@ public partial class ContentView : UserControl
         DataContextChanged += (_, _) => BindViewModel();
     }
 
-    /// <summary>
-    /// Neither list is focusable (keys route through the window), so keep the
-    /// highlighted row scrolled into view ourselves. Only the visible one
-    /// has real geometry to scroll to.
-    /// </summary>
     private static void ScrollHighlightIntoView(ListBox list)
     {
         if (!list.IsVisible || list.SelectedIndex < 0)
@@ -52,13 +47,6 @@ public partial class ContentView : UserControl
             UpdateColumnsPerRow();
     }
 
-    /// <summary>
-    /// Tells the highlight how many items a row holds, so up/down can skip a
-    /// whole row instead of walking the flat list one item at a time. Read
-    /// straight off the real layout — how many cells share the first one's
-    /// top edge — rather than reasoned out from pixel widths, so it can never
-    /// drift from what is actually on screen.
-    /// </summary>
     private void UpdateColumnsPerRow()
     {
         if (_boundViewModel is not { } vm)

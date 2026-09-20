@@ -5,7 +5,6 @@ namespace Rove.Core.Tests;
 
 public class FileOpenerTests
 {
-    /// <summary>A PATH, written the way this machine writes one.</summary>
     private static string Path_(params string[] directories) =>
         string.Join(System.IO.Path.PathSeparator, directories);
 
@@ -94,11 +93,6 @@ public class FileOpenerTests
         Assert.Null(FileOpener.FindOpener(Path_(UsrBin, "/bin"), Present(In(UsrBin, "vim"))));
     }
 
-    /// <summary>
-    /// Only Unix has an execute bit, so only Unix can have a file that is
-    /// there and still cannot be run. Windows has no such state, and asking
-    /// it about one throws rather than answering.
-    /// </summary>
     [Fact]
     public void APresentButUnrunnableNameIsNotAnOpener()
     {
@@ -125,7 +119,6 @@ public class FileOpenerTests
         }
     }
 
-    /// <summary>The other half of the same rule: on Windows, being there is the whole test.</summary>
     [Fact]
     public void OnWindowsAnOpenerThatIsThereCanBeRun()
     {

@@ -9,14 +9,6 @@ using System.Threading;
 
 namespace Rove.UI.Services;
 
-/// <summary>
-/// Puts Rove where Windows looks for a program installed by one person rather
-/// than for the whole machine: the executable under
-/// <c>%LOCALAPPDATA%\Programs\Rove</c>, a Start Menu shortcut, and an entry
-/// in Installed Apps that uninstalls it again. None of that needs
-/// administrator rights, which is the point — the download runs, and it is
-/// installed.
-/// </summary>
 [SupportedOSPlatform("windows")]
 internal static partial class WindowsInstall
 {
@@ -38,11 +30,6 @@ internal static partial class WindowsInstall
 
     public static string[] SupportFiles(string startMenuDir) => [ShortcutPath(startMenuDir)];
 
-    /// <summary>
-    /// Copies the build the caller is running from into the program folder.
-    /// Windows will not delete a program that is running, but it will rename
-    /// one, so each file is pushed aside rather than overwritten.
-    /// </summary>
     public static string? InstallPayload(string programDir, string executable)
     {
         string target = BinaryPath(programDir);
@@ -68,7 +55,6 @@ internal static partial class WindowsInstall
         RemoveInstalled(programDir);
     }
 
-    /// <summary>The shortcut and the Installed Apps entry — everything but the exe.</summary>
     public static void UninstallSupport(string startMenuDir, bool unregister)
     {
         TryDelete(ShortcutPath(startMenuDir));
@@ -76,14 +62,7 @@ internal static partial class WindowsInstall
             DeleteKey(UninstallKey);
     }
 
-    /// <summary>Removes an installed build, folder and all — it is Rove's own.</summary>
     public static void RemoveInstalled(string programDir) => Payload.Remove(programDir);
-
-    // ── the Start Menu shortcut ──────────────────────────────────────────
-    // A .lnk is a shell object, not a file format anything here can write, so
-    // this asks the shell to make one. The interop is generated at compile
-    // time rather than discovered at runtime, because a natively compiled
-    // build has no way to build the plumbing for a COM call as it goes.
 
     private static bool WriteShortcut(string shortcut, string binary)
     {
@@ -132,11 +111,6 @@ internal static partial class WindowsInstall
 
     private static readonly Guid ShellLinkClsid = new("00021401-0000-0000-C000-000000000046");
 
-    /// <summary>
-    /// One shell object, and the interfaces asked of it, released together.
-    /// Wrapping the raw pointer by hand is what replaces <c>new SomeComClass()</c>:
-    /// that syntax needs the runtime to invent a wrapper type on the spot.
-    /// </summary>
     private sealed class ComObject : IDisposable
     {
         private static readonly StrategyBasedComWrappers _wrappers = new();
@@ -181,10 +155,6 @@ internal static partial class WindowsInstall
     [Guid("000214F9-0000-0000-C000-000000000046")]
     internal partial interface IShellLinkW
     {
-        // Only the setters are ever called. The getters still have to be
-        // here, in this order — the slots are how a COM call finds a method —
-        // and their buffers stay raw pointers so nothing has to be marshalled
-        // for a call that never happens.
         void GetPath(IntPtr file, int chars, IntPtr findData, uint flags);
         void GetIDList(out IntPtr idList);
         void SetIDList(IntPtr idList);
@@ -216,11 +186,6 @@ internal static partial class WindowsInstall
         void SaveCompleted(string fileName);
         void GetCurFile(out IntPtr fileName);
     }
-
-    // ── Installed Apps ───────────────────────────────────────────────────
-    // The registry values Windows reads to list a program and offer to remove
-    // it. Under HKEY_CURRENT_USER, so this is one person's install and needs
-    // nobody's permission.
 
     private static bool RegisterUninstall(string binary, string version)
     {

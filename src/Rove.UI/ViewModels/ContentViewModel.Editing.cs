@@ -17,8 +17,6 @@ namespace Rove.UI.ViewModels;
 
 public partial class ContentViewModel
 {
-    // ── rename ───────────────────────────────────────────────────────────
-
     private void ToggleRenameItem()
     {
         if (RefusedInArchive("Rename") || RefusedInTrash("Rename") || RefusedInAdminView("Rename"))
@@ -44,7 +42,6 @@ public partial class ContentViewModel
         CommandResult<FolderItem?> result = _core.Actions.RenameItem(new(selected.Item.FullPath, newName));
         if (!result.IsOk || result.Data is null)
         {
-            // Keep the edit box open so the name can be fixed.
             ErrorRaised?.Invoke(result.Message ?? "Rename failed.");
             return;
         }
@@ -57,8 +54,6 @@ public partial class ContentViewModel
         _undo.Push(new(UndoAction.RenameBack, $"rename of {oldName}",
             [new PathPair(oldPath, result.Data.FullPath)]));
     }
-
-    // ── create ───────────────────────────────────────────────────────────
 
     [ObservableProperty]
     private bool _inCreateItem;
@@ -104,7 +99,6 @@ public partial class ContentViewModel
         );
         if (!result.IsOk || result.Data is null)
         {
-            // Keep the input open so the name can be fixed.
             ErrorRaised?.Invoke(result.Message ?? "Create failed.");
             return;
         }

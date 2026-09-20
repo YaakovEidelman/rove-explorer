@@ -5,10 +5,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>
-/// Bookmarks from the keyboard: keeping a place, finding it again in the
-/// list, and the numbered keys that skip the list altogether.
-/// </summary>
 public class BookmarkKeyTests : HeadlessTest
 {
     private static void Fill(string root)

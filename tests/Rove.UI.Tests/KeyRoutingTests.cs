@@ -5,12 +5,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>
-/// Keys as the user presses them: into the window, through whatever holds
-/// focus, out the other side as a command. Everything below drives the real
-/// window rather than calling the view model, because every regression these
-/// guard against lived in the gap between the two.
-/// </summary>
 public class KeyRoutingTests : HeadlessTest
 {
     private static void Fill(string root)
@@ -132,9 +126,9 @@ public class KeyRoutingTests : HeadlessTest
         harness.Press(Key.OemQuestion);
         harness.Content.DirectoryListing.SearchCurrentDirectoryText = "inner";
         harness.Settle();
-        harness.Press(Key.Enter); // leaves the box, filter stays, "inner" still highlighted
+        harness.Press(Key.Enter);
 
-        harness.Press(Key.Enter); // opens "inner"
+        harness.Press(Key.Enter);
 
         Assert.Equal(Path.Combine(harness.Root, "inner"), harness.Content.DirectoryListing.CurrentDir);
         Assert.Equal("", harness.Content.DirectoryListing.SearchCurrentDirectoryText);
@@ -148,7 +142,7 @@ public class KeyRoutingTests : HeadlessTest
         harness.Press(Key.OemQuestion);
         harness.Content.DirectoryListing.SearchCurrentDirectoryText = "inner";
         harness.Settle();
-        harness.Press(Key.Enter); // leaves the box, filter stays
+        harness.Press(Key.Enter);
 
         harness.Press(Key.Escape);
 

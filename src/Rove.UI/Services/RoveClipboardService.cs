@@ -13,29 +13,16 @@ public interface IRoveClipboardService
 {
     Task CopyTextAsync(string text);
 
-    /// <summary>
-    /// Puts files on the system clipboard the way any other file manager
-    /// does, so a copy or cut made in Rove can be pasted into another
-    /// window — Explorer, a file dialog, Nautilus, VS Code, anywhere.
-    /// </summary>
     Task SetFilesAsync(IReadOnlyList<string> paths, ClipboardOp op);
 
-    /// <summary>
-    /// Reads files off the system clipboard, so something copied or cut in
-    /// another window — Explorer, Nautilus, anywhere — can be pasted into
-    /// Rove. Returns null when the clipboard has no files on it.
-    /// </summary>
     Task<(IReadOnlyList<string> Paths, ClipboardOp Op)?> TryGetFilesAsync();
 }
 
-/// <summary>System clipboard: text ("copy path") and files (copy/cut for other apps).</summary>
 public class RoveClipboardService : IRoveClipboardService
 {
-    /// <summary>What Windows Explorer reads to know whether a paste should copy or move.</summary>
     private static readonly DataFormat<byte[]> WindowsPreferredDropEffect =
         DataFormat.CreateBytesPlatformFormat("Preferred DropEffect");
 
-    /// <summary>What Nautilus (and other GTK file managers) read for the same thing.</summary>
     private static readonly DataFormat<string> GnomeCopiedFiles =
         DataFormat.CreateStringPlatformFormat("x-special/gnome-copied-files");
 
@@ -71,9 +58,6 @@ public class RoveClipboardService : IRoveClipboardService
                 transfer.Add(DataTransferItem.CreateFile(item));
         }
 
-        // The plain file list above is what makes paste-elsewhere work at
-        // all; these two are just so the destination app shows the right
-        // cut-vs-copy affordance, one per platform that cares.
         if (OperatingSystem.IsWindows())
         {
             byte[] dropEffect = BitConverter.GetBytes(op == ClipboardOp.Cut ? 2 : 1);

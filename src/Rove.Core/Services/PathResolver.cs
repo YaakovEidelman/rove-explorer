@@ -2,13 +2,6 @@ using System.Text;
 
 namespace Rove.Core.Services;
 
-/// <summary>
-/// Turns what someone types in the path bar into a real path: surrounding
-/// quotes come off, <c>~</c> and environment variables are expanded, and
-/// anything relative is measured from the folder they are looking at.
-/// Returns null when the text cannot be a path at all — whether anything is
-/// actually there is a separate question, asked by the caller.
-/// </summary>
 public static class PathResolver
 {
     public static string? Resolve(string input, string currentDirectory)
@@ -34,7 +27,6 @@ public static class PathResolver
         }
     }
 
-    /// <summary>A path dragged in from a terminal or a file manager arrives wrapped in quotes.</summary>
     private static string Unquote(string input)
     {
         string text = input.Trim();
@@ -59,11 +51,6 @@ public static class PathResolver
         return text.Length == 1 ? home : Path.Combine(home, text[2..].TrimStart('/', Path.DirectorySeparatorChar));
     }
 
-    /// <summary>
-    /// <c>%VAR%</c> on Windows, <c>$VAR</c> and <c>${VAR}</c> elsewhere. A
-    /// name nothing is set to is left standing as written, so a typo shows up
-    /// as a path that isn't there rather than as a silently shorter one.
-    /// </summary>
     private static string ExpandVariables(string text)
     {
         if (text.Length == 0)
@@ -100,7 +87,6 @@ public static class PathResolver
         return result.ToString();
     }
 
-    /// <summary>Drops a trailing separator, except on a root, which is nothing without it.</summary>
     private static string Tidy(string full)
     {
         string trimmed = Path.TrimEndingDirectorySeparator(full);

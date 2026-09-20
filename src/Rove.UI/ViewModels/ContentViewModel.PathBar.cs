@@ -17,29 +17,15 @@ namespace Rove.UI.ViewModels;
 
 public partial class ContentViewModel
 {
-    // ── the path bar ─────────────────────────────────────────────────────
-    // The path at the top is also the way in: it opens as a text box holding
-    // where you are, and takes anything a shell would take — an absolute
-    // path, a relative one, ~, or an environment variable. A path naming a
-    // file opens the folder around it with that file highlighted.
-
     [ObservableProperty]
     private bool _inEditPath;
 
     [ObservableProperty]
     private string _editPathText = string.Empty;
 
-    /// <summary>
-    /// Where the cursor sits in the path bar. Bound so that text put there by
-    /// a completion leaves the cursor after it, ready to keep typing.
-    /// </summary>
     [ObservableProperty]
     private int _editPathCaret;
 
-    /// <summary>
-    /// Set while a completion is writing the path bar, so its own write is
-    /// not mistaken for the user typing and used to narrow the list again.
-    /// </summary>
     private bool _completionIsWriting;
 
     partial void OnEditPathTextChanged(string value)
@@ -68,13 +54,6 @@ public partial class ContentViewModel
 
     private void CancelEditPath() => InEditPath = false;
 
-    // ── completing what is typed there ───────────────────────────────────
-    // Tab finishes the name against what is really in the folder. Where more
-    // than one thing matches it carries the text as far as they agree and
-    // drops a list out, which is Mode.PathCompletion until it is dismissed or
-    // the path is applied. Moving down the list fills each name into the box. Every one of these writes the box through SetEditPathText,
-    // so the list is never re-narrowed by a change it made itself.
-
     private void CompletePath() => _ = CompletePathAsync();
 
     private async Task CompletePathAsync()
@@ -85,7 +64,6 @@ public partial class ContentViewModel
 
     private void DismissCompletions() => Completions.Close();
 
-    /// <summary>Puts text in the path bar with the cursor left at the end of it.</summary>
     private void SetEditPathText(string text)
     {
         _completionIsWriting = true;
@@ -94,9 +72,6 @@ public partial class ContentViewModel
             EditPathText = text;
             EditPathCaret = text.Length;
 
-            // Said again in case it did not change: the box moves its own
-            // cursor as the user clicks around, and a value that matches the
-            // one already held here would otherwise never be pushed back.
             OnPropertyChanged(nameof(EditPathCaret));
         }
         finally
@@ -119,7 +94,6 @@ public partial class ContentViewModel
         CommandResult<FolderItem?> found = _core.Actions.ResolvePath(new(typed, DirectoryListing.CurrentDir));
         if (!found.IsOk || found.Data is null)
         {
-            // Leave the box open, with the text in it, so it can be corrected.
             ErrorRaised?.Invoke(found.Message ?? $"Could not go to {typed}.");
             return;
         }

@@ -6,15 +6,8 @@ using Xunit;
 
 namespace Rove.Core.Tests;
 
-/// <summary>Shared zip-building for the browsing tests.</summary>
 public static class ZipBuilder
 {
-    /// <summary>
-    /// Writes a zip holding exactly the entries named. A name ending in "/"
-    /// is written as a folder of its own, which is how a zip records an empty
-    /// one — and which most zips never bother to do for folders that have
-    /// something in them.
-    /// </summary>
     public static string Make(string path, params (string Name, string Content)[] entries)
     {
         using FileStream stream = new(LongPath.ForIo(path), FileMode.Create);
@@ -147,7 +140,6 @@ public class ArchivePathTests
         Assert.True(ArchivePath.IsSafeEntryName(name));
 }
 
-/// <summary>Walking into a zip, through the same endpoint that reads a folder.</summary>
 public class ArchiveBrowseTests
 {
     private readonly Actions _actions = new();
@@ -176,7 +168,6 @@ public class ArchiveBrowseTests
     public void AFolderShowsEvenThoughTheZipNeverWroteItDown()
     {
         using TempDir tmp = new();
-        // Only the file is written; "sub" exists solely inside its name.
         ZipBuilder.Make(tmp.Sub("pack.zip"), ("sub/b.txt", "two"));
 
         FolderItem[] items = Read(tmp.Sub("pack.zip"));

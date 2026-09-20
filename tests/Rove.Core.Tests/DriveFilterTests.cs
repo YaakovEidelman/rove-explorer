@@ -76,7 +76,6 @@ public class DriveFilterTests
     [Fact]
     public void RootSurvivesEvenWhenItsFilesystemLooksLikePlumbing()
     {
-        // A live-USB session really does run its root off a squashfs image.
         Assert.False(DriveFilter.IsSystemMount("/", "squashfs"));
     }
 

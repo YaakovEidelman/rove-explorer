@@ -5,33 +5,13 @@ using System.Linq;
 
 namespace Rove.UI.Services;
 
-/// <summary>
-/// What a build of Rove actually is on disk: the program, plus the handful of
-/// native libraries it draws with. A compiled-ahead-of-time build cannot fold
-/// those into one file the way the old bundled build did, so installing means
-/// copying a small set of files rather than one.
-///
-/// <para>
-/// Each file goes down under a temporary name and is then renamed into place.
-/// A rename is atomic and — on both Windows and Linux — is allowed even while
-/// the old file is in use, so an update can replace a copy that is running:
-/// the name moves, and the running program keeps the file it opened.
-/// </para>
-/// </summary>
 internal static class Payload
 {
     private const string StagedSuffix = ".new";
     private const string PreviousSuffix = ".old";
 
-    /// <summary>The libraries a build carries, whatever the system calls them.</summary>
     private static readonly string[] _libraryExtensions = [".dll", ".so", ".dylib"];
 
-    /// <summary>
-    /// The files that make up the build sitting in <paramref name="directory"/>:
-    /// the program named by <paramref name="executable"/>, and the libraries
-    /// beside it. Nothing else — someone who unpacks a download straight into
-    /// a folder full of other things should not have that folder installed.
-    /// </summary>
     public static string[] Files(string directory, string executable, IReadOnlyList<string>? extraFiles = null)
     {
         try
@@ -56,10 +36,6 @@ internal static class Payload
         }
     }
 
-    /// <summary>
-    /// A library, including the versioned kind Linux writes as
-    /// <c>libfoo.so.1.2</c> — where the extension is a number, not ".so".
-    /// </summary>
     private static bool IsLibrary(string name)
     {
         if (_libraryExtensions.Contains(Path.GetExtension(name), StringComparer.OrdinalIgnoreCase))
@@ -67,7 +43,6 @@ internal static class Payload
         return name.Contains(".so.", StringComparison.Ordinal);
     }
 
-    /// <summary>Copies every file of a build into <paramref name="targetDir"/>, replacing what is there.</summary>
     public static bool Install(
         string sourceDir, string targetDir, string executable, IReadOnlyList<string>? extraFiles = null)
     {
@@ -105,7 +80,7 @@ internal static class Payload
             if (File.Exists(target))
                 File.Move(target, previous, overwrite: true);
             File.Move(staged, target, overwrite: true);
-            TryDelete(previous); // in use by a running copy; cleared on a later launch
+            TryDelete(previous);
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
@@ -115,7 +90,6 @@ internal static class Payload
         }
     }
 
-    /// <summary>Removes an installed build, and the folder it was in.</summary>
     public static void Remove(string directory)
     {
         try

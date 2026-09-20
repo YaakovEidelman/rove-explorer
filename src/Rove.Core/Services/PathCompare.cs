@@ -12,7 +12,6 @@ public static class PathCompare
 
     public static StringComparison Comparison => _comparisonType;
 
-    /// <summary>Same rule as <see cref="PathMatches"/>, for sets and groupings.</summary>
     public static StringComparer Comparer => _comparer;
 
     public static bool PathMatches(string value, string compare)
@@ -20,7 +19,6 @@ public static class PathCompare
         return LongPath.Display(value).Equals(LongPath.Display(compare), _comparisonType);
     }
 
-    /// <summary>Sensible starting directory: the user's home folder, falling back to the drive root.</summary>
     public static string DefaultStartDirectory()
     {
         string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);

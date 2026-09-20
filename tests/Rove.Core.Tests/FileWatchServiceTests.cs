@@ -4,22 +4,12 @@ using Xunit;
 
 namespace Rove.Core.Tests;
 
-/// <summary>
-/// Real <see cref="FileSystemWatcher"/> events, on a real temp folder — the
-/// same trick the trash tests use for their own OS-backed format, applied
-/// here to the coalescing that used to be missing.
-/// </summary>
 public class FileWatchServiceTests
 {
     private static Task<List<IReadOnlyList<WatchEvent>>> CollectBatches(
         TempDir tmp, Action fireEvents, int expectedEvents, TimeSpan coalesceWindow
     ) => CollectBatches(tmp, fireEvents, expectedEvents, coalesceWindow, TimeSpan.FromMilliseconds(300));
 
-    // Settling on "N events, then a short quiet period" is a race against the OS's own
-    // notification latency: under a loaded CI runner, a later event (e.g. a delete
-    // following a create) can be delivered after the quiet period already declared the
-    // batch done. Callers verifying that a later event changes the outcome need a wider
-    // quiet period so the real, but delayed, event still arrives in time.
     private static async Task<List<IReadOnlyList<WatchEvent>>> CollectBatches(
         TempDir tmp, Action fireEvents, int expectedEvents, TimeSpan coalesceWindow, TimeSpan idleWindow
     )
@@ -88,8 +78,6 @@ public class FileWatchServiceTests
             expectedEvents: 1,
             TimeSpan.FromMilliseconds(30));
 
-        // Writing a file raises Created and Changed both — one call, but not
-        // necessarily one raw event. Every one of them has to describe it right.
         List<WatchEvent.Upserted> upserts = [.. batches.SelectMany(b => b).OfType<WatchEvent.Upserted>()];
         Assert.NotEmpty(upserts);
         Assert.All(upserts, u => Assert.Equal("hello.txt", u.Item.Name));

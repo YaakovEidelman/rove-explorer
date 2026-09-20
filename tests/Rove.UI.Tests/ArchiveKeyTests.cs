@@ -4,7 +4,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>Walking into a zip and back out of it, from the keys that do it.</summary>
 public class ArchiveKeyTests : HeadlessTest
 {
     private static string Zip(string path, params (string Name, string Content)[] entries)
@@ -190,7 +189,6 @@ public class ArchiveKeyTests : HeadlessTest
         using WindowHarness harness = WindowHarness.Open(Fill);
         harness.GoTo(Path.Combine(harness.Root, "pack.zip"));
 
-        // Marking is a way of looking, not of writing, so it still works.
         harness.Press(Key.V);
         Assert.Single(harness.Content.DirectoryListing.Items, i => i.IsMarked);
 
@@ -221,7 +219,6 @@ public class ArchiveKeyTests : HeadlessTest
         string inside = Path.Combine(harness.Root, "pack.zip", "sub", "deep");
         harness.GoTo(Path.Combine(harness.Root, "pack.zip", "sub"));
 
-        // `b` remembers the highlighted row, which here is the folder "deep".
         harness.Content.DirectoryListing.ListSelection.SelectPath(inside);
         harness.Press(Key.B);
         harness.GoTo(harness.Root);

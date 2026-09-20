@@ -79,7 +79,6 @@ public partial class MainWindow : Window
         return visible;
     }
 
-    /// <summary>Picking a tab from the overflow list closes the list too.</summary>
     private void OnOverflowItemClick(object? sender, RoutedEventArgs e) =>
         tabs_overflow_toggle.IsChecked = false;
 
@@ -91,16 +90,6 @@ public partial class MainWindow : Window
 
     private static readonly TimeSpan TabCloseFadeDuration = TimeSpan.FromMilliseconds(200);
 
-    /// <summary>
-    /// Fades the tab out before actually closing it — done here, at the click,
-    /// rather than as a delay inside TabsViewModel.CloseTabItem, since that
-    /// delay would apply to every close including Ctrl+W's, and this repo's
-    /// headless test harness has no way to fast-forward a real-time delay: it
-    /// can only drain jobs already queued, not make one fire early (verified
-    /// against a plain DispatcherTimer, not just this code). A handful of
-    /// tests assert a tab is gone immediately after Ctrl+W, so keyboard-driven
-    /// closes stay instant; this only touches the click path.
-    /// </summary>
     private async void OnTabCloseClicked(object? sender, RoutedEventArgs e)
     {
         if (sender is not Control { DataContext: FolderTab tab } closeButton)
@@ -116,11 +105,6 @@ public partial class MainWindow : Window
         tab.CloseCommand.Execute(null);
     }
 
-    /// <summary>
-    /// The icon rides in the assembly as a plain resource, not an Avalonia
-    /// one: the same bytes are what the installer writes into the desktop's
-    /// icon theme, where there is no Avalonia to ask for them.
-    /// </summary>
     private static WindowIcon? LoadIcon()
     {
         string name = OperatingSystem.IsWindows() ? "rove.ico" : "png/rove-256.png";

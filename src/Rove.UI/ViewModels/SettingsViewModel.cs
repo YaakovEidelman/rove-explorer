@@ -6,19 +6,6 @@ using System.Runtime.Versioning;
 
 namespace Rove.UI.ViewModels;
 
-/// <summary>
-/// One row of the settings list: what it's called, its current value, and
-/// how to draw it — a section header above it, and a toggle switch instead
-/// of a plain value chip when it's an on/off setting. Display only: row
-/// order/count here is what MoveUp/MoveDown/Activate index into, unchanged.
-///
-/// <para>
-/// A mutable, notifying object rather than a record Rebuild() replaces
-/// wholesale — the toggle switch's on/off transition (App.axaml) animates a
-/// property changing on a control that's still there, not a control created
-/// already in its final state because the row underneath it got swapped out.
-/// </para>
-/// </summary>
 public partial class SettingsRow : ObservableObject
 {
     [ObservableProperty]
@@ -49,12 +36,6 @@ public partial class SettingsRow : ObservableObject
     }
 }
 
-/// <summary>
-/// The settings list, which only exists while it is on screen — the same
-/// shape as bookmarks and the palette: Up/Down to move, one key to act.
-/// There is nothing to type here, so acting cycles the highlighted row to
-/// its next value instead of opening it.
-/// </summary>
 public partial class SettingsViewModel : ViewModelBase
 {
     private readonly CommandRegistry _registry;
@@ -119,13 +100,6 @@ public partial class SettingsViewModel : ViewModelBase
             Rows.RemoveAt(Rows.Count - 1);
     }
 
-    /// <summary>
-    /// Updates the row already at <paramref name="index"/> in place rather than
-    /// replacing it — same reasoning as keeping <see cref="Rows"/> itself
-    /// stable (see git history): a fresh object at that slot is a fresh
-    /// control underneath it, and a toggle switch's on/off transition
-    /// (App.axaml) needs the same control to animate from.
-    /// </summary>
     private void SetRow(int index, string label, string value, string? section = null, bool isToggle = false,
         bool isOn = false)
     {
@@ -165,7 +139,6 @@ public partial class SettingsViewModel : ViewModelBase
         SelectedIndex = SelectedIndex >= Rows.Count - 1 ? 0 : SelectedIndex + 1;
     }
 
-    /// <summary>Cycles the highlighted setting to its next value and saves it.</summary>
     public void Activate()
     {
         if (SelectedIndex < 0 || SelectedIndex >= Rows.Count)

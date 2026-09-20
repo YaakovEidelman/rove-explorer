@@ -9,7 +9,6 @@ public sealed record GitHubAsset(
     [property: JsonPropertyName("browser_download_url")] string BrowserDownloadUrl
 );
 
-/// <summary>What GitHub's "latest release" endpoint answers with — only the fields Rove reads.</summary>
 public sealed record GitHubRelease(
     [property: JsonPropertyName("tag_name")] string TagName,
     [property: JsonPropertyName("body")] string? Body,
@@ -29,13 +28,11 @@ internal partial class GitHubReleaseJson : JsonSerializerContext
 {
 }
 
-/// <summary>Rove's own note of when it last asked, and any release the user said to skip.</summary>
 public sealed record UpdateCheckState(
     [property: JsonPropertyName("lastCheckedUtc")] DateTime LastCheckedUtc,
     [property: JsonPropertyName("skippedVersion")] string? SkippedVersion = null
 )
 {
-    /// <summary>Anything unreadable reads as "never checked" — the check simply runs again.</summary>
     public static UpdateCheckState? Read(string path)
     {
         try
@@ -72,12 +69,6 @@ internal partial class UpdateCheckJson : JsonSerializerContext
 {
 }
 
-/// <summary>
-/// Asks GitHub, once a day at most, whether a newer stable release exists.
-/// Anything that goes wrong — no network, a private repo answering 401, a
-/// timeout — reads as "no update found" rather than as an error: a check
-/// that cannot happen is not a reason to bother anyone.
-/// </summary>
 public static class UpdateChecker
 {
     private const string UserAgent = "rove-explorer-update-checker";
@@ -108,7 +99,6 @@ public static class UpdateChecker
         }
     }
 
-    /// <summary>A release is worth surfacing if it is newer than what's running and not the one skipped.</summary>
     public static bool IsOfferable(GitHubRelease release, Version running, string? skippedVersion) =>
         release.Version is { } version
         && version > running

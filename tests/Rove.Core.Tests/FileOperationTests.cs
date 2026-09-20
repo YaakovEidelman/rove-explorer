@@ -4,7 +4,6 @@ using Xunit;
 
 namespace Rove.Core.Tests;
 
-/// <summary>Collects every progress report an operation makes.</summary>
 internal sealed class ProgressLog : IProgress<FileOpProgress>
 {
     public List<FileOpProgress> Reports { get; } = [];
@@ -42,7 +41,6 @@ public class BackgroundFileOperationTests
         string target = tmp.Dir("target");
         string[] sources = [tmp.File("a.txt", "a"), tmp.File("b.txt", "b"), tmp.File("c.txt", "c")];
 
-        // Cancelled before it ever starts: nothing should be copied.
         using CancellationTokenSource cts = new();
         cts.Cancel();
 
@@ -63,7 +61,6 @@ public class BackgroundFileOperationTests
         string[] sources = [tmp.File("a.txt", "a"), tmp.File("b.txt", "b"), tmp.File("c.txt", "c")];
 
         using CancellationTokenSource cts = new();
-        // Trip the token as soon as the first item is reported as started.
         ProgressCallback progress = new(p =>
         {
             if (p.Completed >= 1)
@@ -131,7 +128,6 @@ public class BackgroundFileOperationTests
     }
 }
 
-/// <summary>Runs a callback on every report, for tripping cancellation mid-run.</summary>
 internal sealed class ProgressCallback : IProgress<FileOpProgress>
 {
     private readonly Action<FileOpProgress> _onReport;

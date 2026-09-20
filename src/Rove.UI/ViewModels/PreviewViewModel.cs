@@ -15,18 +15,12 @@ namespace Rove.UI.ViewModels;
 
 public record MetaRow(string Label, string Value);
 
-/// <summary>
-/// Preview pane: GET_METADATA plus a body — the picture for an image file, a
-/// small head-of-file excerpt for a readable one, nothing for anything else.
-/// Loads are cancellable — moving the highlight abandons the previous load.
-/// </summary>
 public partial class PreviewViewModel : ViewModelBase
 {
     private const int TextPreviewBytes = 16 * 1024;
     private const long MaxPreviewFileBytes = 4 * 1024 * 1024;
     private const long MaxPreviewImageBytes = 64 * 1024 * 1024;
 
-    /// <summary>Decode width: the preview pane's width less its padding.</summary>
     private const int ImagePreviewWidth = 288;
 
     private readonly RoveCore _core;
@@ -71,7 +65,6 @@ public partial class PreviewViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isLoading;
 
-    /// <summary>Whether anything at all sits below the metadata rows.</summary>
     public bool HasPreviewBody => HasTextPreview || HasImagePreview;
 
     public void Toggle()
@@ -81,7 +74,6 @@ public partial class PreviewViewModel : ViewModelBase
             _ = LoadAsync(_current, _currentViaAdmin);
     }
 
-    /// <summary>Called by the shell whenever the highlighted item changes.</summary>
     public void ShowFor(FolderItem? item, bool viaAdmin = false)
     {
         _current = item;
@@ -160,7 +152,6 @@ public partial class PreviewViewModel : ViewModelBase
         }
     }
 
-    /// <summary>The picture for an image, the head of the file for text, else nothing.</summary>
     private async Task LoadBodyAsync(FolderItem item, CancellationToken ct)
     {
         long size = item.Size ?? 0;
@@ -197,7 +188,6 @@ public partial class PreviewViewModel : ViewModelBase
         return [.. rows];
     }
 
-    /// <summary>The same body as any file gets, read from a copy the administrator helper made.</summary>
     private async Task LoadAdminBodyAsync(FolderItem item, CancellationToken ct)
     {
         if (_core.Admin is not { } admin)
@@ -267,7 +257,6 @@ public partial class PreviewViewModel : ViewModelBase
         return [.. rows];
     }
 
-    /// <summary>"rwxr-xr-x (755)" — the form anyone who has used a terminal will recognize.</summary>
     private static string FormatUnixMode(UnixFileMode mode)
     {
         static char Bit(UnixFileMode mode, UnixFileMode flag, char c) => mode.HasFlag(flag) ? c : '-';
@@ -279,7 +268,6 @@ public partial class PreviewViewModel : ViewModelBase
         return $"{bits} ({octal})";
     }
 
-    /// <summary>Reads the head of the file and returns it when it looks like text.</summary>
     private static async Task<string?> TryReadTextAsync(string path, CancellationToken ct)
     {
         try
@@ -290,7 +278,7 @@ public partial class PreviewViewModel : ViewModelBase
             if (read == 0)
                 return "";
             if (buffer.Take(read).Any(b => b == 0))
-                return null; // binary
+                return null;
             return System.Text.Encoding.UTF8.GetString(buffer, 0, read);
         }
         catch (Exception)

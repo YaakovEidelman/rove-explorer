@@ -17,12 +17,6 @@ namespace Rove.UI.ViewModels;
 
 public partial class ContentViewModel
 {
-    // ── undo ─────────────────────────────────────────────────────────────
-    // Every finished action leaves behind what it would take to reverse it,
-    // and undo runs that backwards. A step is used once: it comes off the
-    // stack whether or not the reversal worked, so pressing undo twice walks
-    // back two actions rather than fighting the same one.
-
     private void UndoLastAction() => _ = UndoLastActionAsync();
 
     private async Task UndoLastActionAsync()
@@ -61,8 +55,6 @@ public partial class ContentViewModel
             return;
         }
 
-        // Only touch the list when it is still showing the folder the item
-        // lives in — otherwise the row belongs to somewhere else entirely.
         if (StillIn(Path.GetDirectoryName(pair.After) ?? string.Empty))
         {
             DirectoryListing.Rename(pair.After, result.Data);
@@ -76,7 +68,6 @@ public partial class ContentViewModel
         string path = step.Items[0].After;
         CommandResult<string?> result = _core.Actions.DeleteIfEmpty(new(path));
 
-        // Already gone is the state undo was aiming for.
         if (!result.IsOk && result.Reason != "not_found")
         {
             ErrorRaised?.Invoke(result.Message ?? $"Could not undo the {step.Description}.");
@@ -106,8 +97,6 @@ public partial class ContentViewModel
         if (outcome is not { } result)
             return;
 
-        // The listing has holes in it either way now — rows that went away and
-        // rows that came back — so re-read the folder rather than patching it.
         if (StillIn(here))
             await ReloadCurrentDirectoryAsync();
 
@@ -117,10 +106,6 @@ public partial class ContentViewModel
             InfoRaised?.Invoke($"Undid the {step.Description}.");
     }
 
-    /// <summary>
-    /// Puts moved items back where each one came from — a paste can pull from
-    /// more than one folder, so this runs one move per source folder.
-    /// </summary>
     private async Task<CommandResult<OpResult[]>> MoveBackAsync(
         UndoStep step, IProgress<FileOpProgress> progress, CancellationToken ct
     )

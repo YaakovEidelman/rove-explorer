@@ -2,31 +2,17 @@ using System.IO.Compression;
 
 namespace Rove.Core.Services;
 
-/// <summary>
-/// Zip files, both ways. Unpacking puts an archive into a folder of its own,
-/// and nothing is ever written outside that folder: an entry whose name
-/// climbs back out of it ("../../.bashrc") is refused rather than followed.
-/// Packing goes the other way — a set of items beside each other becomes one
-/// zip beside them, under a name nothing else has.
-/// </summary>
 public static class ArchiveService
 {
-    /// <summary>How many "name (2)", "name (3)" tries before giving up.</summary>
     private const int MaxNameAttempts = 1024;
 
-    /// <summary>What a zip Rove makes is called.</summary>
     public const string ArchiveExtension = ".zip";
 
     private static readonly string[] _extensions = [ArchiveExtension];
 
-    /// <summary>True when Rove knows how to unpack this file.</summary>
     public static bool IsArchive(string path) =>
         _extensions.Contains(Path.GetExtension(LongPath.Display(path)), StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// A folder beside the archive, named after it, that does not exist yet —
-    /// null when even the numbered names are all taken.
-    /// </summary>
     public static string? FreeDestination(string targetDirectory, string archivePath)
     {
         string stem = Path.GetFileNameWithoutExtension(LongPath.Display(archivePath));
@@ -35,15 +21,9 @@ public static class ArchiveService
         return FreeName(targetDirectory, stem, string.Empty);
     }
 
-    /// <summary>A zip beside the items, named after them, that does not exist yet.</summary>
     public static string? FreeArchive(string targetDirectory, string stem) =>
         FreeName(targetDirectory, stem.Length == 0 ? "archive" : stem, ArchiveExtension);
 
-    /// <summary>
-    /// What to call a zip made of these items: the item's own name when there
-    /// is one of them, and the folder they are sitting in when there are
-    /// several — the same answer every other file manager gives.
-    /// </summary>
     public static string ArchiveStem(IReadOnlyList<string> paths, string targetDirectory)
     {
         if (paths.Count == 1)
@@ -71,17 +51,12 @@ public static class ArchiveService
         return null;
     }
 
-    /// <summary>Number of files (not folders) the archive holds.</summary>
     public static int CountFiles(string archivePath)
     {
         using ZipArchive zip = ZipFile.OpenRead(LongPath.ForIo(archivePath));
         return zip.Entries.Count(e => !IsDirectoryEntry(e));
     }
 
-    /// <summary>
-    /// Unpacks every entry into <paramref name="destination"/>, which is
-    /// created here and is the caller's to clean up if this throws.
-    /// </summary>
     internal static void Extract(
         string archivePath, string destination, string verb,
         ProgressTicker ticker, int index, CancellationToken ct
@@ -111,11 +86,6 @@ public static class ArchiveService
         }
     }
 
-    /// <summary>
-    /// Packs every item into one new zip at <paramref name="destination"/>,
-    /// each keeping its own name at the top of the archive. The file is
-    /// created here and is the caller's to clean up if this throws.
-    /// </summary>
     internal static void Compress(
         IReadOnlyList<string> paths, string destination, string verb,
         ProgressTicker ticker, CancellationToken ct
@@ -141,11 +111,6 @@ public static class ArchiveService
         }
     }
 
-    /// <summary>
-    /// Adds a folder and everything under it. A link to another folder is
-    /// noted and not followed — a link that points back up its own tree would
-    /// otherwise be packed forever.
-    /// </summary>
     private static void AddFolder(
         ZipArchive zip, string source, string prefix, string verb,
         ProgressTicker ticker, int index, CancellationToken ct
@@ -169,8 +134,6 @@ public static class ArchiveService
             AddFolder(zip, sub.FullName, $"{prefix}/{sub.Name}", verb, ticker, index, ct);
         }
 
-        // An empty folder is still part of what the user picked, and a zip
-        // only keeps one if it is written down as an entry of its own.
         if (empty)
             zip.CreateEntry($"{prefix}/");
     }
@@ -184,7 +147,6 @@ public static class ArchiveService
         ticker.Report(verb, index, -1, Path.GetFileName(entryName));
 
         ZipArchiveEntry entry = zip.CreateEntry(entryName, CompressionLevel.Optimal);
-        // Zip cannot hold a date before 1980, and refuses one loudly.
         DateTime modified = File.GetLastWriteTime(source);
         if (modified.Year >= 1980)
             entry.LastWriteTime = modified;
@@ -199,11 +161,6 @@ public static class ArchiveService
         || entry.FullName.EndsWith('/')
         || entry.FullName.EndsWith('\\');
 
-    /// <summary>
-    /// Where an entry lands, or null when its name points anywhere but inside
-    /// the destination — zips can carry absolute paths and "..", and a written
-    /// name is not the same thing as a permitted one.
-    /// </summary>
     internal static string? EntryPathInside(string destination, string entryName)
     {
         if (entryName.Length == 0)

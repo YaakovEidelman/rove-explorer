@@ -3,7 +3,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>Zipping, from the key that starts it to the row that appears.</summary>
 public class CompressKeyTests : HeadlessTest
 {
     private static void Fill(string root)

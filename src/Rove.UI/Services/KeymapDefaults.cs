@@ -3,15 +3,6 @@ using System.Collections.Generic;
 
 namespace Rove.UI.Services;
 
-/// <summary>
-/// A mode is always a visible surface (DESIGN.md): Browse = the file list,
-/// Palette = the palette overlay, LocalSearch = the filter box,
-/// GlobalSearch = the search overlay, RenameItem = the inline edit box,
-/// CreateItem = the create input, EditPath = the path bar at the top,
-/// PathCompletion = the list of completions under it, Confirm = the confirm
-/// bar, ResizeColumns = the column-width bar, Bookmarks = the bookmark list,
-/// Settings = the settings list.
-/// </summary>
 public enum Mode
 {
     Browse,
@@ -35,21 +26,12 @@ public static class KeymapDefaults
 {
     private static KeyStroke K(Key key, KeyModifiers mods = KeyModifiers.None) => new(key, mods);
 
-    /// <summary>
-    /// Ctrl+1 to Ctrl+9, one per bookmark, in both the browser and the
-    /// bookmark list — so a shortcut works whether or not the list is up.
-    /// </summary>
     private static IEnumerable<KommandShortcut> BookmarkShortcuts()
     {
         for (int i = 0; i < BookmarkStore.ShortcutCount; i++)
             yield return new(K(Key.D1 + i, KeyModifiers.Control), CommandDef.BookmarkGo(i).Id);
     }
 
-    /// <summary>
-    /// Alt+1 to Alt+9, one per tab. Ctrl+1 to Ctrl+9 already belong to the
-    /// bookmarks, and a bookmark is worth more than a tab you can reach with
-    /// Ctrl+Tab anyway.
-    /// </summary>
     private static IEnumerable<KommandShortcut> TabShortcuts()
     {
         for (int i = 0; i < CommandDef.TabShortcutCount; i++)

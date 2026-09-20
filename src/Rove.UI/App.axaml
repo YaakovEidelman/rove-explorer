@@ -6,8 +6,6 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
-
-                <!-- Light is the primary theme. -->
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F7F6F3" />
                     <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
@@ -24,8 +22,6 @@
                     <SolidColorBrush x:Key="MarkBgBrush" Color="#F8EFD8" />
                     <SolidColorBrush x:Key="OverlayDimBrush" Color="#33222222" />
                 </ResourceDictionary>
-
-                <!-- Dark is the secondary variant (palette: "Toggle Light/Dark Theme"). -->
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#17191D" />
                     <SolidColorBrush x:Key="SurfaceBrush" Color="#1F2228" />
@@ -49,8 +45,6 @@
 
     <Application.Styles>
         <FluentTheme />
-
-        <!-- ── shared chrome ── -->
         <Style Selector="Border.topbar">
             <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
@@ -98,13 +92,6 @@
             <Setter Property="FontSize" Value="13" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
-
-        <!-- ── the tab strip, drawn once there is a tab to show ──
-             Styled after the Windows File Explorer tab strip: the strip
-             itself sits at the chrome's own color, each tab is a bare
-             rounded-top pill with no border, and the active one is filled
-             with the topbar's color so it visually flows straight into the
-             bar underneath instead of looking like a separate boxed button. -->
         <Style Selector="Border.tabstrip">
             <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
             <Setter Property="Padding" Value="10,9,10,0" />
@@ -135,13 +122,6 @@
                 </Transitions>
             </Setter>
         </Style>
-        <!-- ── a tab fades/pops in once it's actually attached to the strip —
-             behaviors:FadeInOnLoad flips .entered a frame later, since doing
-             it immediately would leave nothing for the transition to animate
-             from. Closing one plays the same transition in reverse: the click
-             handler (MainWindow.axaml.cs) adds .closing and waits out the
-             fade before it actually asks TabsViewModel to remove the tab —
-             mouse-only; see that handler for why Ctrl+W stays instant. ── -->
         <Style Selector="Button.tab.entered">
             <Setter Property="Opacity" Value="1" />
             <Setter Property="RenderTransform" Value="scale(1)" />
@@ -186,9 +166,6 @@
         <Style Selector="TextBox.tabrename /template/ DataValidationErrors">
             <Setter Property="MinHeight" Value="0" />
         </Style>
-
-        <!-- ── the x on a tab: hidden until the tab is hovered or active,
-             the way Explorer only shows it when it is relevant ── -->
         <Style Selector="Button.tabclose">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -207,8 +184,6 @@
         <Style Selector="Button.tabclose:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource ErrorSubtleBrush}" />
         </Style>
-
-        <!-- ── the + after the last tab, sitting in the strip rather than boxed ── -->
         <Style Selector="Button.tabnew">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -231,8 +206,6 @@
             <Setter Property="StrokeThickness" Value="1.4" />
             <Setter Property="StrokeLineCap" Value="Round" />
         </Style>
-
-        <!-- ── the ⌄ that shows up once tabs no longer all fit ── -->
         <Style Selector="ToggleButton.taboverflow">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -292,8 +265,6 @@
             <Setter Property="Background" Value="{DynamicResource AppBorderBrush}" />
             <Setter Property="Opacity" Value="0.8" />
         </Style>
-
-        <!-- ── the list the ⌄ opens: every tab, so none of them are out of reach ── -->
         <Style Selector="Border.taboverflowmenu">
             <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
@@ -321,8 +292,6 @@
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="FontWeight" Value="Medium" />
         </Style>
-
-        <!-- ── the path bar's completions, hung off the box rather than floating ── -->
         <Style Selector="Border.completions">
             <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
@@ -357,10 +326,6 @@
         <Style Selector="TextBox.pathedit /template/ DataValidationErrors">
             <Setter Property="MinHeight" Value="0" />
         </Style>
-        <!-- ── overlays (palette / global search / bookmarks / settings) —
-             one shared card language: bigger radius, softer two-layer
-             elevation, an eyebrow title, and a leading icon slot on the
-             search box, so all four read as the same surface. ── -->
         <Style Selector="Border.overlaycard">
             <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
@@ -378,9 +343,6 @@
                 </Transitions>
             </Setter>
         </Style>
-        <!-- ── only the card's overall open/close state drives this — never a
-             tab switch inside it (MainWindowViewModel.OnSurfaceChanged only
-             renotifies IsQuickAccessOpen when it actually flips). ── -->
         <Style Selector="Border.overlaycard.open">
             <Setter Property="Opacity" Value="1" />
             <Setter Property="RenderTransform" Value="scale(1)" />
@@ -437,11 +399,6 @@
         <Style Selector="Border.overlaycard ListBoxItem:selected TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
         </Style>
-
-        <!-- ── quick access dots — Commands/Search/Bookmarks share one card;
-             this is the only hint that Tab moves to another one. Quiet on
-             purpose: the card should read as the thing you asked for, not
-             as a 3-way tab control. ── -->
         <Style Selector="Ellipse.qadot">
             <Setter Property="Width" Value="5" />
             <Setter Property="Height" Value="5" />
@@ -455,8 +412,6 @@
         <Style Selector="Ellipse.qadot.active">
             <Setter Property="Fill" Value="{DynamicResource AccentBrush}" />
         </Style>
-
-        <!-- ── small keyboard-hint chip, used in every overlay/prompt footer ── -->
         <Style Selector="Border.kbd">
             <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
@@ -476,8 +431,6 @@
             <Setter Property="Opacity" Value="0.5" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
-
-        <!-- ── content list ── -->
         <Style Selector="TextBlock.colheader">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Setter Property="FontSize" Value="11" />
@@ -523,8 +476,6 @@
             <Setter Property="BorderBrush" Value="{DynamicResource MarkBarBrush}" />
             <Setter Property="Background" Value="{DynamicResource MarkBgBrush}" />
         </Style>
-
-        <!-- ── icon grid ── -->
         <Style Selector="ListBox#icon_list">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Focusable" Value="False" />
@@ -546,11 +497,6 @@
         <Style Selector="Border.iconcell.marked">
             <Setter Property="Background" Value="{DynamicResource MarkBgBrush}" />
         </Style>
-
-        <!-- ── bottom input row / confirm bar — one "floating sheet" family:
-             same elevation as the overlay cards above, so a prompt at the
-             bottom of the window reads as part of the same design instead
-             of a flat strip glued to the edge. ── -->
         <Style Selector="Border.inputrow">
             <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
@@ -584,11 +530,6 @@
             <Setter Property="MinWidth" Value="120" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
-
-        <!-- ── confirm dialog: was a flat red strip glued to the bottom edge —
-             barely noticeable, easy to miss. Destructive prompts now land as
-             a centered card, dimmed behind like every other overlay, so it
-             reads as "the app needs an answer" rather than a status update. ── -->
         <Style Selector="Border.confirmcard">
             <Setter Property="Width" Value="380" />
         </Style>
@@ -644,15 +585,10 @@
         <Style Selector="Button.dialogbtn.danger:pointerover /template/ ContentPresenter">
             <Setter Property="Opacity" Value="0.9" />
         </Style>
-        <!-- ── keyboard-only: h/l move this highlight between the two
-             buttons, so it doubles as the mouse focus ring the buttons
-             no longer get. ── -->
         <Style Selector="Button.dialogbtn.selected">
             <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
             <Setter Property="BorderThickness" Value="2" />
         </Style>
-
-        <!-- ── preview pane ── -->
         <Style Selector="Border.previewpane">
             <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
@@ -680,9 +616,6 @@
         <Style Selector="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
         </Style>
-
-        <!-- ── settings screen: grouped sections, real toggle switches for
-             on/off rows, a value chip for everything else ── -->
         <Style Selector="TextBlock.settingssection">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Setter Property="FontSize" Value="10" />

@@ -21,10 +21,6 @@ public static class PortalInstall
     public static string ServiceFilePath(string dataHome) =>
         Path.Combine(dataHome, "dbus-1", "services", PortalFiles.ServiceFileName);
 
-    // xdg-desktop-portal looks for "<desktop>-portals.conf" across every config
-    // directory before it ever considers the generic "portals.conf" in any of
-    // them, so a system-shipped desktop-specific file (e.g. hyprland-portals.conf)
-    // silently shadows a claim written only to the generic name.
     public static string ConfigPath(string configHome, string? currentDesktop = null) =>
         Path.Combine(configHome, "xdg-desktop-portal", ConfigFileName(currentDesktop));
 
@@ -160,9 +156,6 @@ public static class PortalInstall
         }
     }
 
-    // xdg-desktop-portal starts rove-portal on demand and it stays running
-    // afterward, so uninstalling out from under it leaves an orphaned process
-    // holding its own deleted binary open.
     private static void KillRunning(string portalExecutable)
     {
         try
@@ -199,10 +192,5 @@ public static class PortalInstall
         }
     }
 
-    // xdg-desktop-portal reads portals.conf/<desktop>-portals.conf once at its
-    // own startup and never notices it change afterward, so a claim or revert
-    // otherwise has no live effect until the user logs out and back in. It's
-    // D-Bus-activatable, so killing it here is enough — the next portal
-    // request from any app makes D-Bus relaunch it fresh, config and all.
     public static void RestartDesktopPortal() => SessionBus.KillOwner("org.freedesktop.portal.Desktop");
 }

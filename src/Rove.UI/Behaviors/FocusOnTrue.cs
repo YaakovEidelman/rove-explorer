@@ -4,11 +4,6 @@ using Avalonia.Threading;
 
 namespace Rove.UI.Behaviors;
 
-/// <summary>
-/// Attached property that focuses a TextBox (caret at end, text selected by
-/// default) when its bound flag turns true — how a surface takes input
-/// ownership the moment it appears.
-/// </summary>
 public class FocusOnTrue
 {
     public static readonly AttachedProperty<bool> FocusProperty =

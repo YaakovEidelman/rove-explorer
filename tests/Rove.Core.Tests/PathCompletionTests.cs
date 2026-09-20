@@ -7,12 +7,9 @@ public class PathCompletionTests
 {
     private static readonly char Sep = System.IO.Path.DirectorySeparatorChar;
 
-    /// <summary>A path written the way this machine writes one.</summary>
     private static string P(params string[] parts) => System.IO.Path.Combine(parts);
 
     private static string Root => PathCompare.OSRootPath();
-
-    // ── splitting ────────────────────────────────────────────────────────
 
     [Fact]
     public void TextWithNoSeparatorNamesTheFolderBeingLookedAt()
@@ -79,8 +76,6 @@ public class PathCompletionTests
         Assert.Equal("a", fragment.Prefix);
     }
 
-    // ── putting a name back in ───────────────────────────────────────────
-
     [Fact]
     public void ChoosingAFileReplacesTheHalfTypedName()
     {
@@ -108,8 +103,6 @@ public class PathCompletionTests
     {
         Assert.Equal("/var/log/", PathCompletion.Join("/var/lo", "log", isDirectory: true));
     }
-
-    // ── how far the names agree ──────────────────────────────────────────
 
     [Fact]
     public void TabCarriesTheTextAsFarAsEveryMatchAgrees()
@@ -142,8 +135,6 @@ public class PathCompletionTests
     {
         Assert.Equal("doc", PathCompletion.LongestCommonPrefix(["doc", "documents"]));
     }
-
-    // ── matching ─────────────────────────────────────────────────────────
 
     [Fact]
     public void NothingTypedMatchesEverything()

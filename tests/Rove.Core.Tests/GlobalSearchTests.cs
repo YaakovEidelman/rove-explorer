@@ -42,14 +42,14 @@ public class GlobalSearchTests
         using TempDir tmp = new();
         tmp.File("match-exact.txt");
         for (int i = 0; i < 10; i++)
-            tmp.File($"m{i}xaxtxcxh.txt"); // scattered weak matches
+            tmp.File($"m{i}xaxtxcxh.txt");
 
         CommandResult<SearchHit[]> result =
             await _search.SearchAsync(tmp.Path, "match", 3, CancellationToken.None);
 
         Assert.True(result.IsOk);
         Assert.Equal(3, result.Data!.Length);
-        Assert.Equal("match-exact.txt", result.Data[0].Item.Name); // best first
+        Assert.Equal("match-exact.txt", result.Data[0].Item.Name);
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class GlobalSearchTests
     public async Task InaccessibleSubdirectory_SkipsItButFindsSiblingMatches()
     {
         if (OperatingSystem.IsWindows())
-            return; // chmod-based permission denial is a Unix concept
+            return;
 
         using TempDir tmp = new();
         string blocked = tmp.Dir("blocked");
@@ -97,8 +97,6 @@ public class GlobalSearchTests
         using CancellationTokenSource cts = new();
         cts.Cancel();
 
-        // Already-cancelled token: Task.Run may throw TaskCanceledException or
-        // return an empty result — either is acceptable, but never a crash.
         try
         {
             CommandResult<SearchHit[]> result =

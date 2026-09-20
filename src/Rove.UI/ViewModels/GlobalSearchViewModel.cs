@@ -38,11 +38,6 @@ public partial class SearchResultItem : ObservableObject
     }
 }
 
-/// <summary>
-/// SEARCH_GLOBAL surface: deep fuzzy search from the current directory
-/// downwards. Typing re-searches (debounced, cancelling the previous run);
-/// Enter jumps to the selected hit in its folder.
-/// </summary>
 public partial class GlobalSearchViewModel : ViewModelBase
 {
     private const int DebounceMs = 250;
@@ -53,7 +48,6 @@ public partial class GlobalSearchViewModel : ViewModelBase
     private readonly Func<string> _rootProvider;
     private CancellationTokenSource? _cts;
 
-    /// <summary>Asks the content view to navigate to (directory, highlightPath).</summary>
     public event Action<string, string?>? NavigateRequested;
 
     public event Action<string>? ErrorRaised;

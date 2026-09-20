@@ -5,12 +5,6 @@ using System.Runtime.InteropServices;
 
 namespace Rove.UI.Services;
 
-/// <summary>
-/// Correlates the picker window with the caller's window, the way the
-/// FileChooser portal spec expects (org.freedesktop.impl.portal.FileChooser's
-/// parent_window argument), so window managers show the picker transient-for
-/// whatever asked for it instead of as an unrelated top-level.
-/// </summary>
 public static class ParentWindowHint
 {
     private const string X11Prefix = "x11:";
@@ -20,10 +14,6 @@ public static class ParentWindowHint
         if (string.IsNullOrEmpty(parentWindow))
             return;
 
-        // Wayland's zxdg_importer_v1 isn't bound by Avalonia.Wayland yet (only
-        // the exporter side, zxdg_exporter_v2, is — see
-        // src/Rove.UI/TODO.md) so a "wayland:HANDLE" parent can't be honored
-        // here today.
         if (!parentWindow.StartsWith(X11Prefix, StringComparison.Ordinal))
             return;
 

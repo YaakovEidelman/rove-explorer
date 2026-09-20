@@ -150,12 +150,6 @@ sealed class FileChooserHandler : IPathMethodHandler
         return (filters, selected);
     }
 
-    /// <summary>
-    /// One filter group's patterns. Glob entries (type 0) pass through
-    /// as-is; mimetype entries (type 1) are resolved to the extensions the
-    /// shared mime database maps to that mimetype and turned into "*.ext"
-    /// globs, since that's what the picker matches on.
-    /// </summary>
     private static (string Name, string[] Patterns) ResolveFilter(VariantValue group)
     {
         string name = group.GetItem(0).GetString();

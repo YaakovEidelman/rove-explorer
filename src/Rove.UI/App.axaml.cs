@@ -37,8 +37,6 @@ public partial class App : Application
                 return;
             }
 
-            // Off on its own thread: nothing here waits for an install, and a
-            // launch with nothing to install reads one small file and stops.
             DesktopInstall.EnsureInBackground();
             DefaultConfigFiles.EnsureExist();
 
@@ -46,8 +44,6 @@ public partial class App : Application
             Func<IStorageProvider?> storageProviderFactory = () => TopLevel.GetTopLevel(desktop.MainWindow)?.StorageProvider;
             RoveClipboardService systemClipboard = new(clipboardFactory, storageProviderFactory);
 
-            // The user's keybindings file is optional; without one the
-            // built-in defaults are the whole keymap.
             KeymapLoad keymap = KeymapConfig.LoadDefault();
             CommandRegistry registry = new(keymap);
             RoveCore core = new();
@@ -74,9 +70,6 @@ public partial class App : Application
 
             HttpClient updateHttp = new() { Timeout = TimeSpan.FromSeconds(10) };
             UpdateService updates = new(updateHttp);
-            // Off on its own thread, same as the self-install check above: a
-            // check that never gets to run — no network, GitHub unreachable
-            // — is not a reason to make the window wait.
             _ = Task.Run(() => updates.CheckInBackgroundAsync(settings.Current.AutoUpdate, default));
 
             MainWindowViewModel main = new(registry, tabs, palette, globalSearch, bookmarkList, confirm,

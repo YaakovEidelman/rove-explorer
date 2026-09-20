@@ -4,13 +4,6 @@ using System;
 
 namespace Rove.UI.ViewModels;
 
-/// <summary>
-/// The visible confirm surface. While open it owns input (Mode.Confirm):
-/// y/n run/discard the pending action directly, h/l move the highlight
-/// between the two buttons and Enter runs whichever is highlighted.
-/// Keyboard-only — the buttons are display only, not clickable. Destructive
-/// verbs never run without this surface being on screen first.
-/// </summary>
 public partial class ConfirmViewModel : ViewModelBase
 {
     private Action? _pending;
@@ -30,7 +23,6 @@ public partial class ConfirmViewModel : ViewModelBase
     [ObservableProperty]
     private string _message = string.Empty;
 
-    /// <summary>Which button h/l/Enter act on — Cancel is the left button, the safe default.</summary>
     [ObservableProperty]
     private bool _cancelHighlighted = true;
 

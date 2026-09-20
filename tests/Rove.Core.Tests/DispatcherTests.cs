@@ -57,13 +57,6 @@ public class DispatcherTests
         await Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Reading a verb's arguments needs a reader generated at compile time
-    /// from <see cref="ProtocolJson"/>'s list — a verb registered here but
-    /// missing from that list compiles fine and only fails the first time
-    /// someone calls it. Every argument type this class actually uses is
-    /// checked against that list directly, so a slip is caught here instead.
-    /// </summary>
     [Fact]
     public void EveryArgumentTypeTheDispatcherUsesHasAGeneratedReader()
     {

@@ -5,7 +5,6 @@ using Xunit;
 
 namespace Rove.UI.Tests;
 
-/// <summary>The list/icon toggle and grid movement, driven through real keys and real layout.</summary>
 public class ViewModeKeyTests : HeadlessTest
 {
     private static void Fill(string root)

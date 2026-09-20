@@ -17,8 +17,6 @@ namespace Rove.UI.ViewModels;
 
 public partial class ContentViewModel
 {
-    // ── delete ───────────────────────────────────────────────────────────
-
     private void DeleteItems()
     {
         if (RefusedInArchive("Delete") || RefusedInAdminView("Delete"))
@@ -41,8 +39,6 @@ public partial class ContentViewModel
         string from = DirectoryListing.CurrentDir;
         ClearMarks();
 
-        // The Windows Recycle Bin call is one shell batch that can't report or stop
-        // partway, so the bar shows movement rather than a count.
         CommandResult<OpResult[]>? outcome = await _operation.RunAsync(
             $"Deleting {Describe(targets.Count)}",
             indeterminate: true,
@@ -107,12 +103,6 @@ public partial class ContentViewModel
         DirectoryListing.ApplyView();
     }
 
-    // ── the trash ────────────────────────────────────────────────────────
-    // On Linux the trash is a folder like any other, so "go to the trash"
-    // walks into it and everything else — opening, deleting for good — works
-    // there as it does anywhere. Putting something back reads the record the
-    // trash keeps of where it came from, so it goes home rather than here.
-
     private void GoToTrash()
     {
         CommandResult<string?> result = _core.Actions.OpenTrash(new());
@@ -146,7 +136,6 @@ public partial class ContentViewModel
             _ = SetCurrentDirectoryAsync(TrashService.BrowsePath!);
     }
 
-    /// <summary>The immediate contents of the trash root — never wherever a nested view has drilled to.</summary>
     private async Task<string[]> TopLevelTrashPathsAsync()
     {
         if (TrashService.BrowsePath is not { } root)
@@ -190,8 +179,6 @@ public partial class ContentViewModel
             InfoRaised?.Invoke($"Put {Describe(undone.Count)} back.");
     }
 
-    // ── emptying the trash ───────────────────────────────────────────────
-
     private void EmptyTrash()
     {
         if (TrashService.BrowsePath is null)
@@ -212,8 +199,6 @@ public partial class ContentViewModel
         if (InTrash)
             _ = SetCurrentDirectoryAsync(TrashService.BrowsePath!);
     }
-
-    // ── clipboard verbs ──────────────────────────────────────────────────
 
     private void CopyItems()
     {
@@ -301,8 +286,6 @@ public partial class ContentViewModel
                 succeeded++;
                 if (op.Item is not null)
                     undone.Add(new PathPair(op.Path, op.Item.FullPath));
-                // The user may have walked somewhere else while this ran; the
-                // rows belong to the folder that was pasted into, not this one.
                 if (op.Item is not null && sameFolder)
                     DirectoryListing.Upsert(op.Item);
             }
@@ -330,7 +313,6 @@ public partial class ContentViewModel
         return set.SetEquals(b);
     }
 
-    /// <summary>Dim items sitting in the cut clipboard so "cut" is visible state.</summary>
     private void RefreshCutFlags()
     {
         bool isCut = _clipboard.HasItems && _clipboard.Op == ClipboardOp.Cut;
@@ -346,7 +328,6 @@ public partial class ContentViewModel
         List<ListViewItem> targets = Targets();
         if (targets.Count == 0)
         {
-            // No highlight — copy the directory itself.
             _ = _systemClipboard.CopyTextAsync(DirectoryListing.CurrentDir);
             InfoRaised?.Invoke("Copied folder path.");
             return;
@@ -355,8 +336,6 @@ public partial class ContentViewModel
         _ = _systemClipboard.CopyTextAsync(text);
         InfoRaised?.Invoke($"Copied {targets.Count} path{Plural(targets.Count)}.");
     }
-
-    // ── extract ──────────────────────────────────────────────────────────
 
     private void ExtractItems()
     {
@@ -406,8 +385,6 @@ public partial class ContentViewModel
             InfoRaised?.Invoke($"Extracted {Describe(succeeded)}.");
     }
 
-    // ── compress ─────────────────────────────────────────────────────────
-
     private void CompressItems()
     {
         if (!RefusedInArchive("Compress") && !RefusedInTrash("Compress") && !RefusedInAdminView("Compress"))
@@ -441,8 +418,6 @@ public partial class ContentViewModel
         }
 
         OpResult made = (result.Data ?? [])[0];
-        // Not RemoveCreated: that one only takes back something still empty,
-        // and a zip that worked is the opposite of empty.
         _undo.Push(new(UndoAction.RemoveCopies, $"zip {Path.GetFileName(made.Path)}",
             [new PathPair(string.Empty, made.Path)]));
 

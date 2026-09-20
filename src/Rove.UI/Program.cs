@@ -7,16 +7,11 @@ namespace Rove.UI;
 
 sealed class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things
-    // aren't initialized yet and stuff might break.
     [STAThread]
     public static void Main(string[] args)
     {
         CrashLogging.InstallProcessHooks();
 
-        // Installing and uninstalling are the two things Rove does without
-        // opening a window; Installed Apps calls the second one by name.
         if (HasFlag(args, "--dev-uninstall"))
         {
             DesktopInstall.DevUninstall(Console.WriteLine);

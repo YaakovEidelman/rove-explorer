@@ -5,15 +5,10 @@ using Xunit;
 
 namespace Rove.Core.Tests;
 
-/// <summary>
-/// The Recycle Bin is a folder layout, so these build one in a scratch
-/// directory and run anywhere — the same trick the Linux trash tests use.
-/// </summary>
 public class WindowsTrashTests
 {
     private const string UserFolder = "S-1-5-21-1111111111-222222222-3333333333-1001";
 
-    /// <summary>Writes the pair the Recycle Bin stores: the record, and the item itself.</summary>
     private static void Trash(string binRoot, string tag, string originalPath, string content, bool legacy = false)
     {
         string user = Path.Combine(binRoot, UserFolder);

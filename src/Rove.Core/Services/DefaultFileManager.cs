@@ -86,8 +86,6 @@ public static class DefaultFileManager
     private static List<string> ReadLines(string path) =>
         File.Exists(path) ? [.. File.ReadAllLines(path)] : [];
 
-    // mimeapps.list has other sections (Added/Removed Associations) that must
-    // be left untouched, so edits are scoped to the one section's line range.
     private static (int Start, int End) FindSection(List<string> lines, string header)
     {
         int start = lines.FindIndex(l => l.Trim() == header);

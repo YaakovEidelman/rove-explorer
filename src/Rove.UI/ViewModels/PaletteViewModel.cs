@@ -12,10 +12,8 @@ public partial class PaletteViewModel : ViewModelBase
 {
     private readonly CommandRegistry _registry;
 
-    /// <summary>Command-id prefix the list is limited to; empty means every command.</summary>
     private string _scope = string.Empty;
 
-    /// <summary>Raised before the list is built — for entries that come and go, like drives.</summary>
     public event Action? Opening;
 
     public event Action? Executing;
@@ -96,10 +94,6 @@ public partial class PaletteViewModel : ViewModelBase
             Open(string.Empty, DefaultPlaceholder);
     }
 
-    /// <summary>
-    /// Opens the palette on one family of commands — how a narrower picker
-    /// (the drives) is put in front of the user without a second overlay.
-    /// </summary>
     public void OpenScoped(string idPrefix, string placeholder)
     {
         Close();
@@ -140,10 +134,6 @@ public partial class PaletteViewModel : ViewModelBase
         SelectedIndex = SelectedIndex >= Items.Count - 1 ? 0 : SelectedIndex + 1;
     }
 
-    /// <summary>
-    /// After ItemsSource is swapped the ListBox resets its own selection;
-    /// bounce through -1 so setting 0 always re-notifies the binding.
-    /// </summary>
     private void ResetSelection()
     {
         SelectedIndex = -1;

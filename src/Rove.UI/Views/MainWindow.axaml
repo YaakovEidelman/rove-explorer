@@ -20,8 +20,6 @@
 
     <Panel>
         <DockPanel>
-
-            <!-- ── top: one box per tab, click to go to it, + to open another ── -->
             <Border DockPanel.Dock="Top" Classes="tabstrip" IsVisible="{Binding Tabs.IsStripVisible}"
                     chrome:WindowDecorationProperties.ElementRole="TitleBar">
                 <DockPanel>
@@ -31,9 +29,6 @@
                         <Image x:Name="brand_icon" Width="16" Height="16" VerticalAlignment="Center" />
                         <TextBlock Classes="brandtext" Text="ROVE" VerticalAlignment="Center" />
                     </StackPanel>
-
-                    <!-- ── stands in for the tabs that got clipped, listing every one so
-                         none of them are ever truly out of reach ── -->
                     <ToggleButton x:Name="tabs_overflow_toggle" DockPanel.Dock="Right" Classes="taboverflow"
                                   IsVisible="False"
                                   chrome:WindowDecorationProperties.ElementRole="User">
@@ -63,15 +58,6 @@
                             </ItemsControl>
                         </Border>
                     </Popup>
-
-                    <!-- ── the tabs themselves, and the + right after the last one: however
-                         many fit, cut off rather than squeezed once they don't — the ⌄
-                         above covers the rest. A ScrollViewer with its scrollbar turned
-                         off rather than a plain panel: it is what keeps this sized to
-                         its own content instead of stretched to fill the strip (which
-                         would leave the + stranded out past the last tab), and its
-                         Extent/Viewport are what tabs_overflow_toggle's visibility is
-                         computed from in the code-behind. ── -->
                     <ScrollViewer x:Name="tabs_scroll"
                                   HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
                         <StackPanel x:Name="tabs_stack" Orientation="Horizontal" Spacing="6">
@@ -115,8 +101,6 @@
                     </ScrollViewer>
                 </DockPanel>
             </Border>
-
-            <!-- ── under the tabs: current path ── -->
             <Border DockPanel.Dock="Top" Classes="topbar">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="2" Margin="0,0,6,0">
@@ -130,7 +114,6 @@
                         </Button>
                     </StackPanel>
                     <Panel ClipToBounds="True" Height="30" VerticalAlignment="Center">
-                        <!-- ── where you are, a box to each step of the path ── -->
                         <ItemsControl ItemsSource="{Binding ContentPage.DirectoryListing.Crumbs}"
                                       IsVisible="{Binding !ContentPage.InEditPath}"
                                       VerticalAlignment="Center">
@@ -158,8 +141,6 @@
                                  behaviors:FocusOnTrue.Focus="{Binding ContentPage.InEditPath}"
                                  behaviors:FocusOnTrue.SelectAll="False"
                                  PlaceholderText="type a path…" />
-
-                        <!-- ── the completions, hung off the box like an address bar's ── -->
                         <Popup PlacementTarget="{Binding #path_box}"
                                Placement="BottomEdgeAlignedLeft"
                                IsLightDismissEnabled="False"
@@ -182,8 +163,6 @@
                     </Panel>
                 </DockPanel>
             </Border>
-
-            <!-- ── bottom: status bar ── -->
             <Border DockPanel.Dock="Bottom" Classes="statusbar">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="14">
@@ -202,8 +181,6 @@
                     </Panel>
                 </DockPanel>
             </Border>
-
-            <!-- ── bottom: running copy/move/delete, with its own cancel ── -->
             <Border DockPanel.Dock="Bottom" Classes="opbar" IsVisible="{Binding FileOperation.IsRunning}">
                 <DockPanel>
                     <TextBlock Classes="optitle" Text="{Binding FileOperation.Title}" />
@@ -217,8 +194,6 @@
                                TextTrimming="CharacterEllipsis" />
                 </DockPanel>
             </Border>
-
-            <!-- ── bottom: input surfaces (filter / create) ── -->
             <Border DockPanel.Dock="Bottom" Classes="inputrow"
                     IsVisible="{Binding ContentPage.DirectoryListing.InLocalSearch}">
                 <DockPanel>
@@ -237,8 +212,6 @@
                              PlaceholderText="name…" />
                 </DockPanel>
             </Border>
-
-            <!-- ── bottom: column width bar (Mode.ResizeColumns while visible) ── -->
             <Border DockPanel.Dock="Bottom" Classes="inputrow"
                     IsVisible="{Binding ContentPage.InResizeColumns}">
                 <DockPanel>
@@ -254,8 +227,6 @@
                     </StackPanel>
                 </DockPanel>
             </Border>
-
-            <!-- ── center: file list + preview pane ── -->
             <SplitView PanePlacement="Right"
                        IsPaneOpen="{Binding Preview.IsOpen}"
                        DisplayMode="Inline"
@@ -269,14 +240,6 @@
                 </SplitView.Content>
             </SplitView>
         </DockPanel>
-
-        <!-- ── quick access: Commands/Search/Bookmarks/Settings share one card
-             instead of four near-identical popups — whichever one's own
-             IsOpen is true picks the title and shows its content; Tab cycles
-             between them (MainWindowViewModel). No always-on tab strip —
-             just the current one's name and a quiet dot per tab, so the card
-             still reads as "the thing you asked for" rather than a 4-in-1
-             shell. ── -->
         <Panel Classes="overlaydim" Classes.open="{Binding IsQuickAccessOpen}"
                Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding IsQuickAccessOpen}">
             <Border Classes="overlaycard" Classes.open="{Binding IsQuickAccessOpen}"
@@ -305,10 +268,6 @@
                 </Grid>
             </Border>
         </Panel>
-
-        <!-- ── center: destructive-action prompt (Mode.Confirm while open) —
-             was a thin bar glued to the bottom edge; centered and dimmed
-             like every other overlay so it can't be missed. ── -->
         <Panel Classes="overlaydim" Classes.open="{Binding Confirm.IsOpen}"
                Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Confirm.IsOpen}">
             <Border Classes="overlaycard confirmcard" Classes.open="{Binding Confirm.IsOpen}"

@@ -12,17 +12,11 @@ public class IconFetchTests
     private static FolderItem Folder() =>
         new("folder", @"C:\x\folder", FileAttributes.Directory, DateTime.Now, true, null, "");
 
-    /// <summary>
-    /// The shape of a first listing: one request per file type in the folder,
-    /// all at once. The Windows shell used to answer only whichever of them
-    /// arrived first and turn the rest away empty-handed, which is what left
-    /// every file row without an icon until the folder was left and re-entered.
-    /// </summary>
     [Fact]
     public async Task AWholeFoldersIconsAskedForAtOnceAllComeBack()
     {
         if (!OperatingSystem.IsWindows())
-            return; // this is a Windows shell problem
+            return;
 
         Actions actions = new();
         FolderItem[] items =

@@ -49,11 +49,6 @@ public sealed class FilePickerPortal
         _restartDesktopPortal = restartDesktopPortal;
     }
 
-    /// <summary>
-    /// The Open/Save dialog claim is the one shown — Enable/Disable always
-    /// move the default-folder-handler claim in lockstep with it, so the two
-    /// never disagree in practice.
-    /// </summary>
     public PortalStatus Status => PortalInstall.CurrentStatus(_configPath, _statePath);
 
     public bool HasAskedAboutDefault => PortalInstall.HasAskedAboutDefault(_askedPath);

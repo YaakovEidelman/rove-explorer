@@ -4,14 +4,6 @@ using Avalonia.Threading;
 
 namespace Rove.UI.Behaviors;
 
-/// <summary>
-/// Adds the "entered" class one frame after a control attaches to the visual
-/// tree — for a style that starts an element faded/scaled down and transitions
-/// it to normal on ".entered", so newly added items (a new tab, say) ease in
-/// instead of popping straight to their resting state. Flipping the class
-/// immediately on attach would give the transition nothing to animate from,
-/// since the attach and the class both land in the same layout pass.
-/// </summary>
 public class FadeInOnLoad
 {
     public static readonly AttachedProperty<bool> EnabledProperty =

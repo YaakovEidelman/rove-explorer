@@ -20,14 +20,8 @@ public partial class MainWindowViewModel : ViewModelBase
     private readonly FileClipboard _clipboard;
     private readonly UpdateService? _updates;
 
-    /// <summary>The tabs, and everything that reads off whichever is in front.</summary>
     public TabsViewModel Tabs { get; }
 
-    /// <summary>
-    /// The folder view on screen. Every binding in the window goes through
-    /// here, so bringing another tab to the front is a single notification
-    /// and the whole window follows it.
-    /// </summary>
     public ContentViewModel ContentPage => Tabs.Active;
 
     public PaletteViewModel Palette { get; }
@@ -44,7 +38,6 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private string _statusInfo = string.Empty;
 
-    /// <summary>Single message slot in the status bar: error > info > mode hint.</summary>
     public string StatusLine =>
         StatusError.Length > 0 ? StatusError
         : StatusInfo.Length > 0 ? StatusInfo
@@ -52,15 +45,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public bool IsErrorShown => StatusError.Length > 0;
 
-    /// <summary>
-    /// Commands/Search/Bookmarks/Settings share one card now (Quick Access) —
-    /// this is true while any one of the four is the visible surface, so the
-    /// shared card's dim background and border know to be on screen at all.
-    /// </summary>
     public bool IsQuickAccessOpen =>
         Palette.IsPaletteOpen || GlobalSearch.IsOpen || Bookmarks.IsOpen || Settings.IsOpen;
 
-    /// <summary>The shared card's title — whichever of the four is actually open.</summary>
     public string QuickAccessTitle =>
         Palette.IsPaletteOpen ? "COMMANDS"
         : GlobalSearch.IsOpen ? "SEARCH"
@@ -107,9 +94,6 @@ public partial class MainWindowViewModel : ViewModelBase
         _registry.Register(CommandDef.QuickAccessNextTab, CycleQuickAccessTab);
         _registry.Register(CommandDef.QuickAccessPreviousTab, CycleQuickAccessTabBackward);
 
-        // Every one of these comes from the tab in front — the strip decides
-        // which that is, so nothing here has to be unhooked and hooked up
-        // again each time a different tab comes forward.
         Tabs.ErrorRaised += message => StatusError = message;
         Tabs.InfoRaised += message => StatusInfo = message;
         Tabs.ConfirmRequested += Confirm.Request;
@@ -136,15 +120,11 @@ public partial class MainWindowViewModel : ViewModelBase
             _updates.ErrorRaised += message => Dispatcher.UIThread.Post(() => StatusError = message);
         }
 
-        // A keybindings file the app could not follow is worth one line at
-        // startup — silently ignoring it looks like the app is broken.
         if (startupWarning is { Length: > 0 })
             StatusError = startupWarning;
 
         _clipboard.Changed += RefreshStatusBar;
 
-        // The status line follows the visible surface — track every
-        // surface's open/close directly.
         Palette.PropertyChanged += OnSurfaceChanged;
         Palette.Executing += () => _handingOff = true;
         Palette.Executed += EndHandoff;
@@ -154,11 +134,6 @@ public partial class MainWindowViewModel : ViewModelBase
         Settings.PropertyChanged += OnSurfaceChanged;
     }
 
-    /// <summary>
-    /// A different tab is in front. Every binding in the window hangs off
-    /// <see cref="ContentPage"/>, so saying that it changed is what moves the
-    /// whole window across; the preview follows the new highlight.
-    /// </summary>
     private void OnActiveTabChanged()
     {
         OnPropertyChanged(nameof(ContentPage));
@@ -182,13 +157,6 @@ public partial class MainWindowViewModel : ViewModelBase
         Palette.Refresh();
     }
 
-    /// <summary>
-    /// Raises <see cref="IsQuickAccessOpen"/> only when its actual value moves —
-    /// four sources feed it, so an unrelated change on one (typing in the search
-    /// box, say) would otherwise renotify it with the same value it already had.
-    /// A binding-driven open/close animation on the card treats every
-    /// notification as a fresh transition, so a spurious one plays it again.
-    /// </summary>
     private void OnSurfaceChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (!_handingOff)
@@ -210,12 +178,6 @@ public partial class MainWindowViewModel : ViewModelBase
     private static readonly Mode[] QuickAccessTabs =
         [Mode.Palette, Mode.GlobalSearch, Mode.Bookmarks, Mode.Settings];
 
-    /// <summary>
-    /// Switches which of Commands/Search/Bookmarks is showing by closing
-    /// whichever is open and opening the next in line — each still owns its
-    /// own IsOpen flag (DESIGN.md invariant #3: mode is derived, never
-    /// stored), this just drives two of those flags in sequence.
-    /// </summary>
     private void CycleQuickAccessTab()
     {
         Mode current = GetCurrentMode();
@@ -236,10 +198,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private void OpenQuickAccessTab(Mode target)
     {
-        // Opens the next tab before closing whichever was open, not after — so
-        // at least one of the four IsOpen flags is true for the whole swap and
-        // IsQuickAccessOpen never dips to false in between. Nothing renders
-        // mid-method either way, so this never shows two tabs at once.
         switch (target)
         {
             case Mode.Palette when !Palette.IsPaletteOpen: Palette.TogglePalette(); break;
@@ -257,8 +215,6 @@ public partial class MainWindowViewModel : ViewModelBase
         if (Settings.IsOpen && target != Mode.Settings)
             Settings.Toggle();
     }
-
-    // ── keyboard entry point ─────────────────────────────────────────────
 
     public bool HandleKey(Key key, KeyModifiers keyModifiers)
     {
@@ -279,10 +235,6 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    /// <summary>
-    /// The mode is derived from which surface is visible, never stored
-    /// (DESIGN.md invariant #3) — so mode and surface can't drift apart.
-    /// </summary>
     public Mode GetCurrentMode()
     {
         if (Confirm.IsOpen)
@@ -311,8 +263,6 @@ public partial class MainWindowViewModel : ViewModelBase
             return Mode.ResizeColumns;
         return Mode.Browse;
     }
-
-    // ── status bar ───────────────────────────────────────────────────────
 
     public string ModeHint => GetCurrentMode() switch
     {
@@ -370,8 +320,6 @@ public partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(ClipboardSummary));
     }
 
-    // ── app-level commands ───────────────────────────────────────────────
-
     private void CloseApp()
     {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -396,11 +344,6 @@ public partial class MainWindowViewModel : ViewModelBase
         _ = _updates.CheckNowAsync(CancellationToken.None);
     }
 
-    /// <summary>
-    /// Only ever switches between Normal and Maximized — never FullScreen,
-    /// which would drop the custom chrome and let the OS draw its own
-    /// title bar over the top.
-    /// </summary>
     private static void ToggleMaximize()
     {
         if (MainWindowInstance() is not { } window)

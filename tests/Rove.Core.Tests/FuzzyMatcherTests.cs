@@ -24,7 +24,7 @@ public class FuzzyMatcherTests
 
     [Theory]
     [InlineData("xyz", "Documents")]
-    [InlineData("cod", "doc")] // right letters, wrong order
+    [InlineData("cod", "doc")]
     [InlineData("a", "")]
     public void MissingOrOutOfOrder_DoesNotMatch(string query, string candidate)
     {

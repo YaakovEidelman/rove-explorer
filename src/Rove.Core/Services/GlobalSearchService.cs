@@ -4,12 +4,6 @@ namespace Rove.Core.Services;
 
 public sealed record SearchHit(FolderItem Item, int Score);
 
-/// <summary>
-/// SEARCH_GLOBAL: deep fuzzy search from a root directory downwards.
-/// Cancellable, skips inaccessible/hidden/system entries and reparse points
-/// (no cycles), and caps how many entries it visits so a search of C:\ can't
-/// run away.
-/// </summary>
 public class GlobalSearchService
 {
     private const int MaxVisitedEntries = 250_000;
@@ -56,15 +50,6 @@ public class GlobalSearchService
             }
         }
 
-        // Try a single fast recursive enumerator over `start`'s whole subtree
-        // first — as cheap as one flat call for a healthy tree. Pseudo
-        // filesystems like /proc can throw mid-walk (e.g. a process exiting
-        // under us); when that happens the native enumerator can't be
-        // resumed, so drop that attempt's partial matches and bisect into
-        // `start`'s immediate children, retrying each independently. That
-        // isolates the failure to just the offending branch instead of
-        // paying a per-directory cost across the whole, otherwise healthy,
-        // tree. Returns false only if `start` itself can't be listed at all.
         bool Walk(string start)
         {
             if (truncated || ct.IsCancellationRequested)

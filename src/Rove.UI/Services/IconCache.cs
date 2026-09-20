@@ -13,21 +13,9 @@ public interface IIconCache
 {
     Task<IImage?> GetIconAsync(FolderItem item, int size);
 
-    /// <summary>
-    /// The already-decoded icon, if there is one. Rows use this first: in a
-    /// folder with thousands of entries almost every row shares an icon with
-    /// one above it, and going through the async path for each of them buries
-    /// the UI thread in callbacks for work that was already done.
-    /// </summary>
     bool TryGetIcon(FolderItem item, int size, out IImage? icon);
 }
 
-/// <summary>
-/// Decodes backend icon bytes into Avalonia images, cached per
-/// (directory?, extension, size). Windows hands back PNG; Linux icon themes
-/// are mostly SVG, so the bytes are sniffed and decoded either way. A null
-/// result is evicted so transient failures can retry later.
-/// </summary>
 public class IconCache : IIconCache
 {
     private readonly Func<GetIconArgs, Task<CommandResult<byte[]?>>> _fetch;

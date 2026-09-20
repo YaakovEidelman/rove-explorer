@@ -17,14 +17,6 @@ namespace Rove.UI.ViewModels;
 
 public partial class ContentViewModel
 {
-    // ── bookmarks ────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Remembers the highlighted item, or forgets it when it is already
-    /// remembered. With nothing highlighted — an empty folder — the folder
-    /// itself is what gets remembered, which is what a person standing in an
-    /// empty folder means by "bookmark this".
-    /// </summary>
     private void ToggleBookmark()
     {
         Bookmark mark = HighlightedItem is { } highlighted
@@ -37,7 +29,6 @@ public partial class ContentViewModel
             : $"Removed the bookmark for {mark.Name}.");
     }
 
-    /// <summary>" · Ctrl+3", or nothing past the ninth.</summary>
     private string Shortcut(Bookmark mark)
     {
         string key = BookmarkStore.ShortcutFor(_bookmarks.IndexOf(mark.Path));
@@ -50,11 +41,6 @@ public partial class ContentViewModel
         return name.Length > 0 ? name : LongPath.Display(path);
     }
 
-    /// <summary>
-    /// Goes where a bookmark points: into a folder, or to the folder holding
-    /// a file with that file under the highlight. Landing next to a file is
-    /// the useful thing — a bookmark is a place, not a thing to run.
-    /// </summary>
     public void GoToBookmark(Bookmark mark)
     {
         if (mark.IsDirectory)

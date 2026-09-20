@@ -16,21 +16,10 @@ public partial class DirectoryListing : ObservableObject
 {
     private readonly IIconCache _cache;
 
-    /// <summary>
-    /// Below this many rows the whole list is cheap to redo, so a filter runs
-    /// on the keystroke; above it the typing is given a moment to settle
-    /// first.
-    /// </summary>
     private const int InstantFilterLimit = 2_000;
 
-    /// <summary>How long typing has to pause before a big folder is refiltered.</summary>
     private static readonly TimeSpan _filterDelay = TimeSpan.FromMilliseconds(90);
 
-    /// <summary>
-    /// Past this much churn the visible list is replaced in one shot instead
-    /// of row by row: a hundred separate notifications cost more than one
-    /// rebuild.
-    /// </summary>
     private const int BulkResetThreshold = 64;
 
     private readonly DispatcherTimer _filterTimer;
@@ -47,11 +36,6 @@ public partial class DirectoryListing : ObservableObject
 
     private List<ListViewItem> _unfilteredContent = [];
 
-    /// <summary>
-    /// Glob patterns a picker caller restricted files to (the portal's
-    /// `filters` option). Folders stay visible regardless — they're not
-    /// what's being filtered, they're how you get to what is.
-    /// </summary>
     private string[]? _selectionFilter;
 
     private int _iconSize = 16;
@@ -61,11 +45,6 @@ public partial class DirectoryListing : ObservableObject
     [ObservableProperty]
     private string _currentDir = PathCompare.DefaultStartDirectory();
 
-    /// <summary>
-    /// <see cref="CurrentDir"/> broken into the steps the top bar draws in
-    /// their own boxes. Derived rather than stored, so the two can never come
-    /// to disagree about where you are.
-    /// </summary>
     public PathCrumb[] Crumbs => PathBreadcrumb.Of(CurrentDir,
         TrashService.BrowsePath is { } trashRoot ? (trashRoot, TrashService.DisplayName) : null);
 
@@ -80,14 +59,12 @@ public partial class DirectoryListing : ObservableObject
     [ObservableProperty]
     private bool _emptyDirectory;
 
-    /// <summary>What the rows are ordered by, below the directories-first split.</summary>
     [ObservableProperty]
     private SortKey _sortBy = SortKey.Name;
 
     [ObservableProperty]
     private bool _sortDescending;
 
-    /// <summary>The arrow a column header shows when it's the active sort key, else nothing.</summary>
     public string NameSortIndicator => IndicatorFor(SortKey.Name);
     public string TypeSortIndicator => IndicatorFor(SortKey.Type);
     public string SizeSortIndicator => IndicatorFor(SortKey.Size);
@@ -107,29 +84,15 @@ public partial class DirectoryListing : ObservableObject
         OnPropertyChanged(nameof(ModifiedSortIndicator));
     }
 
-    /// <summary>
-    /// Whether items the OS marks hidden are in the list. Sticky: it is a way
-    /// of looking at every folder, not a property of this one.
-    /// </summary>
     [ObservableProperty]
     private bool _showHidden;
 
-    /// <summary>The highlight over <see cref="Items"/>.</summary>
     public ListSelection ListSelection { get; }
 
-    /// <summary>
-    /// Items the OS calls its own — Windows marks them System — are never
-    /// listed. Hidden is the user's to decide, so those are held and left out
-    /// of the view instead (see <see cref="Shown"/>).
-    /// </summary>
     private static bool IsKept(FolderItem item) => !item.Attributes.HasFlag(FileAttributes.System);
 
     private static bool IsHidden(FolderItem item) => item.Attributes.HasFlag(FileAttributes.Hidden);
 
-    /// <summary>
-    /// Restricts which files can be picked, by name glob (e.g. "*.png").
-    /// Pass null or empty to lift the restriction.
-    /// </summary>
     public void SetSelectionFilter(IReadOnlyList<string>? patterns)
     {
         _selectionFilter = patterns is { Count: > 0 } ? [.. patterns] : null;
@@ -147,11 +110,6 @@ public partial class DirectoryListing : ObservableObject
         ApplyView();
     }
 
-    /// <summary>
-    /// The sort a folder starts on, before anyone has touched it this visit.
-    /// Everywhere is name order except Downloads, which is more useful sorted
-    /// by what just landed in it.
-    /// </summary>
     private void ApplyDefaultSort(string directory)
     {
         bool sortDownloadsByTime = _settings?.Current.SortDownloadsByTime ?? true;
@@ -160,10 +118,6 @@ public partial class DirectoryListing : ObservableObject
         SortDescending = isDownloads;
     }
 
-    /// <summary>
-    /// Picks a new sort, or — asked for the one already active — flips its
-    /// direction instead of doing nothing.
-    /// </summary>
     public void SetSort(SortKey key)
     {
         if (SortBy == key)
@@ -175,17 +129,11 @@ public partial class DirectoryListing : ObservableObject
             SortBy = key;
             SortDescending = key is SortKey.Size or SortKey.Modified;
         }
-        // The cached "shown"/"matched" snapshots hold the pre-sort order —
-        // stale until rebuilt, same as after any other content change.
         InvalidateFilter();
         SortContent();
         ApplyView();
     }
 
-    /// <summary>
-    /// Every row still on screen re-fetches its icon at the new size; rows
-    /// created afterwards (a paste, a watcher event) just start there.
-    /// </summary>
     public void SetIconSize(int size)
     {
         if (_iconSize == size)
@@ -209,18 +157,12 @@ public partial class DirectoryListing : ObservableObject
             ScheduleApplyView();
     }
 
-    /// <summary>Waits for a gap in the typing, restarting the clock on each keystroke.</summary>
     private void ScheduleApplyView()
     {
         _filterTimer.Stop();
         _filterTimer.Start();
     }
 
-    /// <summary>
-    /// Runs a filter that is still waiting on the clock. Anything that acts on
-    /// the highlighted row calls this first, so a fast typist can never open
-    /// an item from a list that is one keystroke out of date.
-    /// </summary>
     public void FlushPendingFilter()
     {
         if (_filterTimer.IsEnabled)
@@ -232,30 +174,18 @@ public partial class DirectoryListing : ObservableObject
         _filterTimer.Stop();
 
         IReadOnlyList<ListViewItem> shown = Shown();
-        // Filtering follows the query, not whether the box still has focus —
-        // leaving the box (Enter) keeps the filtered view up until something
-        // clears the query.
         IReadOnlyList<ListViewItem> target = SearchCurrentDirectoryText.Length > 0 ? Filtered(shown) : shown;
 
-        // Take the highlight off the control first: it mirrors the highlight
-        // two-way and would push a stale index back while rows come and go.
         ListSelection.Detach();
         SyncItems(target);
         EmptyDirectory = Items.Count == 0;
         ListSelection.Reconcile();
     }
 
-    // ── filtering ────────────────────────────────────────────────────────
-
     private List<ListViewItem>? _lastMatches;
     private string _lastQuery = string.Empty;
     private List<ListViewItem>? _lastShown;
 
-    /// <summary>
-    /// The rows the current view lets through, before any filter text. Held
-    /// until the folder or the toggle changes, so flipping between filtered
-    /// and unfiltered costs nothing.
-    /// </summary>
     private IReadOnlyList<ListViewItem> Shown()
     {
         IReadOnlyList<ListViewItem> shown = ShowHidden
@@ -268,12 +198,6 @@ public partial class DirectoryListing : ObservableObject
         row.Item.IsDirectory
         || _selectionFilter!.Any(pattern => FileSystemName.MatchesSimpleExpression(pattern, row.Item.Name));
 
-    /// <summary>
-    /// Rows matching the filter box. Typing one more character can only ever
-    /// shrink the previous result — every character of the query still has to
-    /// appear, in order — so the next pass looks at what survived last time
-    /// instead of the whole folder again.
-    /// </summary>
     private List<ListViewItem> Filtered(IReadOnlyList<ListViewItem> shown)
     {
         string query = SearchCurrentDirectoryText;
@@ -294,7 +218,6 @@ public partial class DirectoryListing : ObservableObject
         return matches;
     }
 
-    /// <summary>The folder changed underneath the filter — the cached result is stale.</summary>
     private void InvalidateFilter()
     {
         _lastMatches = null;
@@ -302,12 +225,6 @@ public partial class DirectoryListing : ObservableObject
         _lastShown = null;
     }
 
-    // ── syncing the visible rows ─────────────────────────────────────────
-
-    /// <summary>
-    /// Brings the visible collection in line with the target list. The common
-    /// case — nothing moved — walks each list once and touches nothing.
-    /// </summary>
     private void SyncItems(IReadOnlyList<ListViewItem> target)
     {
         HashSet<ListViewItem> keep = [.. target];
@@ -338,8 +255,6 @@ public partial class DirectoryListing : ObservableObject
             if (i < Items.Count && ReferenceEquals(Items[i], item))
                 continue;
 
-            // Everything before i already matches, so the row can only be
-            // further down — no need to rescan from the top.
             int existing = IndexOfFrom(item, i);
             if (existing >= 0)
                 Items.Move(existing, i);
@@ -358,18 +273,9 @@ public partial class DirectoryListing : ObservableObject
         return -1;
     }
 
-    // ── content changes ──────────────────────────────────────────────────
-
     private int GetIndexFromContent(string path) =>
         _unfilteredContent.FindIndex(x => PathCompare.PathMatches(x.Item.FullPath, path));
 
-    /// <summary>
-    /// Whether a path names something in the folder on screen. Watcher events
-    /// can arrive from the folder that was being watched a moment ago — the
-    /// watcher is pointed elsewhere, but what it already saw is still on its
-    /// way — and a row for something that lives somewhere else does not
-    /// belong in this list.
-    /// </summary>
     private bool Belongs(string path) =>
         Path.GetDirectoryName(LongPath.Display(path)) is { Length: > 0 } parent
         && PathCompare.PathMatches(parent, CurrentDir);
@@ -413,7 +319,7 @@ public partial class DirectoryListing : ObservableObject
     {
         if (!Belongs(item.FullPath))
         {
-            RemoveWithApply(oldPath); // renamed out of this folder
+            RemoveWithApply(oldPath);
             return;
         }
         MutateRename(oldPath, item);
@@ -427,7 +333,7 @@ public partial class DirectoryListing : ObservableObject
         if (existingIndex == -1)
             existingIndex = GetIndexFromContent(item.FullPath);
         MutateUpsert(existingIndex, item);
-        InvalidateFilter(); // the new name may match a filter the old one didn't
+        InvalidateFilter();
     }
 
     public void Remove(string path) => RemoveAt(GetIndexFromContent(path));
@@ -446,11 +352,6 @@ public partial class DirectoryListing : ObservableObject
         InvalidateFilter();
     }
 
-    /// <summary>
-    /// A coalesced batch of watcher events, applied as one resort and one
-    /// view rebuild instead of one apiece — the fix for a fast folder (an
-    /// archive extracting into it, say) choking the list on every event.
-    /// </summary>
     public void ApplyBatch(IReadOnlyList<WatchEvent> events)
     {
         foreach (WatchEvent e in events)
@@ -476,7 +377,6 @@ public partial class DirectoryListing : ObservableObject
         ApplyView();
     }
 
-    /// <summary>Directories first, then by <see cref="SortBy"/> — ties broken by name.</summary>
     private void SortContent()
     {
         Comparison<ListViewItem> byKey = SortBy switch

@@ -4,10 +4,6 @@ using Xunit;
 
 namespace Rove.Core.Tests;
 
-/// <summary>
-/// Shares the process-wide XDG environment variables, so these classes take
-/// turns instead of overwriting each other's scratch directories.
-/// </summary>
 public sealed class XdgEnvironment
 {
     public const string Name = "xdg environment";

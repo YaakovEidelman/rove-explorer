@@ -2,7 +2,6 @@ using Rove.Core.Protocol;
 
 namespace Rove.Core.Services;
 
-/// <summary>A folder-watch event, coalesced into a batch before it reaches a listener.</summary>
 public abstract record WatchEvent
 {
     public sealed record Upserted(FolderItem Item) : WatchEvent;
@@ -12,20 +11,6 @@ public abstract record WatchEvent
     public sealed record Renamed(string OldPath, FolderItem Item) : WatchEvent;
 }
 
-/// <summary>
-/// MONITOR_DIR: watches the current folder for external changes.
-/// Buffer is raised to 64KB and an Error handler is wired so bulk changes
-/// that overflow the buffer trigger a resync callback instead of being
-/// silently dropped.
-///
-/// <para>
-/// Events are coalesced over a short window instead of delivered one at a
-/// time. Something like an archive extracting into the folder can raise
-/// thousands of raw events in a few seconds, and a listener that resorts
-/// and redraws for each one alone falls behind. A batch delivered a few
-/// times a second costs a resort and a redraw per batch instead.
-/// </para>
-/// </summary>
 public class FileWatchService : IDisposable
 {
     private static readonly TimeSpan DefaultCoalesceWindow = TimeSpan.FromMilliseconds(75);
@@ -88,11 +73,9 @@ public class FileWatchService : IDisposable
         catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
         {
         }
-        // The item vanished (or is unreadable) between the event and now.
         return null;
     }
 
-    /// <summary><paramref name="apply"/> receives a batch at most every <see cref="_coalesceWindow"/>.</summary>
     public void Subscribe(Action<IReadOnlyList<WatchEvent>> apply, Action resync)
     {
         _apply = apply;
@@ -100,9 +83,6 @@ public class FileWatchService : IDisposable
         _watcher.Created += (_, e) => Enqueue(new PendingChange.Upsert(e.FullPath));
         _watcher.Deleted += (_, e) => Enqueue(new PendingChange.Delete(e.FullPath));
         _watcher.Renamed += (_, e) => Enqueue(new PendingChange.Rename(e.OldFullPath, e.FullPath));
-        // Buffer overflow or watcher failure: the event stream is no longer
-        // trustworthy, drop anything queued and ask the UI to re-read the
-        // directory instead.
         _watcher.Error += (_, _) =>
         {
             lock (_gate)

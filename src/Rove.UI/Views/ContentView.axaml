@@ -9,8 +9,6 @@
              x:Class="Rove.UI.Views.ContentView">
 
     <Grid RowDefinitions="Auto, *">
-
-        <!-- column headers -->
         <Border Grid.Row="0"
                 IsVisible="{Binding IsListView}"
                 BorderBrush="{DynamicResource AppBorderBrush}"
@@ -47,8 +45,6 @@
                 </Panel>
             </StackPanel>
         </Border>
-
-        <!-- file list / icon grid -->
         <Panel Grid.Row="1" IsVisible="{Binding !DirectoryListing.EmptyDirectory}">
             <ListBox x:Name="content_list"
                      ItemsSource="{Binding DirectoryListing.Items}"
@@ -128,8 +124,6 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Panel>
-
-        <!-- empty / loading states -->
         <StackPanel Grid.Row="1"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     Spacing="4"
