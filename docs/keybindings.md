@@ -109,7 +109,6 @@ and `f1`–`f12`. Punctuation is written as itself: `/`, `.`, `,`, `-`, `=`,
 | `content.path_complete`  | Complete the typed path   |
 | `content.path_complete_up` | Completions: move up    |
 | `content.path_complete_down` | Completions: move down |
-| `content.path_complete_accept` | Completions: take the selected one |
 | `content.path_complete_dismiss` | Completions: close the list |
 | `nav.drives`             | Go to drive…              |
 | `nav.trash`              | Go to the trash           |
@@ -130,10 +129,16 @@ it with that file highlighted.
 `Tab` in that box completes what you have typed against what is really in the
 folder, the way a shell does. One match is filled in outright; several carry
 the text as far as they all agree and drop a list out below. While the list is
-showing, `Tab` or `Ctrl+N` moves down it, `Shift+Tab` or `Ctrl+P` moves up,
-`Enter` takes the highlighted one, and `Esc` closes the list without leaving
-the path box. Completing a folder leaves the separator on the end, so `Tab`
-again carries on inside it.
+showing, `Ctrl+N` moves down it and `Ctrl+P` moves up. Each name you land on is
+filled into the path box, so `Enter` always goes to what the box holds. `Tab`
+keeps completing from what is in the box, and `Esc` closes the list without
+leaving the path box. Completing a folder leaves the separator on the end, so
+`Tab` again carries on inside it.
+
+When `Enter` opens a file and nothing on the system knows what to do with it, Rove
+does not just say so. It puts up a list of every installed app that takes a file, under
+the same picker the drive list uses: type to narrow, `Ctrl+N`/`Ctrl+P` to move, `Enter` to
+open the file with that app. This is Linux only; Windows asks which app to use itself.
 
 ### Finding things
 

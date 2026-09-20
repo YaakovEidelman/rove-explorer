@@ -71,8 +71,8 @@ public partial class ContentViewModel
     // ── completing what is typed there ───────────────────────────────────
     // Tab finishes the name against what is really in the folder. Where more
     // than one thing matches it carries the text as far as they agree and
-    // drops a list out, which is Mode.PathCompletion until it is taken or
-    // dismissed. Every one of these writes the box through SetEditPathText,
+    // drops a list out, which is Mode.PathCompletion until it is dismissed or
+    // the path is applied. Moving down the list fills each name into the box. Every one of these writes the box through SetEditPathText,
     // so the list is never re-narrowed by a change it made itself.
 
     private void CompletePath() => _ = CompletePathAsync();
@@ -81,12 +81,6 @@ public partial class ContentViewModel
     {
         if (await Completions.ExpandAsync(EditPathText, DirectoryListing.CurrentDir) is { } completed)
             SetEditPathText(completed);
-    }
-
-    private void AcceptCompletion()
-    {
-        if (Completions.AcceptSelected(EditPathText) is { } taken)
-            SetEditPathText(taken);
     }
 
     private void DismissCompletions() => Completions.Close();

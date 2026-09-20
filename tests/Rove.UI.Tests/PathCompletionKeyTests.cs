@@ -72,24 +72,62 @@ public class PathCompletionKeyTests : HeadlessTest
     });
 
     [Fact]
-    public Task CtrlNMovesThroughTheListAndEnterTakesTheOneHighlighted() => OnUiThread(() =>
+    public Task CtrlNFillsEachNameIntoTheBarAndEnterGoesThere() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(Fill);
+        TypePath(harness, Path.Combine(harness.Root, "rep"));
+        harness.Press(Key.Tab);
+        Assert.Equal(-1, harness.Content.Completions.SelectedIndex);
+
+        harness.Press(Key.N, RawInputModifiers.Control);
+        string first = harness.Content.Completions.Items[harness.Content.Completions.SelectedIndex].Name;
+        Assert.Equal(
+            Path.Combine(harness.Root, first) + Path.DirectorySeparatorChar,
+            harness.Content.EditPathText);
+
+        harness.Press(Key.N, RawInputModifiers.Control);
+        string second = harness.Content.Completions.Items[harness.Content.Completions.SelectedIndex].Name;
+        Assert.NotEqual(first, second);
+        Assert.Equal(
+            Path.Combine(harness.Root, second) + Path.DirectorySeparatorChar,
+            harness.Content.EditPathText);
+        Assert.True(harness.Content.Completions.IsOpen);
+
+        harness.Press(Key.Enter);
+
+        Assert.False(harness.Content.InEditPath);
+        Assert.Equal(Mode.Browse, harness.Model.GetCurrentMode());
+        Assert.Equal(
+            Path.Combine(harness.Root, second),
+            harness.Content.DirectoryListing.CurrentDir);
+    });
+
+    [Fact]
+    public Task CtrlPFromNothingHighlightedFillsTheLastName() => OnUiThread(() =>
     {
         using WindowHarness harness = WindowHarness.Open(Fill);
         TypePath(harness, Path.Combine(harness.Root, "rep"));
         harness.Press(Key.Tab);
 
-        string first = harness.Content.Completions.Items[0].Name;
-        harness.Press(Key.N, RawInputModifiers.Control);
-        string second = harness.Content.Completions.Items[harness.Content.Completions.SelectedIndex].Name;
-        Assert.NotEqual(first, second);
+        harness.Press(Key.P, RawInputModifiers.Control);
 
-        harness.Press(Key.Enter);
-
-        Assert.False(harness.Content.Completions.IsOpen);
-        Assert.True(harness.Content.InEditPath);
+        string last = harness.Content.Completions.Items[^1].Name;
         Assert.Equal(
-            Path.Combine(harness.Root, second) + Path.DirectorySeparatorChar,
+            Path.Combine(harness.Root, last) + Path.DirectorySeparatorChar,
             harness.Content.EditPathText);
+    });
+
+    [Fact]
+    public Task TabWhileTheListShowsKeepsCompletingInsteadOfMoving() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(Fill);
+        TypePath(harness, Path.Combine(harness.Root, "rep"));
+        harness.Press(Key.Tab);
+        int before = harness.Content.Completions.SelectedIndex;
+
+        harness.Press(Key.Tab);
+
+        Assert.Equal(before, harness.Content.Completions.SelectedIndex);
     });
 
     [Fact]

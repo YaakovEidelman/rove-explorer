@@ -141,7 +141,7 @@ public sealed partial class PickerWindowViewModel : ViewModelBase
                 : ""),
         Mode.LocalSearch => "type to filter · Enter keeps filter, back to browsing · Esc clears",
         Mode.EditPath => "type a path · Tab complete · Enter go · Esc cancel",
-        Mode.PathCompletion => "Ctrl+N/Ctrl+P or Tab move · Enter take it · Esc close list",
+        Mode.PathCompletion => "Ctrl+N/Ctrl+P move · Tab go deeper · Enter go · Esc close list",
         Mode.RenameItem => "Enter apply · Esc cancel",
         Mode.CreateItem => "Enter create · Esc cancel",
         Mode.Confirm => "y/Enter confirm · n/Esc cancel",

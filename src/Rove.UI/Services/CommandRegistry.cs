@@ -77,7 +77,6 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public static readonly CommandDef CompletePath = new("content.path_complete", "Complete Path", CommandKind.System);
     public static readonly CommandDef PathCompleteMoveUp = new("content.path_complete_up", "Completions: Move Up", CommandKind.System);
     public static readonly CommandDef PathCompleteMoveDown = new("content.path_complete_down", "Completions: Move Down", CommandKind.System);
-    public static readonly CommandDef PathCompleteAccept = new("content.path_complete_accept", "Completions: Take Selected", CommandKind.System);
     public static readonly CommandDef PathCompleteDismiss = new("content.path_complete_dismiss", "Completions: Close List", CommandKind.System);
 
     // Search
@@ -140,6 +139,7 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
 
     // Drives — one command per mounted drive, registered as they come and go.
     public const string DriveIdPrefix = "nav.drive:";
+    public const string OpenWithIdPrefix = "open.with:";
     public static readonly CommandDef ShowDrives = new("nav.drives", "Go to Drive…", CommandKind.User);
     public static readonly CommandDef ShowTrash = new("nav.trash", $"Go to the {TrashService.DisplayName}", CommandKind.User);
 

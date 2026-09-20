@@ -228,8 +228,14 @@ public partial class ContentViewModel
     private async Task LaunchAsync(FolderItem item)
     {
         CommandResult<string?> result = await _core.Actions.LaunchFileAsync(new(item.FullPath));
-        if (!result.IsOk)
-            ErrorRaised?.Invoke(result.Message ?? "Could not open the file.");
+        if (result.IsOk)
+            return;
+
+        string message = result.Message ?? "Could not open the file.";
+        if (result.Reason == "launch_refused")
+            await OfferAppPickerAsync(item, message);
+        else
+            ErrorRaised?.Invoke(message);
     }
 
     private readonly List<string> _backHistory = [];

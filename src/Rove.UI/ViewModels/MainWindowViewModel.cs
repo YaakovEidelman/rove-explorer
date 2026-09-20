@@ -114,6 +114,8 @@ public partial class MainWindowViewModel : ViewModelBase
         Tabs.ConfirmRequested += Confirm.Request;
         Tabs.DrivePickerRequested +=
             () => Palette.OpenScoped(CommandDef.DriveIdPrefix, "pick a drive…");
+        Tabs.AppPickerRequested +=
+            () => Palette.OpenScoped(CommandDef.OpenWithIdPrefix, "open with…");
         Tabs.SurfaceChanged += RefreshStatusBar;
         Tabs.SelectionChanged += () => Preview.ShowFor(ContentPage.HighlightedItem?.Item, ContentPage.IsAdminView);
         Tabs.ActiveChanged += OnActiveTabChanged;
@@ -299,7 +301,7 @@ public partial class MainWindowViewModel : ViewModelBase
             "type to narrow · Ctrl+N/Ctrl+P move · Enter go · Ctrl+D forget · Tab switch tab · Esc close",
         Mode.Settings => "j/k move · Enter/Space change · Tab switch tab · Esc close",
         Mode.EditPath => "type a path · Tab complete · Enter go · Esc cancel",
-        Mode.PathCompletion => "Ctrl+N/Ctrl+P or Tab move · Enter take it · Esc close list",
+        Mode.PathCompletion => "Ctrl+N/Ctrl+P move · Tab go deeper · Enter go · Esc close list",
         Mode.RenameItem => "Enter apply · Esc cancel",
         Mode.RenameTab => "Enter apply · Esc cancel",
         Mode.CreateItem => "Enter create · Esc cancel",

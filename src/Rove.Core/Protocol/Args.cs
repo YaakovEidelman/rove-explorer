@@ -6,6 +6,12 @@ public record GetParentArgs(string Path);
 /// <summary>A path as a person typed it, plus the folder relative paths are measured from.</summary>
 public record ResolvePathArgs(string Input, string CurrentDirectory);
 public record LaunchFileArgs(string Path);
+
+/// <summary>Every installed app that takes a file to open.</summary>
+public record ListOpenWithArgs();
+
+/// <summary>Open Path with the app whose .desktop file is DesktopFile.</summary>
+public record LaunchFileWithArgs(string Path, string DesktopFile);
 public record GetIconArgs(FolderItem Item, int Size);
 
 /// <summary>Rename keeps the item in place: NewName is a bare name, never a path.</summary>

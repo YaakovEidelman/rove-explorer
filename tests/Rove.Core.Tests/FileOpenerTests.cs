@@ -20,6 +20,23 @@ public class FileOpenerTests
     private const string HomeBin = "/home/me/bin";
 
     [Fact]
+    public void AProgramIsFoundInTheFirstFolderThatHasIt()
+    {
+        string? found = FileOpener.FindProgram(
+            Path_(LocalBin, UsrBin),
+            "gio",
+            Present(In(UsrBin, "gio"), In(LocalBin, "gio")));
+
+        Assert.Equal(In(LocalBin, "gio"), found);
+    }
+
+    [Fact]
+    public void AProgramThatIsNowhereOnThePathIsNotFound()
+    {
+        Assert.Null(FileOpener.FindProgram(Path_(UsrBin), "gio", Present(In(UsrBin, "xdg-open"))));
+    }
+
+    [Fact]
     public void TheTerminalAwareOpenerIsPreferred()
     {
         (string Path, string? First)? found = FileOpener.FindOpener(

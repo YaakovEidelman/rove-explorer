@@ -51,7 +51,9 @@ public partial class PaletteViewModel : ViewModelBase
     private PaletteEntry ToEntry(Command c) => new(c, _registry.HintFor(c.Def.Id));
 
     private bool InScope(Command c) =>
-        _scope.Length == 0 || c.Def.Id.StartsWith(_scope, StringComparison.Ordinal);
+        _scope.Length == 0
+            ? !c.Def.Id.StartsWith(CommandDef.OpenWithIdPrefix, StringComparison.Ordinal)
+            : c.Def.Id.StartsWith(_scope, StringComparison.Ordinal);
 
     private void Rebuild()
     {

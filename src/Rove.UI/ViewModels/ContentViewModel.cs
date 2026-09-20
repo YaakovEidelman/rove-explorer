@@ -52,6 +52,8 @@ public partial class ContentViewModel : ViewModelBase
     /// <summary>Asks for the drive list to be put in front of the user.</summary>
     public event Action? DrivePickerRequested;
 
+    public event Action? AppPickerRequested;
+
     public ContentViewModel(
         ICommandTarget registry,
         RoveCore core,
@@ -76,6 +78,7 @@ public partial class ContentViewModel : ViewModelBase
         _watcher = core.NewWatcher();
         _directoryListing = new(_cache, _settings);
         Completions = new(_core);
+        Completions.Filled += SetEditPathText;
 
         AppSettings defaults = _settings.Current;
         DirectoryListing.ShowHidden = defaults.ShowHiddenByDefault;
@@ -241,7 +244,6 @@ public partial class ContentViewModel : ViewModelBase
         _registry.Register(CommandDef.CompletePath, CompletePath);
         _registry.Register(CommandDef.PathCompleteMoveUp, Completions.MoveUp);
         _registry.Register(CommandDef.PathCompleteMoveDown, Completions.MoveDown);
-        _registry.Register(CommandDef.PathCompleteAccept, AcceptCompletion);
         _registry.Register(CommandDef.PathCompleteDismiss, DismissCompletions);
         _registry.Register(CommandDef.ShowDrives, ShowDrives);
         _registry.Register(CommandDef.ShowTrash, GoToTrash);

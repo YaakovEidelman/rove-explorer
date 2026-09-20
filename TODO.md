@@ -10,9 +10,7 @@ The following is in no particular order (other then that prod grade is first, bu
 1. I need a full code review and check on the existing code front and backend. make sure everything is bullet proof and good. (This should be after everything)
 2. allow apps own binary, to download, install, and update itself, by default, not auto, but with an option for auto.
 3. on Linux (GNOME/Nautilus at least), double-clicking the extracted `Rove` binary fails with an error like "there is no application installed for application/x-pie-executable files." `xdg-mime query default application/x-pie-executable` returns nothing — GNOME has no default-app mechanism for a raw downloaded ELF binary the way it does for documents, only for scripts with a shebang. Works fine via right-click -> "Run as a Program", or from a terminal, just not a plain double-click. docs/installing.md's "unpack it and run it" pitch doesn't hold as-is on GNOME out of the box.
-4. if an enter cannot open something in rove, display the option to "select an app to open"
-5. editing the crumbs bar needs UX work. ctrl + n/p should go up and down the list, but also fill it in. tab, should auto complete the next item. enter goes to the folder/item.
-7. if a folder on linux says "Access Denied" and is enterable via sudo, we need to allow that to work.
+4. if a folder on linux says "Access Denied" and is enterable via sudo, we need to allow that to work.
 
 ## Important but can still be published without it.
 1. claiming the default file manager now force-kills whatever currently holds org.freedesktop.FileManager1 (e.g. Nautilus) so the claim takes effect right away. Deliberate on whether I actually want that, or whether there should at least be an option to skip the kill and only take over via normal D-Bus activation (i.e. only when nothing is currently running).

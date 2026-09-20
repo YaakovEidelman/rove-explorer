@@ -48,6 +48,8 @@ public partial class TabsViewModel : ViewModelBase, IDisposable
     /// <summary>The tab in front wants the drive list put up.</summary>
     public event Action? DrivePickerRequested;
 
+    public event Action? AppPickerRequested;
+
     /// <summary>Anything changed that the status bar reads off the tab in front.</summary>
     public event Action? SurfaceChanged;
 
@@ -264,6 +266,7 @@ public partial class TabsViewModel : ViewModelBase, IDisposable
         content.ConfirmRequested += (message, act) =>
             FromFront(content, () => ConfirmRequested?.Invoke(message, act));
         content.DrivePickerRequested += () => FromFront(content, () => DrivePickerRequested?.Invoke());
+        content.AppPickerRequested += () => FromFront(content, () => AppPickerRequested?.Invoke());
 
         content.PropertyChanged += (_, _) => FromFront(content, RaiseSurface);
         content.DirectoryListing.PropertyChanged += (_, _) => FromFront(content, RaiseSurface);

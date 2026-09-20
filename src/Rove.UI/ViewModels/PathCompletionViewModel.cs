@@ -25,11 +25,14 @@ public record PathCompletionEntry(string Name, string FullPath, bool IsDirectory
 /// Tab completion for the path bar, and the list it puts up. It works the way
 /// a shell works — Tab carries the text as far as the matches agree, and when
 /// more than one is left the list appears to pick from with Ctrl+N/Ctrl+P.
+/// Moving onto a name fills it into the path bar, so what the bar holds is
+/// always where Enter goes.
 ///
 /// <para>
 /// It never touches the path bar's text itself: every method hands back the
-/// text the bar should now hold, and <see cref="ContentViewModel"/> puts it
-/// there. One owner for the text means the two can't disagree about it.
+/// text the bar should now hold, or raises <see cref="Filled"/> with it, and
+/// <see cref="ContentViewModel"/> puts it there. One owner for the text means
+/// the two can't disagree about it.
 /// </para>
 /// </summary>
 public partial class PathCompletionViewModel : ViewModelBase
@@ -43,7 +46,12 @@ public partial class PathCompletionViewModel : ViewModelBase
     /// </summary>
     private int _generation;
 
+    /// <summary>What was typed when the list was last put up, which every fill is built from.</summary>
+    private string _typedBase = string.Empty;
+
     public PathCompletionViewModel(RoveCore core) => _core = core;
+
+    public event Action<string>? Filled;
 
     [ObservableProperty]
     private bool _isOpen;
@@ -89,7 +97,7 @@ public partial class PathCompletionViewModel : ViewModelBase
             return PathCompletion.Join(typed, matches[0].Name, matches[0].IsDirectory);
         }
 
-        Show(matches);
+        Show(matches, typed);
         string shared = PathCompletion.LongestCommonPrefix([.. matches.Select(match => match.Name)]);
         string prefix = PathCompletion.Split(typed, currentDirectory).Prefix;
         return shared.Length > prefix.Length
@@ -109,7 +117,7 @@ public partial class PathCompletionViewModel : ViewModelBase
         if (matches.Count == 0)
             Close();
         else
-            Show(matches);
+            Show(matches, typed);
     }
 
     public void MoveUp()
@@ -126,21 +134,13 @@ public partial class PathCompletionViewModel : ViewModelBase
         SelectedIndex = SelectedIndex >= Items.Count - 1 ? 0 : SelectedIndex + 1;
     }
 
-    /// <summary>
-    /// Takes the highlighted name into the path bar and puts the list away.
-    /// Null when there was nothing highlighted to take.
-    /// </summary>
-    public string? AcceptSelected(string typed)
+    partial void OnSelectedIndexChanged(int value)
     {
-        if (SelectedIndex < 0 || SelectedIndex >= Items.Count)
-        {
-            Close();
-            return null;
-        }
+        if (value < 0 || value >= Items.Count)
+            return;
 
-        PathCompletionEntry chosen = Items[SelectedIndex];
-        Close();
-        return PathCompletion.Join(typed, chosen.Name, chosen.IsDirectory);
+        PathCompletionEntry chosen = Items[value];
+        Filled?.Invoke(PathCompletion.Join(_typedBase, chosen.Name, chosen.IsDirectory));
     }
 
     public void Close()
@@ -203,21 +203,11 @@ public partial class PathCompletionViewModel : ViewModelBase
         return PathCompletion.Matches(item.Name, prefix);
     }
 
-    private void Show(IReadOnlyList<PathCompletionEntry> matches)
+    private void Show(IReadOnlyList<PathCompletionEntry> matches, string typed)
     {
+        _typedBase = typed;
         Items = [.. matches];
         IsOpen = true;
-        ResetSelection();
-    }
-
-    /// <summary>
-    /// After ItemsSource is swapped the ListBox resets its own selection;
-    /// bounce through -1 so setting 0 always re-notifies the binding.
-    /// </summary>
-    private void ResetSelection()
-    {
         SelectedIndex = -1;
-        if (Items.Count > 0)
-            SelectedIndex = 0;
     }
 }

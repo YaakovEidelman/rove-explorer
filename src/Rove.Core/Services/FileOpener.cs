@@ -114,20 +114,44 @@ public static class FileOpener
         if (FindOpener(Environment.GetEnvironmentVariable("PATH"), IsRunnable) is not { } found)
             return "There is no program on this system for opening files. Installing xdg-utils gives Rove one.";
 
+        string[] leading = found.First is { Length: > 0 } first ? [first] : [];
+        return Run(found.Path, leading, path, out opener);
+    }
+
+    /// <summary>
+    /// Same, but with the app the user picked rather than the one the desktop
+    /// would. <c>gio launch</c> is what runs a .desktop file, so it is the one
+    /// program this needs.
+    /// </summary>
+    public static string? StartWith(string desktopFile, string path, out Opener? opener)
+    {
+        opener = null;
+        if (OperatingSystem.IsWindows())
+            return "Windows asks which app to use on its own.";
+
+        if (FindProgram(Environment.GetEnvironmentVariable("PATH"), "gio", IsRunnable) is not { } gio)
+            return "Opening a file with a chosen app needs gio, which comes with glib.";
+
+        return Run(gio, ["launch", desktopFile], path, out opener);
+    }
+
+    private static string? Run(string program, string[] leading, string path, out Opener? opener)
+    {
+        opener = null;
         string? errorFile = File.Exists(_shell)
             ? Path.Combine(Path.GetTempPath(), $"rove-open-{Guid.NewGuid():N}")
             : null;
 
-        ProcessStartInfo info = new(errorFile is null ? found.Path : _shell) { UseShellExecute = false };
+        ProcessStartInfo info = new(errorFile is null ? program : _shell) { UseShellExecute = false };
         if (errorFile is not null)
         {
             info.ArgumentList.Add("-c");
             info.ArgumentList.Add(_handOff);
             info.ArgumentList.Add(errorFile);
-            info.ArgumentList.Add(found.Path);
+            info.ArgumentList.Add(program);
         }
-        if (found.First is { Length: > 0 } first)
-            info.ArgumentList.Add(first);
+        foreach (string argument in leading)
+            info.ArgumentList.Add(argument);
         info.ArgumentList.Add(LongPath.Display(path));
 
         try
@@ -240,17 +264,24 @@ public static class FileOpener
     /// </summary>
     internal static (string Path, string? First)? FindOpener(string? pathVariable, Func<string, bool> exists)
     {
+        foreach ((string program, string? first) in _openers)
+        {
+            if (FindProgram(pathVariable, program, exists) is { } found)
+                return (found, first);
+        }
+        return null;
+    }
+
+    internal static string? FindProgram(string? pathVariable, string program, Func<string, bool> exists)
+    {
         string[] directories = (pathVariable ?? string.Empty)
             .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        foreach ((string program, string? first) in _openers)
+        foreach (string directory in directories)
         {
-            foreach (string directory in directories)
-            {
-                string candidate = Path.Combine(directory, program);
-                if (exists(candidate))
-                    return (candidate, first);
-            }
+            string candidate = Path.Combine(directory, program);
+            if (exists(candidate))
+                return candidate;
         }
         return null;
     }

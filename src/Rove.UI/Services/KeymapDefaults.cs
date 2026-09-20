@@ -268,9 +268,8 @@ public static class KeymapDefaults
             [
                 new(K(Key.Escape), CommandDef.PathCompleteDismiss.Id),
                 new(K(Key.C, KeyModifiers.Control), CommandDef.PathCompleteDismiss.Id),
-                new(K(Key.Enter), CommandDef.PathCompleteAccept.Id),
-                new(K(Key.Tab), CommandDef.PathCompleteMoveDown.Id),
-                new(K(Key.Tab, KeyModifiers.Shift), CommandDef.PathCompleteMoveUp.Id),
+                new(K(Key.Enter), CommandDef.ApplyEditPath.Id),
+                new(K(Key.Tab), CommandDef.CompletePath.Id),
                 new(K(Key.N, KeyModifiers.Control), CommandDef.PathCompleteMoveDown.Id),
                 new(K(Key.P, KeyModifiers.Control), CommandDef.PathCompleteMoveUp.Id),
                 new(K(Key.Down), CommandDef.PathCompleteMoveDown.Id),

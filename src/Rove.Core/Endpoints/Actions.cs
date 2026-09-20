@@ -316,6 +316,44 @@ public class Actions
             : CommandResult<string?>.Fail("launch_refused", error);
     }
 
+    public CommandResult<AppEntry[]> ListOpenWithApps(ListOpenWithArgs args)
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            return CommandResult<AppEntry[]>.Fail(
+                "unsupported", "Windows asks which app to use on its own.");
+        }
+
+        try
+        {
+            return CommandResult<AppEntry[]>.Ok(LinuxDesktopApps.Installed());
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return CommandResult<AppEntry[]>.Fail("io_error", ex.Message);
+        }
+    }
+
+    public async Task<CommandResult<string?>> LaunchFileWithAsync(
+        LaunchFileWithArgs args, CancellationToken ct = default
+    )
+    {
+        string? error = FileOpener.StartWith(args.DesktopFile, args.Path, out FileOpener.Opener? opener);
+        if (error is not null)
+        {
+            opener?.Dispose();
+            return CommandResult<string?>.Fail("launch_failed", error);
+        }
+
+        using (opener)
+        {
+            error = await FileOpener.WaitForRefusal(opener, args.Path, ct);
+        }
+        return error is null
+            ? CommandResult<string?>.Ok(null)
+            : CommandResult<string?>.Fail("launch_refused", error);
+    }
+
     // ── Icons ────────────────────────────────────────────────────────────
 
     public async Task<CommandResult<byte[]?>> GetItemIcon(GetIconArgs args)

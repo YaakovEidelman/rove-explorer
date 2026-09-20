@@ -31,6 +31,8 @@ public class Dispatcher
         Register<GetParentArgs, FolderItem?>("get_parent", _actions.GetParent);
         Register<ResolvePathArgs, FolderItem?>("resolve_path", _actions.ResolvePath);
         Register<LaunchFileArgs, string?>("launch_file", _actions.LaunchFile);
+        Register<ListOpenWithArgs, AppEntry[]>("list_open_with", _actions.ListOpenWithApps);
+        Register<LaunchFileWithArgs, string?>("launch_file_with", a => _actions.LaunchFileWithAsync(a));
         Register<ListDrivesArgs, DriveEntry[]>("list_drives", _actions.ListDrives);
         Register<GetIconArgs, byte[]?>("get_icon", _actions.GetItemIcon);
         Register<RenameItemArgs, FolderItem?>("rename_item", _actions.RenameItem);

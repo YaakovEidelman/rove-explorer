@@ -50,7 +50,7 @@ public class DispatcherTests
             "read_directory", "get_parent", "launch_file", "get_icon",
             "rename_item", "move_items", "copy_items", "delete_items",
             "delete_items_permanent", "create_item", "get_metadata", "search_global",
-            "restore_items", "delete_if_empty",
+            "restore_items", "delete_if_empty", "list_open_with", "launch_file_with",
         ];
         foreach (string verb in verbs)
             Assert.Contains(verb, _dispatcher.DispatcherDict.Keys);
@@ -70,7 +70,8 @@ public class DispatcherTests
         Type[] argTypes =
         [
             typeof(ReadDirectoryArgs), typeof(GetParentArgs), typeof(ResolvePathArgs),
-            typeof(LaunchFileArgs), typeof(ListDrivesArgs), typeof(GetIconArgs),
+            typeof(LaunchFileArgs), typeof(ListOpenWithArgs), typeof(LaunchFileWithArgs),
+            typeof(ListDrivesArgs), typeof(GetIconArgs),
             typeof(RenameItemArgs), typeof(MoveItemsArgs), typeof(CopyItemsArgs),
             typeof(DeleteItemsArgs), typeof(RestoreItemsArgs), typeof(OpenTrashArgs),
             typeof(ExtractArchivesArgs), typeof(CompressItemsArgs), typeof(DeleteIfEmptyArgs),
