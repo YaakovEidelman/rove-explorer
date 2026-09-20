@@ -260,15 +260,19 @@ closes the width bar if it was up.
 
 ### Locked folders (Linux)
 
-When a folder says "Access denied", Rove asks "Open it as administrator?" (`y`/`Enter` to
-accept, `n`/`Esc` to decline). Accepting shows the standard polkit password dialog, then lists the
-folder as root through a helper started with `pkexec`. The helper stays up for the rest of the
-session, so you type the password once; folders that need it open with no more questions.
+When a folder says "Access denied", Rove shows the standard polkit password dialog and then
+lists the folder as root through a helper started with `pkexec`. The helper stays up for the rest
+of the session, so you type the password once; folders that need it open with no more questions.
+The tab shows a red ADMIN mark next to its name while it is in this view.
 
-This view is read-only for now: the status bar says "administrator (read-only)", and delete,
-rename, new file/folder, cut, copy, paste, extract and compress are refused. Going to a folder
-you can read normally leaves the view. It needs `pkexec` and a running polkit agent, and only
-exists on Linux.
+The preview pane works here, and `Enter` on a file opens it. You can't read a root-only file
+yourself, so the helper makes a read-only copy in a private folder (`$XDG_RUNTIME_DIR`, else the
+temp folder) and the copy is what opens. Rove says so in the status bar, and changes to the copy
+are not saved to the original. Copies are deleted when Rove closes; preview copies right away.
+
+This view is read-only for now: delete, rename, new file/folder, cut, copy, paste, extract and
+compress are refused. Going to a folder you can read normally leaves the view. It needs `pkexec`
+and a running polkit agent, and only exists on Linux.
 
 ### Tabs
 

@@ -94,6 +94,8 @@
                                                         Content="✕"
                                                         IsVisible="{Binding !IsRenaming}"
                                                         chrome:WindowDecorationProperties.ElementRole="User" />
+                                                <TextBlock DockPanel.Dock="Right" Classes="tabadmin" Text="ADMIN"
+                                                           IsVisible="{Binding IsAdmin}" />
                                                 <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"
                                                            IsVisible="{Binding !IsRenaming}" />
                                                 <TextBox Classes="tabrename" Text="{Binding EditText}"

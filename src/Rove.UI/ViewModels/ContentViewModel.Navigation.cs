@@ -37,23 +37,21 @@ public partial class ContentViewModel
 
         if (!result.IsOk || result.Data is null)
         {
-            if (!viaAdmin && CanOfferAdministratorAccess(directory, result))
+            if (!viaAdmin && CanRetryAsAdministrator(directory, result))
             {
-                ConfirmRequested?.Invoke(
-                    $"Can't open {directory}. Open it as administrator?",
-                    () => _ = SetCurrentDirectoryAsync(directory, highlightPath, asAdmin: true));
+                await SetCurrentDirectoryAsync(directory, highlightPath, asAdmin: true);
                 return;
             }
             ErrorRaised?.Invoke(result.Message ?? $"Could not open {directory}.");
             return;
         }
 
+        IsAdminView = viaAdmin;
         DirectoryListing.InLocalSearch = false;
         DirectoryListing.SearchCurrentDirectoryText = string.Empty;
         DirectoryListing.Load(directory, result.Data);
         DirectoryListing.CurrentDir = directory;
         InArchive = ArchivePath.IsInside(directory);
-        IsAdminView = viaAdmin;
         InTrash = TrashService.BrowsePath is { } trashRoot && PathGuard.IsSameOrDescendant(trashRoot, directory);
         RefreshCutFlags();
 
@@ -99,7 +97,7 @@ public partial class ContentViewModel
         return (result, false);
     }
 
-    private bool CanOfferAdministratorAccess(string directory, CommandResult<FolderItem[]> result) =>
+    private bool CanRetryAsAdministrator(string directory, CommandResult<FolderItem[]> result) =>
         result.Reason == "permission_denied"
         && _core.Admin is not null
         && !ArchivePath.IsInside(directory);
@@ -119,6 +117,11 @@ public partial class ContentViewModel
             return;
         }
         ClearLocalSearch();
+        if (IsAdminView)
+        {
+            _ = OpenFromAdminAsync(item);
+            return;
+        }
         if (ArchiveService.IsArchive(item.FullPath))
         {
             _ = OpenArchiveAsync(item);
@@ -165,6 +168,34 @@ public partial class ContentViewModel
             return;
         InfoRaised?.Invoke($"Opened a copy of {item.Name} — edits to it are not saved back into the zip.");
         await LaunchAsync(FolderItem.FromPath(copy));
+    }
+
+    /// <summary>
+    /// A file in an administrator view can only be read by root, and the
+    /// program that opens it runs as the user — so it gets a read-only copy
+    /// the helper made, and is told so.
+    /// </summary>
+    private async Task OpenFromAdminAsync(FolderItem item)
+    {
+        if (_core.Admin is not { } admin)
+            return;
+        IsLoading = true;
+        CommandResult<string> result;
+        try
+        {
+            result = await admin.CopyToTempAsync(item.FullPath, long.MaxValue);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+        if (!result.IsOk || result.Data is null)
+        {
+            ErrorRaised?.Invoke(result.Message ?? $"Could not read {item.Name} as administrator.");
+            return;
+        }
+        InfoRaised?.Invoke($"Opened a read-only copy of {item.Name} — it is not the original.");
+        await LaunchAsync(FolderItem.FromPath(result.Data));
     }
 
     /// <summary>

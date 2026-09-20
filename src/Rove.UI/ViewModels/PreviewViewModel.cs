@@ -4,6 +4,7 @@ using Rove.Core;
 using Rove.Core.Protocol;
 using Rove.UI.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -32,6 +33,7 @@ public partial class PreviewViewModel : ViewModelBase
     private readonly IImagePreviewLoader _images;
     private CancellationTokenSource? _cts;
     private FolderItem? _current;
+    private bool _currentViaAdmin;
 
     public PreviewViewModel(CommandRegistry registry, RoveCore core, IImagePreviewLoader images)
     {
@@ -76,13 +78,14 @@ public partial class PreviewViewModel : ViewModelBase
     {
         IsOpen = !IsOpen;
         if (IsOpen && _current is not null)
-            _ = LoadAsync(_current);
+            _ = LoadAsync(_current, _currentViaAdmin);
     }
 
     /// <summary>Called by the shell whenever the highlighted item changes.</summary>
-    public void ShowFor(FolderItem? item)
+    public void ShowFor(FolderItem? item, bool viaAdmin = false)
     {
         _current = item;
+        _currentViaAdmin = viaAdmin;
         if (!IsOpen)
             return;
         if (item is null)
@@ -90,7 +93,7 @@ public partial class PreviewViewModel : ViewModelBase
             ClearDisplay();
             return;
         }
-        _ = LoadAsync(item);
+        _ = LoadAsync(item, viaAdmin);
     }
 
     private void ClearDisplay()
@@ -109,7 +112,7 @@ public partial class PreviewViewModel : ViewModelBase
         HasImagePreview = false;
     }
 
-    private async Task LoadAsync(FolderItem item)
+    private async Task LoadAsync(FolderItem item, bool viaAdmin)
     {
         _cts?.Cancel();
         CancellationTokenSource cts = new();
@@ -124,6 +127,14 @@ public partial class PreviewViewModel : ViewModelBase
 
         try
         {
+            if (viaAdmin)
+            {
+                Rows = [.. BuildAdminRows(item)];
+                if (!item.IsDirectory)
+                    await LoadAdminBodyAsync(item, cts.Token);
+                return;
+            }
+
             CommandResult<ItemMetadata?> result =
                 await _core.Actions.GetMetadataAsync(new(item.FullPath), cts.Token);
             if (cts.Token.IsCancellationRequested)
@@ -174,6 +185,47 @@ public partial class PreviewViewModel : ViewModelBase
             return;
         PreviewText = text;
         HasTextPreview = true;
+    }
+
+    private static MetaRow[] BuildAdminRows(FolderItem item)
+    {
+        List<MetaRow> rows = [new("Location", item.FullPath)];
+        if (item.Size is { } size)
+            rows.Add(new("Size", $"{ColumnDefaults.FormatSize(size)} ({size:N0} bytes)"));
+        rows.Add(new("Modified", item.LastWriteTime.ToString("g")));
+        rows.Add(new("Access", "administrator (read-only)"));
+        return [.. rows];
+    }
+
+    /// <summary>The same body as any file gets, read from a copy the administrator helper made.</summary>
+    private async Task LoadAdminBodyAsync(FolderItem item, CancellationToken ct)
+    {
+        if (_core.Admin is not { } admin)
+            return;
+
+        bool isImage = _images.CanPreview(item.Extension);
+        long size = item.Size ?? 0;
+        if (size > (isImage ? MaxPreviewImageBytes : MaxPreviewFileBytes))
+            return;
+
+        CommandResult<string> copy = await admin.CopyToTempAsync(
+            item.FullPath, isImage ? MaxPreviewImageBytes : TextPreviewBytes, ct);
+        if (!copy.IsOk || copy.Data is null)
+        {
+            Rows = [.. Rows, new MetaRow("Error", copy.Message ?? "Could not read the file.")];
+            return;
+        }
+
+        try
+        {
+            if (ct.IsCancellationRequested)
+                return;
+            await LoadBodyAsync(FolderItem.FromPath(copy.Data), ct);
+        }
+        finally
+        {
+            admin.Discard(copy.Data);
+        }
     }
 
     private static MetaRow[] BuildRows(ItemMetadata m)

@@ -115,7 +115,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Tabs.DrivePickerRequested +=
             () => Palette.OpenScoped(CommandDef.DriveIdPrefix, "pick a drive…");
         Tabs.SurfaceChanged += RefreshStatusBar;
-        Tabs.SelectionChanged += () => Preview.ShowFor(ContentPage.HighlightedItem?.Item);
+        Tabs.SelectionChanged += () => Preview.ShowFor(ContentPage.HighlightedItem?.Item, ContentPage.IsAdminView);
         Tabs.ActiveChanged += OnActiveTabChanged;
         Tabs.Emptied += CloseApp;
 
@@ -158,7 +158,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private void OnActiveTabChanged()
     {
         OnPropertyChanged(nameof(ContentPage));
-        Preview.ShowFor(ContentPage.HighlightedItem?.Item);
+        Preview.ShowFor(ContentPage.HighlightedItem?.Item, ContentPage.IsAdminView);
     }
 
     private bool _lastQuickAccessOpen;
@@ -321,8 +321,6 @@ public partial class MainWindowViewModel : ViewModelBase
                 summary += " · hidden shown";
             if (ContentPage.InArchive)
                 summary += " · in a zip";
-            if (ContentPage.IsAdminView)
-                summary += " · administrator (read-only)";
             return summary;
         }
     }

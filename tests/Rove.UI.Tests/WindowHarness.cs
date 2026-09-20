@@ -146,7 +146,8 @@ internal sealed class WindowHarness : IDisposable
         while (quiet < quietPassesWanted && DateTime.UtcNow < deadline)
         {
             Dispatcher.UIThread.RunJobs();
-            quiet = Content.IsLoading || Model.FileOperation.IsRunning || Content.Completions.IsReading
+            quiet = Content.IsLoading || Model.Preview.IsLoading || Model.FileOperation.IsRunning
+                || Content.Completions.IsReading
                 ? 0
                 : quiet + 1;
             Thread.Sleep(1);

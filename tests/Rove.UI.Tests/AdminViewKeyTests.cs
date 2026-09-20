@@ -1,6 +1,7 @@
 using Avalonia.Input;
 using Rove.Core.Protocol;
 using Rove.Core.Services;
+using Rove.UI.ViewModels;
 using Xunit;
 
 namespace Rove.UI.Tests;
@@ -12,6 +13,10 @@ public class AdminViewKeyTests : HeadlessTest
         public List<string> Requests { get; } = [];
         public bool Refuse { get; init; }
         public bool IsRunning { get; private set; }
+        public List<(string Path, long MaxBytes)> CopyRequests { get; } = [];
+        public List<string> Discarded { get; } = [];
+        public string CopyContent { get; init; } = "hello from root";
+        public bool CopyFails { get; init; }
 
         public Task<CommandResult<FolderItem[]>> ReadDirectoryAsync(string path)
         {
@@ -26,6 +31,24 @@ public class AdminViewKeyTests : HeadlessTest
                     DateTime.Now, false, 3, ".txt"),
             ];
             return Task.FromResult(CommandResult<FolderItem[]>.Ok(items));
+        }
+
+        public Task<CommandResult<string>> CopyToTempAsync(
+            string path, long maxBytes, CancellationToken ct = default)
+        {
+            CopyRequests.Add((path, maxBytes));
+            if (CopyFails)
+                return Task.FromResult(CommandResult<string>.Fail("not_a_file", "Could not read it."));
+            string folder = Directory.CreateTempSubdirectory("rove-fake-admin-").FullName;
+            string copy = Path.Combine(folder, Path.GetFileName(path));
+            File.WriteAllText(copy, CopyContent);
+            return Task.FromResult(CommandResult<string>.Ok(copy));
+        }
+
+        public void Discard(string copy)
+        {
+            Discarded.Add(copy);
+            Directory.Delete(Path.GetDirectoryName(copy)!, recursive: true);
         }
 
         public void Dispose()
@@ -47,7 +70,7 @@ public class AdminViewKeyTests : HeadlessTest
             | UnixFileMode.UserExecute);
 
     [Fact]
-    public Task EnteringALockedFolderAsksBeforeUsingAdministratorAccess() => OnUiThread(() =>
+    public Task EnteringALockedFolderGoesStraightToTheAdministratorSession() => OnUiThread(() =>
     {
         FakeAdminSession admin = new();
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
@@ -57,31 +80,9 @@ public class AdminViewKeyTests : HeadlessTest
             harness.Highlight("locked");
 
             harness.Press(Key.Enter);
-
-            Assert.True(harness.Model.Confirm.IsOpen);
-            Assert.Empty(admin.Requests);
-            Assert.Equal(harness.Root, harness.Content.DirectoryListing.CurrentDir);
-        }
-        finally
-        {
-            Unlock(harness.Root);
-        }
-    });
-
-    [Fact]
-    public Task AcceptingOpensTheFolderThroughTheAdministratorSession() => OnUiThread(() =>
-    {
-        FakeAdminSession admin = new();
-        using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
-        Lock(harness.Root);
-        try
-        {
-            harness.Highlight("locked");
-            harness.Press(Key.Enter);
-
-            harness.Press(Key.Y);
 
             string locked = Path.Combine(harness.Root, "locked");
+            Assert.False(harness.Model.Confirm.IsOpen);
             Assert.Equal([locked], admin.Requests);
             Assert.Equal(locked, harness.Content.DirectoryListing.CurrentDir);
             Assert.Equal(["secret.txt"], harness.Names());
@@ -94,22 +95,23 @@ public class AdminViewKeyTests : HeadlessTest
     });
 
     [Fact]
-    public Task DecliningLeavesEverythingAsItWas() => OnUiThread(() =>
+    public Task TheTabIsMarkedWhileItShowsTheAdministratorView() => OnUiThread(() =>
     {
         FakeAdminSession admin = new();
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
         Lock(harness.Root);
         try
         {
+            FolderTab tab = harness.Model.Tabs.Items[harness.Model.Tabs.ActiveIndex];
+            Assert.False(tab.IsAdmin);
             harness.Highlight("locked");
+
             harness.Press(Key.Enter);
+            Assert.True(tab.IsAdmin);
+            Assert.DoesNotContain("administrator", harness.Model.ItemSummary);
 
-            harness.Press(Key.N);
-
-            Assert.Empty(admin.Requests);
-            Assert.False(harness.Model.Confirm.IsOpen);
-            Assert.False(harness.Content.IsAdminView);
-            Assert.Equal(harness.Root, harness.Content.DirectoryListing.CurrentDir);
+            harness.Press(Key.H);
+            Assert.False(tab.IsAdmin);
         }
         finally
         {
@@ -118,7 +120,7 @@ public class AdminViewKeyTests : HeadlessTest
     });
 
     [Fact]
-    public Task OnceUnlockedTheNextLockedFolderOpensWithoutAskingAgain() => OnUiThread(() =>
+    public Task TheSessionIsReusedForTheNextLockedFolder() => OnUiThread(() =>
     {
         FakeAdminSession admin = new();
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
@@ -127,7 +129,6 @@ public class AdminViewKeyTests : HeadlessTest
         {
             harness.Highlight("locked");
             harness.Press(Key.Enter);
-            harness.Press(Key.Y);
             harness.Press(Key.H);
             Assert.False(harness.Content.IsAdminView);
             Assert.Equal(harness.Root, harness.Content.DirectoryListing.CurrentDir);
@@ -154,9 +155,8 @@ public class AdminViewKeyTests : HeadlessTest
         try
         {
             harness.Highlight("locked");
-            harness.Press(Key.Enter);
 
-            harness.Press(Key.Y);
+            harness.Press(Key.Enter);
 
             Assert.Equal("Administrator access was cancelled.", harness.Model.StatusError);
             Assert.False(harness.Model.Confirm.IsOpen);
@@ -199,13 +199,89 @@ public class AdminViewKeyTests : HeadlessTest
         {
             harness.Highlight("locked");
             harness.Press(Key.Enter);
-            harness.Press(Key.Y);
             harness.Highlight("secret.txt");
 
             harness.Press(Key.D, RawInputModifiers.Shift);
 
             Assert.False(harness.Model.Confirm.IsOpen);
             Assert.Contains("administrator view", harness.Model.StatusLine);
+        }
+        finally
+        {
+            Unlock(harness.Root);
+        }
+    });
+
+    [Fact]
+    public Task PreviewShowsTheStartOfTheFileFromACopyAndDiscardsIt() => OnUiThread(() =>
+    {
+        FakeAdminSession admin = new();
+        using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
+        Lock(harness.Root);
+        try
+        {
+            harness.Highlight("locked");
+            harness.Press(Key.Enter);
+            harness.Model.Preview.Toggle();
+
+            harness.Highlight("secret.txt");
+            harness.Settle();
+
+            string secret = Path.Combine(harness.Root, "locked", "secret.txt");
+            Assert.Equal("hello from root", harness.Model.Preview.PreviewText);
+            Assert.Contains(harness.Model.Preview.Rows, r => r.Label == "Location" && r.Value == secret);
+            Assert.All(admin.CopyRequests, r => Assert.Equal((secret, 16 * 1024L), r));
+            Assert.NotEmpty(admin.CopyRequests);
+            Assert.Equal(admin.CopyRequests.Count, admin.Discarded.Count);
+        }
+        finally
+        {
+            Unlock(harness.Root);
+        }
+    });
+
+    [Fact]
+    public Task PreviewSaysWhyWhenTheCopyFails() => OnUiThread(() =>
+    {
+        FakeAdminSession admin = new() { CopyFails = true };
+        using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
+        Lock(harness.Root);
+        try
+        {
+            harness.Highlight("locked");
+            harness.Press(Key.Enter);
+            harness.Model.Preview.Toggle();
+
+            harness.Highlight("secret.txt");
+            harness.Settle();
+
+            Assert.False(harness.Model.Preview.HasTextPreview);
+            Assert.Contains(harness.Model.Preview.Rows, r => r.Label == "Error");
+        }
+        finally
+        {
+            Unlock(harness.Root);
+        }
+    });
+
+    [Fact]
+    public Task OpeningAFileAsksTheSessionForTheWholeFileAndSaysSo() => OnUiThread(() =>
+    {
+        FakeAdminSession admin = new() { CopyFails = true };
+        using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
+        Lock(harness.Root);
+        try
+        {
+            harness.Highlight("locked");
+            harness.Press(Key.Enter);
+            harness.Highlight("secret.txt");
+
+            harness.Press(Key.Enter);
+            harness.Settle();
+
+            string secret = Path.Combine(harness.Root, "locked", "secret.txt");
+            Assert.Equal([(secret, long.MaxValue)], admin.CopyRequests);
+            Assert.Equal("Could not read it.", harness.Model.StatusError);
         }
         finally
         {

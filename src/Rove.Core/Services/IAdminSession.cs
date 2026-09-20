@@ -7,6 +7,10 @@ public interface IAdminSession : IDisposable
     bool IsRunning { get; }
 
     Task<CommandResult<FolderItem[]>> ReadDirectoryAsync(string path);
+
+    Task<CommandResult<string>> CopyToTempAsync(string path, long maxBytes, CancellationToken ct = default);
+
+    void Discard(string copy);
 }
 
 public static class AdminSessionChooser

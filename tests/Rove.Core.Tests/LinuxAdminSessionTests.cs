@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Rove.Core.Protocol;
 using Rove.Core.Services;
 using Xunit;
@@ -147,5 +148,176 @@ public class LinuxAdminSessionTests
         Assert.Equal("admin_failed", result.Reason);
         Assert.Equal("Administrator access was cancelled.", result.Message);
         Assert.False(session.IsRunning);
+    }
+
+    [Fact]
+    public async Task CopiesAFileByteForByteIntoAPrivateFolder()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+        using TempDir dir = new();
+        byte[] content = new byte[300_000];
+        new Random(7).NextBytes(content);
+        string source = Path.Combine(dir.Path, "data.bin");
+        File.WriteAllBytes(source, content);
+        using LinuxAdminSession session = Open();
+
+        CommandResult<string> result = await session.CopyToTempAsync(source, long.MaxValue);
+
+        Assert.True(result.IsOk);
+        Assert.Equal("data.bin", Path.GetFileName(result.Data));
+        Assert.Equal(content, File.ReadAllBytes(result.Data!));
+        Assert.Equal(UnixFileMode.UserRead, File.GetUnixFileMode(result.Data!));
+        Assert.Equal(
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute,
+            File.GetUnixFileMode(Path.GetDirectoryName(result.Data!)!));
+    }
+
+    [Fact]
+    public async Task CopiesOnlyAsMuchAsAskedFor()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+        using TempDir dir = new();
+        string source = Path.Combine(dir.Path, "long.txt");
+        File.WriteAllText(source, "0123456789abcdef");
+        using LinuxAdminSession session = Open();
+
+        CommandResult<string> result = await session.CopyToTempAsync(source, 10);
+
+        Assert.Equal("0123456789", File.ReadAllText(result.Data!));
+    }
+
+    [Fact]
+    public async Task EveryLengthOfCopyComesBackExact()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+        using TempDir dir = new();
+        byte[] content = Enumerable.Range(0, 40).Select(i => (byte)(i * 7)).ToArray();
+        string source = Path.Combine(dir.Path, "run.bin");
+        File.WriteAllBytes(source, content);
+        using LinuxAdminSession session = Open();
+
+        for (int length = 0; length <= content.Length; length++)
+        {
+            CommandResult<string> result = await session.CopyToTempAsync(source, length);
+            Assert.Equal(content[..length], File.ReadAllBytes(result.Data!));
+        }
+    }
+
+    [Fact]
+    public async Task CopiesAnEmptyFileAndKeepsTheSessionInStep()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+        using TempDir dir = new();
+        string empty = Path.Combine(dir.Path, "empty");
+        File.WriteAllText(empty, "");
+        using LinuxAdminSession session = Open();
+
+        CommandResult<string> copy = await session.CopyToTempAsync(empty, long.MaxValue);
+        CommandResult<FolderItem[]> listing = await session.ReadDirectoryAsync(dir.Path);
+
+        Assert.Empty(File.ReadAllBytes(copy.Data!));
+        Assert.Equal(["empty"], listing.Data!.Select(i => i.Name));
+    }
+
+    [Fact]
+    public async Task AFolderOrAMissingFileIsNotCopiedAndTheSessionCarriesOn()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+        using TempDir dir = new();
+        using LinuxAdminSession session = Open();
+
+        CommandResult<string> folder = await session.CopyToTempAsync(dir.Path, long.MaxValue);
+        CommandResult<string> missing =
+            await session.CopyToTempAsync(Path.Combine(dir.Path, "nope"), long.MaxValue);
+        CommandResult<FolderItem[]> listing = await session.ReadDirectoryAsync(dir.Path);
+
+        Assert.Equal("not_a_file", folder.Reason);
+        Assert.Equal("not_a_file", missing.Reason);
+        Assert.True(listing.IsOk);
+    }
+
+    [Fact]
+    public async Task ARelativePathIsNotCopied()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+        using LinuxAdminSession session = Open();
+
+        CommandResult<string> result = await session.CopyToTempAsync("relative.txt", long.MaxValue);
+
+        Assert.Equal("bad_path", result.Reason);
+        Assert.False(session.IsRunning);
+    }
+
+    [Fact]
+    public async Task DiscardRemovesJustThatCopyAndDisposeRemovesTheRest()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+        using TempDir dir = new();
+        string source = Path.Combine(dir.Path, "a.txt");
+        File.WriteAllText(source, "a");
+        LinuxAdminSession session = Open();
+        string first = (await session.CopyToTempAsync(source, long.MaxValue)).Data!;
+        string second = (await session.CopyToTempAsync(source, long.MaxValue)).Data!;
+
+        session.Discard(first);
+
+        Assert.False(File.Exists(first));
+        Assert.True(File.Exists(second));
+        session.Dispose();
+        Assert.False(File.Exists(second));
+    }
+
+    [Fact]
+    public async Task DiscardLeavesAlonePathsThatAreNotItsCopies()
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+        using TempDir dir = new();
+        string mine = Path.Combine(dir.Path, "keep.txt");
+        File.WriteAllText(mine, "keep");
+        using LinuxAdminSession session = Open();
+        await session.CopyToTempAsync(mine, long.MaxValue);
+
+        session.Discard(mine);
+
+        Assert.True(File.Exists(mine));
+    }
+
+    [Theory]
+    [InlineData("wrong-secret", "list", "/tmp", "")]
+    [InlineData(null, "delete", "/tmp", "")]
+    [InlineData(null, "read", "/etc/hostname", "-1")]
+    [InlineData(null, "list", "relative", "")]
+    public async Task TheHelperStopsOnARequestItShouldNotHaveGot(
+        string? token, string verb, string path, string limit)
+    {
+        if (!OperatingSystem.IsLinux())
+            return;
+        const string secret = "s3cret";
+        ProcessStartInfo start = new("/usr/bin/bash")
+        {
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+        };
+        start.ArgumentList.Add("-c");
+        start.ArgumentList.Add(LinuxAdminSession.Script);
+        using Process helper = Process.Start(start)!;
+
+        string request = $"{secret}\0{token ?? secret}\0{verb}\0{path}\0{limit}\0";
+        await helper.StandardInput.WriteAsync(request);
+        await helper.StandardInput.FlushAsync();
+        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(5));
+        await helper.WaitForExitAsync(timeout.Token);
+
+        Assert.Equal(1, helper.ExitCode);
+        Assert.Equal("", await helper.StandardOutput.ReadToEndAsync());
     }
 }

@@ -20,6 +20,11 @@ The following is in no particular order (other then that prod grade is first, bu
 3. it seems like a lot of file managers auto extract .tar.gz files on click (or double click), maybe we should do that?
 4. Add a "Move To/Copy To/etc.." option, so a user doesn't have to manually cut/copy, paste.
 
+### Admin stuff
+1. Copy out of an admin folder: copy things from an admin folder into a normal folder. Rove reads as root and writes as you.
+2. Write actions in an admin folder: create, rename, paste in and delete, all done by the root helper. This is the riskiest step.
+3. Admin polish: a clear way to leave admin mode, how long the password stays valid, and what delete means for root (no user trash).
+
 ## Windows - doable, pushed off for a later release
 1. on Windows, going to trash just opens the Windows Recycle Bin instead of showing trashed items inside Rove. Doable - would need to read and list the $Recycle.Bin format instead of just restoring by path - but not needed for this release.
 2. the file picker portal only exists on Linux, so other apps' "Open File" dialogs can't open as Rove on Windows the way they can on Linux. Doable via a Windows shell extension, but not needed for this release.

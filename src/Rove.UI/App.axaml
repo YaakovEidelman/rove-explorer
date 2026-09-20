@@ -168,6 +168,13 @@
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="FontWeight" Value="Medium" />
         </Style>
+        <Style Selector="Button.tab TextBlock.tabadmin">
+            <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+            <Setter Property="FontSize" Value="9" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="LetterSpacing" Value="1" />
+            <Setter Property="Margin" Value="8,0,0,0" />
+        </Style>
         <Style Selector="TextBox.tabrename">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="MinHeight" Value="26" />

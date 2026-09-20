@@ -44,12 +44,21 @@ public sealed partial class FolderTab : ObservableObject, IDisposable
         Content = content;
         Commands = commands;
         Content.DirectoryListing.PropertyChanged += OnListingChanged;
+        Content.PropertyChanged += OnContentChanged;
         ActivateCommand = new RelayCommand(() => activate(this));
         CloseCommand = new RelayCommand(() => close(this));
     }
 
     /// <summary>What the strip calls this tab: the folder's own name.</summary>
     public string Title => CustomTitle is { Length: > 0 } custom ? custom : NameOf(Content.DirectoryListing.CurrentDir);
+
+    public bool IsAdmin => Content.IsAdminView;
+
+    private void OnContentChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ContentViewModel.IsAdminView))
+            OnPropertyChanged(nameof(IsAdmin));
+    }
 
     private void OnListingChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -88,6 +97,7 @@ public sealed partial class FolderTab : ObservableObject, IDisposable
     public void Dispose()
     {
         Content.DirectoryListing.PropertyChanged -= OnListingChanged;
+        Content.PropertyChanged -= OnContentChanged;
         Content.Close();
     }
 }
