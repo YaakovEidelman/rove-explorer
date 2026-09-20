@@ -68,7 +68,7 @@ the `dev` release directly from a local machine.
 
 `RoveCore` (`src/Rove.Core/RoveCore.cs`) is the facade the UI talks to directly
 —`Actions`, `GlobalSearchService`, per-view `FileWatchService` instances. In
-parallel, `Protocol/Dispatcher.cs` wraps the same `Actions`/`GlobalSearchService`
+parallel, `Protocol/Dispatch/Dispatcher.cs` wraps the same `Actions`/`GlobalSearchService`
 methods behind a verb-name → JSON-envelope router (`RequestEnvelope`/
 `ResponseEnvelope`, source-generated `ProtocolJson` serialization for AOT).
 The UI does not go through the dispatcher today — it exists so the backend
@@ -80,9 +80,17 @@ the shared batch helpers, and `Actions.Browse.cs`, `.Open.cs`, `.Edit.cs`,
 `.Transfer.cs` (move, copy), `.Archives.cs`, `.Delete.cs`, `.Trash.cs` and
 `.Metadata.cs` hold the operations by concern.
 
+### Code layout
+
+One type (class, interface, struct, enum, record) per file, named after the type. A class split
+across files uses `Type.Concern.cs`. Files sit in folders by concern (`Services/Archives`,
+`Services/Trash`, `ViewModels/Overlays`, `Views/Shell`, ...) and the tests mirror those folders.
+Namespaces do not follow the folders: everything under `Services` stays in `Rove.Core.Services`
+(or `Rove.UI.Services`), so moving a file never changes a `using`.
+
 ### ContentViewModel
 
-`src/Rove.UI/ViewModels/ContentViewModel.cs` is the single-pane browse-mode
+`src/Rove.UI/ViewModels/Browsing/ContentViewModel.cs` is the single-pane browse-mode
 ViewModel — the busiest command surface in the UI — split across one core
 file and same-class partials by concern, all `public partial class
 ContentViewModel`: `ContentViewModel.cs` (constructor, shared fields,
@@ -100,7 +108,7 @@ wire it into `RegisterBindings()` in the core file.
 User input flows through one indirection layer, documented in full in
 `docs/keybindings.md`:
 
-- `CommandDef` (`src/Rove.UI/Services/CommandRegistry.cs`) — the fixed set of
+- `CommandDef` (`src/Rove.UI/Services/Commands/CommandDef.cs`) — the fixed set of
   named commands (e.g. `content.move_down`, `palette.toggle`), each tagged
   `System` (plumbing, hidden from the palette) or `User` (shows in the command
   palette).
@@ -126,7 +134,7 @@ static chooser, one implementation file per OS.
 
 ### Self-install/update
 
-`src/Rove.UI/Services/DesktopInstall.cs` and friends (`InstallRecord`,
+`src/Rove.UI/Services/Install/DesktopInstall.cs` and friends (`InstallRecord`,
 `SelfDelete`) implement Rove's copy-itself-in-and-self-update behavior on
 first run, described end-to-end in `docs/installing.md`. `ROVE_NO_INSTALL=1`
 disables it for local dev runs.
@@ -154,8 +162,8 @@ compile time of a `dotnet build`.
 
 - `tests/Rove.Core.Tests` — plain xUnit against `Rove.Core` logic.
 - `tests/Rove.UI.Tests` — xUnit + `Avalonia.Headless`, driving a **real**
-  `MainWindow` on a windowless backend (`HeadlessSession.cs`). `WindowHarness`
-  (`tests/Rove.UI.Tests/WindowHarness.cs`) opens a real window against a
+  `MainWindow` on a windowless backend (`Support/HeadlessTest.cs`). `WindowHarness`
+  (`tests/Rove.UI.Tests/Support/WindowHarness.cs`) opens a real window against a
   scratch temp folder, wires real ViewModels/services (with fakes only for
   the OS clipboard and image preview loader), and drives it with
   `Press(Key)`/`Settle()` so key-routing tests exercise the same path a real
