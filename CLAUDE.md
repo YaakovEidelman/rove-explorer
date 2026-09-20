@@ -75,7 +75,10 @@ The UI does not go through the dispatcher today — it exists so the backend
 can be moved out-of-process later without touching handler code. When adding
 a new backend operation, add it to `Actions` and register it in both the UI
 call site and `Dispatcher`'s constructor if it's meant to be reachable that
-way.
+way. `Actions` is split the same way as `ContentViewModel`: `Actions.cs` holds
+the shared batch helpers, and `Actions.Browse.cs`, `.Open.cs`, `.Edit.cs`,
+`.Transfer.cs` (move, copy), `.Archives.cs`, `.Delete.cs`, `.Trash.cs` and
+`.Metadata.cs` hold the operations by concern.
 
 ### ContentViewModel
 
@@ -86,8 +89,9 @@ ContentViewModel`: `ContentViewModel.cs` (constructor, shared fields,
 `Targets()`/`RefusedInArchive()`, `RegisterBindings()`), `.Navigation.cs`
 (directory navigation, history, archive-as-folder, drives), `.PathBar.cs`
 (path bar edit/completion), `.View.cs` (view mode, icon size, columns, local
-search, hidden items, marks), `.Editing.cs` (rename, create), `.FileOps.cs`
-(delete, trash, clipboard, extract, compress), `.Bookmarks.cs`, `.Undo.cs`.
+search, hidden items, marks), `.Editing.cs` (rename, create), `.Delete.cs`,
+`.Trash.cs`, `.Clipboard.cs` (copy, cut, paste), `.Archives.cs` (extract,
+compress), `.OpenWith.cs`, `.Bookmarks.cs`, `.Undo.cs`.
 Add a new browse-mode verb to whichever partial matches its concern, then
 wire it into `RegisterBindings()` in the core file.
 
