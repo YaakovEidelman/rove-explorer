@@ -111,6 +111,7 @@ and `f1`–`f12`. Punctuation is written as itself: `/`, `.`, `,`, `-`, `=`,
 | `content.path_complete_down` | Completions: move down |
 | `content.path_complete_dismiss` | Completions: close the list |
 | `nav.drives`             | Go to drive…              |
+| `content.open_with`      | Open the highlighted file with a chosen app |
 | `nav.trash`              | Go to the trash           |
 | `bookmark.toggle`        | Bookmark / remove bookmark |
 | `bookmark.show`          | Open the bookmark list    |
@@ -135,10 +136,20 @@ keeps completing from what is in the box, and `Esc` closes the list without
 leaving the path box. Completing a folder leaves the separator on the end, so
 `Tab` again carries on inside it.
 
-When `Enter` opens a file and nothing on the system knows what to do with it, Rove
-does not just say so. It puts up a list of every installed app that takes a file, under
-the same picker the drive list uses: type to narrow, `Ctrl+N`/`Ctrl+P` to move, `Enter` to
-open the file with that app. This is Linux only; Windows asks which app to use itself.
+### Open With
+
+`content.open_with` ("Open With…" in the command palette) works on the highlighted file. It
+lists only the apps the system says can open that kind of file, the default first. The last
+entry, "Other apps…", lists every installed app that takes a file, for when the right one is
+not registered for the type. Choosing an app opens the file with it. It works on files only,
+and is Linux only for now: Windows asks which app to use by itself.
+
+When `Enter` opens a file and nothing on the system is set up to open it, Rove puts up the
+same list instead of only saying so.
+
+`Enter` on a compiled program with its execute bit set (an ELF binary, an AppImage) runs it,
+the way Nautilus does, from the folder it sits in. Scripts are not run; they open in
+whatever opens text.
 
 ### Finding things
 

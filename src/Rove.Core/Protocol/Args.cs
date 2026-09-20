@@ -7,8 +7,8 @@ public record GetParentArgs(string Path);
 public record ResolvePathArgs(string Input, string CurrentDirectory);
 public record LaunchFileArgs(string Path);
 
-/// <summary>Every installed app that takes a file to open.</summary>
-public record ListOpenWithArgs();
+/// <summary>The apps that open Path, or with All set every installed app that takes a file.</summary>
+public record ListOpenWithArgs(string Path, bool All);
 
 /// <summary>Open Path with the app whose .desktop file is DesktopFile.</summary>
 public record LaunchFileWithArgs(string Path, string DesktopFile);

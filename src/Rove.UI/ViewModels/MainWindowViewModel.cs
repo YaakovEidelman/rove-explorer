@@ -10,6 +10,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Rove.UI.ViewModels;
 
@@ -114,8 +115,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Tabs.ConfirmRequested += Confirm.Request;
         Tabs.DrivePickerRequested +=
             () => Palette.OpenScoped(CommandDef.DriveIdPrefix, "pick a drive…");
-        Tabs.AppPickerRequested +=
-            () => Palette.OpenScoped(CommandDef.OpenWithIdPrefix, "open with…");
+        Tabs.AppPickerRequested += loading => _ = ShowAppPickerAsync(loading);
         Tabs.SurfaceChanged += RefreshStatusBar;
         Tabs.SelectionChanged += () => Preview.ShowFor(ContentPage.HighlightedItem?.Item, ContentPage.IsAdminView);
         Tabs.ActiveChanged += OnActiveTabChanged;
@@ -146,6 +146,8 @@ public partial class MainWindowViewModel : ViewModelBase
         // The status line follows the visible surface — track every
         // surface's open/close directly.
         Palette.PropertyChanged += OnSurfaceChanged;
+        Palette.Executing += () => _handingOff = true;
+        Palette.Executed += EndHandoff;
         GlobalSearch.PropertyChanged += OnSurfaceChanged;
         Bookmarks.PropertyChanged += OnSurfaceChanged;
         Confirm.PropertyChanged += OnSurfaceChanged;
@@ -165,6 +167,21 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private bool _lastQuickAccessOpen;
 
+    private bool _handingOff;
+
+    private void EndHandoff()
+    {
+        _handingOff = false;
+        RefreshSurfaces();
+    }
+
+    private async Task ShowAppPickerAsync(Task loading)
+    {
+        Palette.OpenScoped(CommandDef.OpenWithIdPrefix, "open with…");
+        await loading;
+        Palette.Refresh();
+    }
+
     /// <summary>
     /// Raises <see cref="IsQuickAccessOpen"/> only when its actual value moves —
     /// four sources feed it, so an unrelated change on one (typing in the search
@@ -173,6 +190,12 @@ public partial class MainWindowViewModel : ViewModelBase
     /// notification as a fresh transition, so a spurious one plays it again.
     /// </summary>
     private void OnSurfaceChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (!_handingOff)
+            RefreshSurfaces();
+    }
+
+    private void RefreshSurfaces()
     {
         RefreshStatusBar();
         bool nowOpen = IsQuickAccessOpen;

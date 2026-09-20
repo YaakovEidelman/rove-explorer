@@ -52,7 +52,7 @@ public partial class ContentViewModel : ViewModelBase
     /// <summary>Asks for the drive list to be put in front of the user.</summary>
     public event Action? DrivePickerRequested;
 
-    public event Action? AppPickerRequested;
+    public event Action<Task>? AppPickerRequested;
 
     public ContentViewModel(
         ICommandTarget registry,
@@ -246,6 +246,7 @@ public partial class ContentViewModel : ViewModelBase
         _registry.Register(CommandDef.PathCompleteMoveDown, Completions.MoveDown);
         _registry.Register(CommandDef.PathCompleteDismiss, DismissCompletions);
         _registry.Register(CommandDef.ShowDrives, ShowDrives);
+        _registry.Register(CommandDef.OpenWith, ShowOpenWith);
         _registry.Register(CommandDef.ShowTrash, GoToTrash);
         _registry.Register(CommandDef.RestoreTrashedItems, RestoreTrashedItems);
         _registry.Register(CommandDef.RestoreAllTrashedItems, RestoreAllTrashedItems);

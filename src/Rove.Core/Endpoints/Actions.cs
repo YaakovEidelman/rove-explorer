@@ -311,9 +311,10 @@ public class Actions
         {
             error = await FileOpener.WaitForRefusal(opener, args.Path, ct);
         }
+        string reason = FileOpener.IsNativeExecutable(args.Path) ? "launch_failed" : "launch_refused";
         return error is null
             ? CommandResult<string?>.Ok(null)
-            : CommandResult<string?>.Fail("launch_refused", error);
+            : CommandResult<string?>.Fail(reason, error);
     }
 
     public CommandResult<AppEntry[]> ListOpenWithApps(ListOpenWithArgs args)
@@ -326,7 +327,7 @@ public class Actions
 
         try
         {
-            return CommandResult<AppEntry[]>.Ok(LinuxDesktopApps.Installed());
+            return CommandResult<AppEntry[]>.Ok(args.All ? LinuxDesktopApps.Installed() : LinuxDesktopApps.ForFile(args.Path));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

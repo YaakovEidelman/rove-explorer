@@ -1,3 +1,3 @@
 namespace Rove.Core.Protocol;
 
-public record AppEntry(string Name, string DesktopFile);
+public record AppEntry(string Id, string Name, string DesktopFile);

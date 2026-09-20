@@ -233,7 +233,7 @@ public partial class ContentViewModel
 
         string message = result.Message ?? "Could not open the file.";
         if (result.Reason == "launch_refused")
-            await OfferAppPickerAsync(item, message);
+            ShowAppPicker(item, message, all: false);
         else
             ErrorRaised?.Invoke(message);
     }

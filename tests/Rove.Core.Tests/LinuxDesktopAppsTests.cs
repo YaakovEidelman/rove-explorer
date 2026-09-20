@@ -18,6 +18,7 @@ public class LinuxDesktopAppsTests
         AppEntry[] apps = LinuxDesktopApps.Collect([tmp.Path]);
 
         AppEntry app = Assert.Single(apps);
+        Assert.Equal("kate.desktop", app.Id);
         Assert.Equal("Kate", app.Name);
         Assert.Equal(tmp.Sub("kate.desktop"), app.DesktopFile);
     }

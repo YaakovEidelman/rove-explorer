@@ -46,7 +46,7 @@ public readonly record struct KeyStroke(Key Key, KeyModifiers Modifiers)
 
 public readonly record struct Command(CommandDef Def, Action Method);
 
-public readonly record struct CommandDef(string Id, string Title, CommandKind CommandKind)
+public readonly record struct CommandDef(string Id, string Title, CommandKind CommandKind, int Order = 0)
 {
     // Palette
     public static readonly CommandDef TogglePalette = new("palette.toggle", "Command Palette", CommandKind.System);
@@ -140,6 +140,12 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     // Drives — one command per mounted drive, registered as they come and go.
     public const string DriveIdPrefix = "nav.drive:";
     public const string OpenWithIdPrefix = "open.with:";
+    public const string OpenWithOthersId = OpenWithIdPrefix + "other-apps";
+    public static readonly CommandDef OpenWith = new("content.open_with", "Open With…", CommandKind.User);
+
+    public static bool IsTransient(string id) =>
+        id.StartsWith(OpenWithIdPrefix, StringComparison.Ordinal);
+
     public static readonly CommandDef ShowDrives = new("nav.drives", "Go to Drive…", CommandKind.User);
     public static readonly CommandDef ShowTrash = new("nav.trash", $"Go to the {TrashService.DisplayName}", CommandKind.User);
 
@@ -297,7 +303,8 @@ public class CommandRegistry : ICommandTarget
     public Command[] Commands() =>
         [.. _commands.Values
             .Where(c => c.Def.CommandKind == CommandKind.User)
-            .OrderBy(c => c.Def.Title, StringComparer.OrdinalIgnoreCase)];
+            .OrderBy(c => c.Def.Order)
+            .ThenBy(c => c.Def.Title, StringComparer.OrdinalIgnoreCase)];
 
     public Command[] FilteredCommands(string filter)
     {
@@ -309,6 +316,7 @@ public class CommandRegistry : ICommandTarget
             .Select(c => (Command: c, Matched: FuzzyMatcher.TryMatch(filter, c.Def.Title, out int score), Score: score))
             .Where(t => t.Matched)
             .OrderByDescending(t => t.Score)
+            .ThenBy(t => t.Command.Def.Order)
             .ThenBy(t => t.Command.Def.Title, StringComparer.OrdinalIgnoreCase)
             .Select(t => t.Command)];
     }

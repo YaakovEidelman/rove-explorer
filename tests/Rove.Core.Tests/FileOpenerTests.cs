@@ -193,4 +193,95 @@ public class FileOpenerTests
             "Nothing on this system is set up to open notes.txt.",
             FileOpener.Refusal(3, "   \n  ", "notes.txt"));
     }
+
+    private static readonly byte[] ElfHead = [0x7F, (byte)'E', (byte)'L', (byte)'F', 2, 1, 1, 0];
+
+    private static string Write(TempDir tmp, string name, byte[] bytes, UnixFileMode mode)
+    {
+        string path = tmp.Sub(name);
+        File.WriteAllBytes(path, bytes);
+        File.SetUnixFileMode(path, mode);
+        return path;
+    }
+
+    private const UnixFileMode Runnable = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+    private const UnixFileMode NotRunnable = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+    [Fact]
+    public void AnElfFileWithAnExecuteBitIsANativeExecutable()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+        using TempDir tmp = new();
+
+        Assert.True(FileOpener.IsNativeExecutable(Write(tmp, "Rove", ElfHead, Runnable)));
+    }
+
+    [Fact]
+    public void AnElfFileWithoutAnExecuteBitIsNot()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+        using TempDir tmp = new();
+
+        Assert.False(FileOpener.IsNativeExecutable(Write(tmp, "Rove", ElfHead, NotRunnable)));
+    }
+
+    [Fact]
+    public void AnExecutableScriptIsLeftToTheOpener()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+        using TempDir tmp = new();
+        byte[] script = System.Text.Encoding.ASCII.GetBytes("#!/bin/sh\necho hi\n");
+
+        Assert.False(FileOpener.IsNativeExecutable(Write(tmp, "run.sh", script, Runnable)));
+    }
+
+    [Fact]
+    public void ATinyFileAndAFolderAreNotNativeExecutables()
+    {
+        if (OperatingSystem.IsWindows())
+            return;
+        using TempDir tmp = new();
+
+        Assert.False(FileOpener.IsNativeExecutable(Write(tmp, "tiny", [0x7F, (byte)'E'], Runnable)));
+        Assert.False(FileOpener.IsNativeExecutable(tmp.Dir("folder")));
+    }
+
+    [Fact]
+    public async Task ANativeExecutableIsRunNotHandedToTheOpener()
+    {
+        if (!OperatingSystem.IsLinux() || !File.Exists("/bin/true"))
+            return;
+        using TempDir tmp = new();
+        string program = tmp.Sub("prog");
+        File.Copy("/bin/true", program);
+        File.SetUnixFileMode(program, Runnable);
+
+        string? error = FileOpener.Start(program, out FileOpener.Opener? opener);
+        using (opener)
+        {
+            Assert.Null(error);
+            Assert.Null(await FileOpener.WaitForRefusal(opener, program));
+        }
+    }
+
+    [Fact]
+    public async Task ANativeExecutableThatFailsSaysSo()
+    {
+        if (!OperatingSystem.IsLinux() || !File.Exists("/bin/false"))
+            return;
+        using TempDir tmp = new();
+        string program = tmp.Sub("prog");
+        File.Copy("/bin/false", program);
+        File.SetUnixFileMode(program, Runnable);
+
+        string? error = FileOpener.Start(program, out FileOpener.Opener? opener);
+        using (opener)
+        {
+            Assert.Null(error);
+            Assert.Equal("Could not open prog.", await FileOpener.WaitForRefusal(opener, program));
+        }
+    }
 }

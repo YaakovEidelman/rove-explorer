@@ -11,6 +11,15 @@ public static class LinuxDesktopApps
     public static AppEntry[] Installed() =>
         Collect(XdgPaths.DataDirs().Select(dir => Path.Combine(dir, "applications")));
 
+    public static AppEntry[] ForFile(string path)
+    {
+        if (GioMime.ContentType(path) is not { } type)
+            return [];
+
+        Dictionary<string, AppEntry> installed = Installed().ToDictionary(app => app.Id, StringComparer.Ordinal);
+        return [.. GioMime.AppIds(type).Select(id => installed.GetValueOrDefault(id)).OfType<AppEntry>()];
+    }
+
     internal static AppEntry[] Collect(IEnumerable<string> applicationDirs)
     {
         HashSet<string> seen = new(StringComparer.Ordinal);
@@ -21,7 +30,7 @@ public static class LinuxDesktopApps
             foreach (string file in Directory.EnumerateFiles(dir, "*.desktop", SearchOption.AllDirectories))
             {
                 string id = Path.GetRelativePath(dir, file).Replace(Path.DirectorySeparatorChar, '-');
-                if (seen.Add(id) && Read(file) is { } app)
+                if (seen.Add(id) && Read(file, id) is { } app)
                     found.Add(app);
             }
         }
@@ -29,7 +38,7 @@ public static class LinuxDesktopApps
         return [.. found.OrderBy(app => app.Name, StringComparer.OrdinalIgnoreCase)];
     }
 
-    private static AppEntry? Read(string file)
+    private static AppEntry? Read(string file, string id)
     {
         Dictionary<string, string> keys = ReadDesktopEntry(file);
         if (!keys.TryGetValue("Type", out string? type) || type != "Application")
@@ -41,7 +50,7 @@ public static class LinuxDesktopApps
         if (!keys.TryGetValue("Exec", out string? exec) || !_fileCodes.Any(exec.Contains))
             return null;
 
-        return new AppEntry(name, file);
+        return new AppEntry(id, name, file);
     }
 
     private static bool IsTrue(Dictionary<string, string> keys, string key) =>

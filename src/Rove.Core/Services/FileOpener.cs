@@ -111,11 +111,16 @@ public static class FileOpener
         if (OperatingSystem.IsWindows())
             return StartWindows(path);
 
+        if (IsNativeExecutable(path))
+            return Run(LongPath.Display(path), [], Path.GetDirectoryName(LongPath.Display(path)), out opener);
+
         if (FindOpener(Environment.GetEnvironmentVariable("PATH"), IsRunnable) is not { } found)
             return "There is no program on this system for opening files. Installing xdg-utils gives Rove one.";
 
-        string[] leading = found.First is { Length: > 0 } first ? [first] : [];
-        return Run(found.Path, leading, path, out opener);
+        string[] arguments = found.First is { Length: > 0 } first
+            ? [first, LongPath.Display(path)]
+            : [LongPath.Display(path)];
+        return Run(found.Path, arguments, null, out opener);
     }
 
     /// <summary>
@@ -132,10 +137,10 @@ public static class FileOpener
         if (FindProgram(Environment.GetEnvironmentVariable("PATH"), "gio", IsRunnable) is not { } gio)
             return "Opening a file with a chosen app needs gio, which comes with glib.";
 
-        return Run(gio, ["launch", desktopFile], path, out opener);
+        return Run(gio, ["launch", desktopFile, LongPath.Display(path)], null, out opener);
     }
 
-    private static string? Run(string program, string[] leading, string path, out Opener? opener)
+    private static string? Run(string program, string[] arguments, string? workingDirectory, out Opener? opener)
     {
         opener = null;
         string? errorFile = File.Exists(_shell)
@@ -150,9 +155,10 @@ public static class FileOpener
             info.ArgumentList.Add(errorFile);
             info.ArgumentList.Add(program);
         }
-        foreach (string argument in leading)
+        foreach (string argument in arguments)
             info.ArgumentList.Add(argument);
-        info.ArgumentList.Add(LongPath.Display(path));
+        if (workingDirectory is { Length: > 0 })
+            info.WorkingDirectory = workingDirectory;
 
         try
         {
@@ -284,6 +290,38 @@ public static class FileOpener
                 return candidate;
         }
         return null;
+    }
+
+    /// <summary>
+    /// A compiled program the user can run: it starts with the ELF magic and
+    /// has an execute bit. The desktop's opener has no answer for these — there
+    /// is no default app for a program — but a file manager is expected to
+    /// run one, as Nautilus does. Scripts are left to the opener: opening one
+    /// in an editor is what people mean by Enter on text.
+    /// </summary>
+    internal static bool IsNativeExecutable(string path)
+    {
+        if (OperatingSystem.IsWindows())
+            return false;
+
+        const UnixFileMode executable =
+            UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute;
+        byte[] elf = [0x7F, (byte)'E', (byte)'L', (byte)'F'];
+        try
+        {
+            string real = LongPath.Display(path);
+            if ((File.GetUnixFileMode(real) & executable) == 0)
+                return false;
+
+            using FileStream stream = File.OpenRead(real);
+            Span<byte> head = stackalloc byte[4];
+            return stream.ReadAtLeast(head, head.Length, throwOnEndOfStream: false) == head.Length
+                && head.SequenceEqual(elf);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+        {
+            return false;
+        }
     }
 
     /// <summary>

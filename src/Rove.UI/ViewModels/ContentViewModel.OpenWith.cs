@@ -1,4 +1,5 @@
 using Rove.Core.Protocol;
+using Rove.Core.Services;
 using Rove.UI.Services;
 using System.Threading.Tasks;
 
@@ -6,26 +7,54 @@ namespace Rove.UI.ViewModels;
 
 public partial class ContentViewModel
 {
-    private async Task OfferAppPickerAsync(FolderItem item, string refusal)
+    private void ShowOpenWith()
     {
-        CommandResult<AppEntry[]> result = await Task.Run(() => _core.Actions.ListOpenWithApps(new()));
-        if (!result.IsOk || result.Data is not { Length: > 0 } apps)
+        if (RefusedInArchive("Open With") || RefusedInAdminView("Open With") || RefusedInTrash("Open With"))
+            return;
+        if (HighlightedItem is not { } highlighted || highlighted.Item.IsDirectory)
         {
-            ErrorRaised?.Invoke(refusal);
+            InfoRaised?.Invoke("Open With needs a file highlighted.");
             return;
         }
+        ShowAppPicker(highlighted.Item, null, all: false);
+    }
 
+    private void ShowAppPicker(FolderItem item, string? note, bool all)
+    {
         foreach (string id in _registry.CommandIdsStartingWith(CommandDef.OpenWithIdPrefix))
             _registry.Unregister(id);
 
-        foreach (AppEntry app in apps)
+        AppPickerRequested?.Invoke(LoadAppsAsync(item, note, all));
+    }
+
+    private async Task LoadAppsAsync(FolderItem item, string? note, bool all)
+    {
+        CommandResult<AppEntry[]> result = await Task.Run(
+            () => _core.Actions.ListOpenWithApps(new(item.FullPath, all)));
+        if (!result.IsOk)
         {
-            CommandDef def = new(CommandDef.OpenWithIdPrefix + app.DesktopFile, $"Open with {app.Name}", CommandKind.User);
+            ErrorRaised?.Invoke(note ?? result.Message ?? $"Could not list apps for {item.Name}.");
+            return;
+        }
+
+        AppEntry[] apps = result.Data ?? [];
+        if (note is not null)
+            InfoRaised?.Invoke(note);
+        else if (apps.Length == 0)
+            InfoRaised?.Invoke(all ? "No apps were found on this system." : $"Nothing is set up to open {item.Name}.");
+
+        for (int i = 0; i < apps.Length; i++)
+        {
+            AppEntry app = apps[i];
+            CommandDef def = new(CommandDef.OpenWithIdPrefix + app.Id, $"Open with {app.Name}", CommandKind.User, i);
             _registry.Register(def, () => _ = OpenWithAsync(item, app));
         }
 
-        InfoRaised?.Invoke($"{refusal} Pick an app to open it with.");
-        AppPickerRequested?.Invoke();
+        if (!all)
+        {
+            CommandDef others = new(CommandDef.OpenWithOthersId, "Other apps…", CommandKind.User, apps.Length);
+            _registry.Register(others, () => ShowAppPicker(item, null, all: true));
+        }
     }
 
     private async Task OpenWithAsync(FolderItem item, AppEntry app)

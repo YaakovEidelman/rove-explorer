@@ -18,6 +18,10 @@ public partial class PaletteViewModel : ViewModelBase
     /// <summary>Raised before the list is built — for entries that come and go, like drives.</summary>
     public event Action? Opening;
 
+    public event Action? Executing;
+
+    public event Action? Executed;
+
     public PaletteViewModel(CommandRegistry registry)
     {
         _registry = registry;
@@ -52,7 +56,7 @@ public partial class PaletteViewModel : ViewModelBase
 
     private bool InScope(Command c) =>
         _scope.Length == 0
-            ? !c.Def.Id.StartsWith(CommandDef.OpenWithIdPrefix, StringComparison.Ordinal)
+            ? !CommandDef.IsTransient(c.Def.Id)
             : c.Def.Id.StartsWith(_scope, StringComparison.Ordinal);
 
     private void Rebuild()
@@ -66,8 +70,22 @@ public partial class PaletteViewModel : ViewModelBase
         if (Items.Count == 0 || SelectedIndex < 0 || SelectedIndex >= Items.Count)
             return;
         PaletteEntry selected = Items[SelectedIndex];
-        TogglePalette();
-        _registry.TryExecute(selected.Command.Def.Id);
+        Executing?.Invoke();
+        try
+        {
+            TogglePalette();
+            _registry.TryExecute(selected.Command.Def.Id);
+        }
+        finally
+        {
+            Executed?.Invoke();
+        }
+    }
+
+    public void Refresh()
+    {
+        if (IsPaletteOpen)
+            Rebuild();
     }
 
     public void TogglePalette()

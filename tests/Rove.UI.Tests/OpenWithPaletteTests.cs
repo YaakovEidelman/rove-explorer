@@ -37,6 +37,26 @@ public class OpenWithPaletteTests
     }
 
     [Fact]
+    public void TheAppListKeepsTheOrderItWasGivenNotAlphabetical()
+    {
+        CommandRegistry registry = new();
+        string[] names = ["Zed", "Alpha", "Mid"];
+        for (int i = 0; i < names.Length; i++)
+        {
+            registry.Register(
+                new CommandDef(CommandDef.OpenWithIdPrefix + names[i], $"Open with {names[i]}", CommandKind.User, i),
+                () => { });
+        }
+        PaletteViewModel palette = new(registry);
+
+        palette.OpenScoped(CommandDef.OpenWithIdPrefix, "open with…");
+
+        Assert.Equal(
+            ["Open with Zed", "Open with Alpha", "Open with Mid"],
+            palette.Items.Select(entry => entry.Command.Def.Title));
+    }
+
+    [Fact]
     public void PickingAnAppRunsItsCommand()
     {
         CommandRegistry registry = new();
