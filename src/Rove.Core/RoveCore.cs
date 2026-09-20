@@ -16,6 +16,17 @@ public class RoveCore : IDisposable
     public Actions Actions { get; } = new();
     public GlobalSearchService Search { get; } = new();
 
+    public IAdminSession? Admin { get; }
+
+    public RoveCore() : this(AdminSessionChooser.CreateForHost())
+    {
+    }
+
+    public RoveCore(IAdminSession? admin)
+    {
+        Admin = admin;
+    }
+
     /// <summary>
     /// A watcher of a folder's own. Every folder view has one, because a
     /// watcher follows exactly one directory and two views are rarely
@@ -39,6 +50,7 @@ public class RoveCore : IDisposable
 
     public void Dispose()
     {
+        Admin?.Dispose();
         FileWatchService[] open;
         lock (_watchers)
         {

@@ -321,6 +321,8 @@ public partial class MainWindowViewModel : ViewModelBase
                 summary += " · hidden shown";
             if (ContentPage.InArchive)
                 summary += " · in a zip";
+            if (ContentPage.IsAdminView)
+                summary += " · administrator (read-only)";
             return summary;
         }
     }

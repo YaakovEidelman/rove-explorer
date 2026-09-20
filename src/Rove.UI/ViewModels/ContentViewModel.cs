@@ -129,6 +129,9 @@ public partial class ContentViewModel : ViewModelBase
     [ObservableProperty]
     private bool _inTrash;
 
+    [ObservableProperty]
+    private bool _isAdminView;
+
     public ListViewItem? HighlightedItem => DirectoryListing.ListSelection.SelectedItem;
 
     /// <summary>Gives back what this view was holding — its watcher, and nothing else.</summary>
@@ -173,6 +176,14 @@ public partial class ContentViewModel : ViewModelBase
         if (!InTrash)
             return false;
         InfoRaised?.Invoke($"{verb} does not work inside the {TrashService.DisplayName}.");
+        return true;
+    }
+
+    private bool RefusedInAdminView(string verb)
+    {
+        if (!IsAdminView)
+            return false;
+        InfoRaised?.Invoke($"{verb} does not work in administrator view yet — it is read-only.");
         return true;
     }
 

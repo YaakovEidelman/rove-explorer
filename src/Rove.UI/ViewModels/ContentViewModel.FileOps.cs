@@ -21,7 +21,7 @@ public partial class ContentViewModel
 
     private void DeleteItems()
     {
-        if (RefusedInArchive("Delete"))
+        if (RefusedInArchive("Delete") || RefusedInAdminView("Delete"))
             return;
         if (InTrash)
         {
@@ -65,7 +65,7 @@ public partial class ContentViewModel
 
     private void DeleteItemsPermanent()
     {
-        if (RefusedInArchive("Delete"))
+        if (RefusedInArchive("Delete") || RefusedInAdminView("Delete"))
             return;
         List<ListViewItem> targets = Targets();
         if (targets.Count == 0)
@@ -217,13 +217,13 @@ public partial class ContentViewModel
 
     private void CopyItems()
     {
-        if (!RefusedInArchive("Copy"))
+        if (!RefusedInArchive("Copy") && !RefusedInAdminView("Copy"))
             SetClipboard(ClipboardOp.Copy);
     }
 
     private void CutItems()
     {
-        if (!RefusedInArchive("Cut") && !RefusedInTrash("Cut"))
+        if (!RefusedInArchive("Cut") && !RefusedInTrash("Cut") && !RefusedInAdminView("Cut"))
             SetClipboard(ClipboardOp.Cut);
     }
 
@@ -242,7 +242,7 @@ public partial class ContentViewModel
 
     private void PasteItems()
     {
-        if (!RefusedInArchive("Paste") && !RefusedInTrash("Paste"))
+        if (!RefusedInArchive("Paste") && !RefusedInTrash("Paste") && !RefusedInAdminView("Paste"))
             _ = PasteItemsAsync();
     }
 
@@ -360,7 +360,7 @@ public partial class ContentViewModel
 
     private void ExtractItems()
     {
-        if (!RefusedInArchive("Extract") && !RefusedInTrash("Extract"))
+        if (!RefusedInArchive("Extract") && !RefusedInTrash("Extract") && !RefusedInAdminView("Extract"))
             _ = ExtractItemsAsync();
     }
 
@@ -410,7 +410,7 @@ public partial class ContentViewModel
 
     private void CompressItems()
     {
-        if (!RefusedInArchive("Compress") && !RefusedInTrash("Compress"))
+        if (!RefusedInArchive("Compress") && !RefusedInTrash("Compress") && !RefusedInAdminView("Compress"))
             _ = CompressItemsAsync();
     }
 

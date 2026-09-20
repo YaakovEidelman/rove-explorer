@@ -19,14 +19,16 @@ public partial class ContentViewModel
 {
     // ── navigation ───────────────────────────────────────────────────────
 
-    public async Task SetCurrentDirectoryAsync(string directory, string? highlightPath = null)
+    public async Task SetCurrentDirectoryAsync(
+        string directory, string? highlightPath = null, bool asAdmin = false)
     {
         string from = DirectoryListing.CurrentDir;
         IsLoading = true;
         CommandResult<FolderItem[]> result;
+        bool viaAdmin;
         try
         {
-            result = await _core.Actions.ReadDirectoryAsync(new(directory));
+            (result, viaAdmin) = await ReadForNavigationAsync(directory, asAdmin);
         }
         finally
         {
@@ -35,6 +37,13 @@ public partial class ContentViewModel
 
         if (!result.IsOk || result.Data is null)
         {
+            if (!viaAdmin && CanOfferAdministratorAccess(directory, result))
+            {
+                ConfirmRequested?.Invoke(
+                    $"Can't open {directory}. Open it as administrator?",
+                    () => _ = SetCurrentDirectoryAsync(directory, highlightPath, asAdmin: true));
+                return;
+            }
             ErrorRaised?.Invoke(result.Message ?? $"Could not open {directory}.");
             return;
         }
@@ -44,6 +53,7 @@ public partial class ContentViewModel
         DirectoryListing.Load(directory, result.Data);
         DirectoryListing.CurrentDir = directory;
         InArchive = ArchivePath.IsInside(directory);
+        IsAdminView = viaAdmin;
         InTrash = TrashService.BrowsePath is { } trashRoot && PathGuard.IsSameOrDescendant(trashRoot, directory);
         RefreshCutFlags();
 
@@ -64,7 +74,7 @@ public partial class ContentViewModel
             // There is nothing to watch inside a zip: the entries are not
             // files the system can report on, and the archive changing under
             // us is rare enough to leave to a manual reload.
-            if (InArchive)
+            if (InArchive || IsAdminView)
                 _watcher.Pause();
             else
                 _watcher.ChangePath(directory);
@@ -75,6 +85,24 @@ public partial class ContentViewModel
             // manual refresh rather than failing navigation.
         }
     }
+
+    private async Task<(CommandResult<FolderItem[]> Result, bool ViaAdmin)> ReadForNavigationAsync(
+        string directory, bool asAdmin)
+    {
+        IAdminSession? admin = _core.Admin;
+        if (asAdmin && admin is not null)
+            return (await admin.ReadDirectoryAsync(directory), true);
+
+        CommandResult<FolderItem[]> result = await _core.Actions.ReadDirectoryAsync(new(directory));
+        if (result.Reason == "permission_denied" && admin is { IsRunning: true })
+            return (await admin.ReadDirectoryAsync(directory), true);
+        return (result, false);
+    }
+
+    private bool CanOfferAdministratorAccess(string directory, CommandResult<FolderItem[]> result) =>
+        result.Reason == "permission_denied"
+        && _core.Admin is not null
+        && !ArchivePath.IsInside(directory);
 
     public Task ReloadCurrentDirectoryAsync() =>
         SetCurrentDirectoryAsync(DirectoryListing.CurrentDir, HighlightedItem?.Item.FullPath);

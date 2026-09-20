@@ -258,6 +258,18 @@ Column widths and sorting only apply to the list view. In icon view the width
 bar won't open, the sort commands do nothing, and switching to icon view
 closes the width bar if it was up.
 
+### Locked folders (Linux)
+
+When a folder says "Access denied", Rove asks "Open it as administrator?" (`y`/`Enter` to
+accept, `n`/`Esc` to decline). Accepting shows the standard polkit password dialog, then lists the
+folder as root through a helper started with `pkexec`. The helper stays up for the rest of the
+session, so you type the password once; folders that need it open with no more questions.
+
+This view is read-only for now: the status bar says "administrator (read-only)", and delete,
+rename, new file/folder, cut, copy, paste, extract and compress are refused. Going to a folder
+you can read normally leaves the view. It needs `pkexec` and a running polkit agent, and only
+exists on Linux.
+
 ### Tabs
 
 | Command          | What it does                     |

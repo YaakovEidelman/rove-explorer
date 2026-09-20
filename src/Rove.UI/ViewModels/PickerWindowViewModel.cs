@@ -160,6 +160,8 @@ public sealed partial class PickerWindowViewModel : ViewModelBase
                 summary += $" · {marked} marked";
             if (ContentPage.DirectoryListing.ShowHidden)
                 summary += " · hidden shown";
+            if (ContentPage.IsAdminView)
+                summary += " · administrator (read-only)";
             if (_filters.Length > 0)
                 summary += $" · filter: {_filters[_filterIndex].Name}";
             return summary;

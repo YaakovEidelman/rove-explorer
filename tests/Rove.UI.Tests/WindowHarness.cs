@@ -3,6 +3,7 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Rove.Core;
+using Rove.Core.Services;
 using Rove.UI.Services;
 using Rove.UI.ViewModels;
 using Rove.UI.Views;
@@ -67,14 +68,14 @@ internal sealed class WindowHarness : IDisposable
         _settingsFile = settingsFile;
     }
 
-    public static WindowHarness Open(Action<string> fill)
+    public static WindowHarness Open(Action<string> fill, IAdminSession? admin = null)
     {
         string root = Path.Combine(Path.GetTempPath(), "rove-ui-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         fill(root);
 
         CommandRegistry registry = new(KeymapLoad.Empty);
-        RoveCore core = new();
+        RoveCore core = new(admin);
         FileClipboard fileClipboard = new();
         FileOperationViewModel operation = new(registry);
         string bookmarkFile = Path.Combine(Path.GetTempPath(), "rove-marks-" + Guid.NewGuid().ToString("N") + ".json");
