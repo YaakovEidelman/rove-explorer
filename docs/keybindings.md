@@ -112,6 +112,7 @@ and `f1`–`f12`. Punctuation is written as itself: `/`, `.`, `,`, `-`, `=`,
 | `content.path_complete_dismiss` | Completions: close the list |
 | `nav.drives`             | Go to drive…              |
 | `content.open_with`      | Open the highlighted file with a chosen app |
+| `content.open_terminal`  | Open a terminal in the current folder |
 | `nav.trash`              | Go to the trash           |
 | `bookmark.toggle`        | Bookmark / remove bookmark |
 | `bookmark.show`          | Open the bookmark list    |
@@ -135,6 +136,15 @@ filled into the path box, so `Enter` always goes to what the box holds. `Tab`
 keeps completing from what is in the box, and `Esc` closes the list without
 leaving the path box. Completing a folder leaves the separator on the end, so
 `Tab` again carries on inside it.
+
+### Open Terminal Here
+
+`content.open_terminal` ("Open Terminal Here" in the command palette) opens a terminal in the
+folder you are looking at. On Linux it uses the program named in the `TERMINAL` environment
+variable, then `xdg-terminal-exec`, `x-terminal-emulator`, and a list of common terminals
+(ghostty, kitty, alacritty, foot, wezterm, gnome-terminal, konsole, xfce4-terminal, tilix,
+xterm). On Windows it uses Windows Terminal, or `cmd` if that is not installed. It does not work
+inside a zip or the trash.
 
 ### Open With
 

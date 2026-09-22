@@ -90,6 +90,8 @@ public readonly record struct CommandDef(string Id, string Title, CommandKind Co
     public const string OpenWithOthersId = OpenWithIdPrefix + "other-apps";
     public static readonly CommandDef OpenWith = new("content.open_with", "Open With…", CommandKind.User);
 
+    public static readonly CommandDef OpenTerminal = new("content.open_terminal", "Open Terminal Here", CommandKind.User);
+
     public static bool IsTransient(string id) =>
         id.StartsWith(OpenWithIdPrefix, StringComparison.Ordinal);
 

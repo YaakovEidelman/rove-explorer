@@ -8,6 +8,7 @@ namespace Rove.Core.Protocol;
 [JsonSerializable(typeof(LaunchFileArgs))]
 [JsonSerializable(typeof(ListOpenWithArgs))]
 [JsonSerializable(typeof(LaunchFileWithArgs))]
+[JsonSerializable(typeof(OpenTerminalArgs))]
 [JsonSerializable(typeof(GetIconArgs))]
 [JsonSerializable(typeof(RenameItemArgs))]
 [JsonSerializable(typeof(MoveItemsArgs))]

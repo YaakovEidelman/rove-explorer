@@ -99,7 +99,7 @@ ContentViewModel`: `ContentViewModel.cs` (constructor, shared fields,
 (path bar edit/completion), `.View.cs` (view mode, icon size, columns, local
 search, hidden items, marks), `.Editing.cs` (rename, create), `.Delete.cs`,
 `.Trash.cs`, `.Clipboard.cs` (copy, cut, paste), `.Archives.cs` (extract,
-compress), `.OpenWith.cs`, `.Bookmarks.cs`, `.Undo.cs`.
+compress), `.OpenWith.cs`, `.Terminal.cs`, `.Bookmarks.cs`, `.Undo.cs`.
 Add a new browse-mode verb to whichever partial matches its concern, then
 wire it into `RegisterBindings()` in the core file.
 

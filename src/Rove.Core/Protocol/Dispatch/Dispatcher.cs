@@ -25,6 +25,7 @@ public class Dispatcher
         Register<LaunchFileArgs, string?>("launch_file", _actions.LaunchFile);
         Register<ListOpenWithArgs, AppEntry[]>("list_open_with", _actions.ListOpenWithApps);
         Register<LaunchFileWithArgs, string?>("launch_file_with", a => _actions.LaunchFileWithAsync(a));
+        Register<OpenTerminalArgs, string?>("open_terminal", _actions.OpenTerminal);
         Register<ListDrivesArgs, DriveEntry[]>("list_drives", _actions.ListDrives);
         Register<GetIconArgs, byte[]?>("get_icon", _actions.GetItemIcon);
         Register<RenameItemArgs, FolderItem?>("rename_item", _actions.RenameItem);

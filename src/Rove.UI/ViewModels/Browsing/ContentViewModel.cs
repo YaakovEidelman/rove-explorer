@@ -174,6 +174,7 @@ public partial class ContentViewModel : ViewModelBase
         _registry.Register(CommandDef.PathCompleteDismiss, DismissCompletions);
         _registry.Register(CommandDef.ShowDrives, ShowDrives);
         _registry.Register(CommandDef.OpenWith, ShowOpenWith);
+        _registry.Register(CommandDef.OpenTerminal, OpenTerminalHere);
         _registry.Register(CommandDef.ShowTrash, GoToTrash);
         _registry.Register(CommandDef.RestoreTrashedItems, RestoreTrashedItems);
         _registry.Register(CommandDef.RestoreAllTrashedItems, RestoreAllTrashedItems);

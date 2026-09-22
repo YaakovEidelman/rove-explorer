@@ -76,6 +76,20 @@ public partial class Actions
             : CommandResult<string?>.Fail(reason, error);
     }
 
+    public CommandResult<string?> OpenTerminal(OpenTerminalArgs args)
+    {
+        if (ArchivePath.IsInside(args.Path))
+        {
+            return CommandResult<string?>.Fail(
+                "in_archive", "A terminal cannot open inside a zip. Extract it first.");
+        }
+
+        string? error = TerminalLauncher.Start(args.Path);
+        return error is null
+            ? CommandResult<string?>.Ok(null)
+            : CommandResult<string?>.Fail("launch_failed", error);
+    }
+
     public CommandResult<AppEntry[]> ListOpenWithApps(ListOpenWithArgs args)
     {
         if (!OperatingSystem.IsLinux())
