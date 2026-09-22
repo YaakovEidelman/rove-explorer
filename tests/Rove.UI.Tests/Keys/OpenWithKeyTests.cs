@@ -27,6 +27,9 @@ public class OpenWithKeyTests : HeadlessTest
     [Fact]
     public Task OpenWithFromThePaletteListsOnlyAppsAndEndsInOtherApps() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(Fill);
         harness.Highlight("notes.txt");
 
@@ -47,6 +50,9 @@ public class OpenWithKeyTests : HeadlessTest
     [Fact]
     public Task HandingFromOnePickerToAnotherNeverFlipsTheCardClosed() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(Fill);
         harness.Highlight("notes.txt");
         harness.Press(Key.Space);

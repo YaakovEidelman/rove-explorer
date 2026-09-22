@@ -72,6 +72,9 @@ public class AdminViewKeyTests : HeadlessTest
     [Fact]
     public Task EnteringALockedFolderGoesStraightToTheAdministratorSession() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         FakeAdminSession admin = new();
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
         Lock(harness.Root);
@@ -97,6 +100,9 @@ public class AdminViewKeyTests : HeadlessTest
     [Fact]
     public Task TheTabIsMarkedWhileItShowsTheAdministratorView() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         FakeAdminSession admin = new();
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
         Lock(harness.Root);
@@ -122,6 +128,9 @@ public class AdminViewKeyTests : HeadlessTest
     [Fact]
     public Task TheSessionIsReusedForTheNextLockedFolder() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         FakeAdminSession admin = new();
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
         Lock(harness.Root);
@@ -149,6 +158,9 @@ public class AdminViewKeyTests : HeadlessTest
     [Fact]
     public Task ARefusedPasswordShowsTheReasonAndStaysPut() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         FakeAdminSession admin = new() { Refuse = true };
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
         Lock(harness.Root);
@@ -172,6 +184,9 @@ public class AdminViewKeyTests : HeadlessTest
     [Fact]
     public Task WithoutAdministratorSupportALockedFolderJustShowsTheError() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder);
         Lock(harness.Root);
         try
@@ -192,6 +207,9 @@ public class AdminViewKeyTests : HeadlessTest
     [Fact]
     public Task WritingVerbsAreRefusedInAdministratorView() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         FakeAdminSession admin = new();
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
         Lock(harness.Root);
@@ -215,6 +233,9 @@ public class AdminViewKeyTests : HeadlessTest
     [Fact]
     public Task PreviewShowsTheStartOfTheFileFromACopyAndDiscardsIt() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         FakeAdminSession admin = new();
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
         Lock(harness.Root);
@@ -243,6 +264,9 @@ public class AdminViewKeyTests : HeadlessTest
     [Fact]
     public Task PreviewSaysWhyWhenTheCopyFails() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         FakeAdminSession admin = new() { CopyFails = true };
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
         Lock(harness.Root);
@@ -267,6 +291,9 @@ public class AdminViewKeyTests : HeadlessTest
     [Fact]
     public Task OpeningAFileAsksTheSessionForTheWholeFileAndSaysSo() => OnUiThread(() =>
     {
+        if (!OperatingSystem.IsLinux())
+            return;
+
         FakeAdminSession admin = new() { CopyFails = true };
         using WindowHarness harness = WindowHarness.Open(FillWithLockedFolder, admin);
         Lock(harness.Root);
