@@ -90,6 +90,17 @@ public partial class Actions
             : CommandResult<string?>.Fail("launch_failed", error);
     }
 
+    public CommandResult<string?> OpenWithSystemDialog(LaunchFileArgs args)
+    {
+        if (!OperatingSystem.IsWindows())
+            return CommandResult<string?>.Fail("unsupported", "This system does not have its own Open With dialog.");
+
+        string? error = WindowsOpenWith.Start(args.Path);
+        return error is null
+            ? CommandResult<string?>.Ok(null)
+            : CommandResult<string?>.Fail("launch_failed", error);
+    }
+
     public CommandResult<AppEntry[]> ListOpenWithApps(ListOpenWithArgs args)
     {
         if (!OperatingSystem.IsLinux())

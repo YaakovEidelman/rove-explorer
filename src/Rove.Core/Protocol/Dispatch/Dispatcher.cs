@@ -24,6 +24,7 @@ public class Dispatcher
         Register<ResolvePathArgs, FolderItem?>("resolve_path", _actions.ResolvePath);
         Register<LaunchFileArgs, string?>("launch_file", _actions.LaunchFile);
         Register<ListOpenWithArgs, AppEntry[]>("list_open_with", _actions.ListOpenWithApps);
+        Register<LaunchFileArgs, string?>("open_with_system_dialog", _actions.OpenWithSystemDialog);
         Register<LaunchFileWithArgs, string?>("launch_file_with", a => _actions.LaunchFileWithAsync(a));
         Register<OpenTerminalArgs, string?>("open_terminal", _actions.OpenTerminal);
         Register<ListDrivesArgs, DriveEntry[]>("list_drives", _actions.ListDrives);

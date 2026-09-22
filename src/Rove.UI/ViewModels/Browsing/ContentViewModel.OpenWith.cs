@@ -14,7 +14,24 @@ public partial class ContentViewModel
             InfoRaised?.Invoke("Open With needs a file highlighted.");
             return;
         }
-        ShowAppPicker(highlighted.Item, null, all: false);
+        OfferOpenWith(highlighted.Item, null);
+    }
+
+    private void OfferOpenWith(FolderItem item, string? note)
+    {
+        if (OperatingSystem.IsWindows())
+            _ = OpenWithSystemDialogAsync(item, note);
+        else
+            ShowAppPicker(item, note, all: false);
+    }
+
+    private async Task OpenWithSystemDialogAsync(FolderItem item, string? note)
+    {
+        if (note is not null)
+            InfoRaised?.Invoke(note);
+        CommandResult<string?> result = await Task.Run(() => _core.Actions.OpenWithSystemDialog(new(item.FullPath)));
+        if (!result.IsOk)
+            ErrorRaised?.Invoke(result.Message ?? $"Could not open the Open With dialog for {item.Name}.");
     }
 
     private void ShowAppPicker(FolderItem item, string? note, bool all)

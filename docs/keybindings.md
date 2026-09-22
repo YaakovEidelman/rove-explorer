@@ -148,14 +148,15 @@ inside a zip or the trash.
 
 ### Open With
 
-`content.open_with` ("Open With…" in the command palette) works on the highlighted file. It
-lists only the apps the system says can open that kind of file, the default first. The last
-entry, "Other apps…", lists every installed app that takes a file, for when the right one is
-not registered for the type. Choosing an app opens the file with it. It works on files only,
-and is Linux only for now: Windows asks which app to use by itself.
+`content.open_with` ("Open With…" in the command palette) works on the highlighted file. On
+Linux it lists only the apps the system says can open that kind of file, the default first. The
+last entry, "Other apps…", lists every installed app that takes a file, for when the right one
+is not registered for the type. Choosing an app opens the file with it. On Windows it hands off
+to the system's own "Open With" dialog instead of building a list, since Windows already owns
+that picker. It works on files only.
 
 When `Enter` opens a file and nothing on the system is set up to open it, Rove puts up the
-same list instead of only saying so.
+same app list (or, on Windows, the same system dialog) instead of only saying so.
 
 `Enter` on a compiled program with its execute bit set (an ELF binary, an AppImage) runs it,
 the way Nautilus does, from the folder it sits in. Scripts are not run; they open in

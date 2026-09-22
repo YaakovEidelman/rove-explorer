@@ -186,7 +186,7 @@ public partial class ContentViewModel
 
         string message = result.Message ?? "Could not open the file.";
         if (result.Reason == "launch_refused")
-            ShowAppPicker(item, message, all: false);
+            OfferOpenWith(item, message);
         else
             ErrorRaised?.Invoke(message);
     }
