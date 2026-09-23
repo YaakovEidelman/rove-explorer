@@ -268,6 +268,14 @@
                 </Grid>
             </Border>
         </Panel>
+        <Panel Classes="overlaydim" Classes.open="{Binding Settings.InThemeEditorField}"
+               Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Settings.InThemeEditorField}">
+            <Border Classes="overlaycard" Classes.open="{Binding Settings.InThemeEditorField}"
+                    Width="240"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <views:ColorEditorPopupView DataContext="{Binding Settings.SelectedThemeRow}" />
+            </Border>
+        </Panel>
         <Panel Classes="overlaydim" Classes.open="{Binding Confirm.IsOpen}"
                Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Confirm.IsOpen}">
             <Border Classes="overlaycard confirmcard" Classes.open="{Binding Confirm.IsOpen}"

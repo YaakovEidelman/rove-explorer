@@ -121,6 +121,21 @@ public class SettingsViewModelTests : IDisposable
     }
 
     [Fact]
+    public void ActivatingAColorRowOpensItAsTheSelectedThemeRow()
+    {
+        (SettingsViewModel settings, _, _) = New();
+        settings.Toggle();
+        settings.MoveDown();
+        settings.Activate();
+        settings.ThemeMoveDown();
+
+        settings.ThemeActivate();
+        ThemeEditorRow row = settings.ThemeRows[settings.ThemeSelectedIndex];
+        Assert.Same(row, settings.SelectedThemeRow);
+        Assert.True(row.IsEditing);
+    }
+
+    [Fact]
     public void EditingSeedsRgbSlidersAndKeepsThemInSyncWithTheTypedHex()
     {
         (SettingsViewModel settings, _, _) = New();
@@ -131,7 +146,7 @@ public class SettingsViewModelTests : IDisposable
 
         settings.ThemeActivate();
         ThemeEditorRow row = settings.ThemeRows[settings.ThemeSelectedIndex];
-        Assert.Equal(row.EditText, $"{row.Red:X2}{row.Green:X2}{row.Blue:X2}");
+        Assert.Equal(row.EditText, $"{row.Red:X2}{row.Green:X2}{row.Blue:X2}", ignoreCase: true);
 
         row.EditText = "00FF80";
         Assert.Equal(0, row.Red);

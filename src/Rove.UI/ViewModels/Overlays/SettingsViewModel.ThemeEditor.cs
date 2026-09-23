@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Rove.Core.Services;
 using Rove.UI.Services;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace Rove.UI.ViewModels;
 
@@ -10,6 +11,7 @@ public partial class SettingsViewModel
 {
     private ThemeColors _themeColors = CustomTheme.Default;
     private readonly Dictionary<ThemeColorField, ThemeEditorRow> _themeRowsByField = [];
+    private ThemeEditorRow? _liveEditingRow;
 
     [ObservableProperty]
     private bool _inThemeEditor;
@@ -21,7 +23,11 @@ public partial class SettingsViewModel
     private ObservableCollection<ThemeEditorRow> _themeRows = [];
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedThemeRow))]
     private int _themeSelectedIndex;
+
+    public ThemeEditorRow? SelectedThemeRow =>
+        ThemeSelectedIndex >= 0 && ThemeSelectedIndex < ThemeRows.Count ? ThemeRows[ThemeSelectedIndex] : null;
 
     private void OpenThemeEditor()
     {
@@ -124,6 +130,8 @@ public partial class SettingsViewModel
 
         row.BeginEditing(row.Value.TrimStart('#'));
         InThemeEditorField = true;
+        _liveEditingRow = row;
+        row.PropertyChanged += OnEditingRowPropertyChanged;
     }
 
     public void ApplyThemeField()
@@ -146,23 +154,11 @@ public partial class SettingsViewModel
             return;
         }
 
-        _themeColors = row.Field switch
-        {
-            ThemeColorField.AppBackground => _themeColors with { AppBackground = typed },
-            ThemeColorField.Surface => _themeColors with { Surface = typed },
-            ThemeColorField.SurfaceAlt => _themeColors with { SurfaceAlt = typed },
-            ThemeColorField.AppBorder => _themeColors with { AppBorder = typed },
-            ThemeColorField.TextPrimary => _themeColors with { TextPrimary = typed },
-            ThemeColorField.TextSecondary => _themeColors with { TextSecondary = typed },
-            ThemeColorField.Accent => _themeColors with { Accent = typed },
-            ThemeColorField.AccentSubtle => _themeColors with { AccentSubtle = typed },
-            ThemeColorField.Error => _themeColors with { Error = typed },
-            ThemeColorField.MarkBar => _themeColors with { MarkBar = typed },
-            _ => _themeColors,
-        };
+        _themeColors = WithField(_themeColors, row.Field, typed);
 
         row.IsEditing = false;
         InThemeEditorField = false;
+        StopLiveEditing();
         SaveThemeColors();
         RebuildThemeRows();
     }
@@ -172,7 +168,42 @@ public partial class SettingsViewModel
         if (ThemeSelectedIndex >= 0 && ThemeSelectedIndex < ThemeRows.Count)
             ThemeRows[ThemeSelectedIndex].IsEditing = false;
         InThemeEditorField = false;
+        StopLiveEditing();
+        ApplyTheme();
     }
+
+    private void OnEditingRowPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(ThemeEditorRow.Swatch))
+            return;
+        if (sender is not ThemeEditorRow row || row.Swatch is not SolidColorBrush brush)
+            return;
+
+        string hex = $"#{brush.Color.R:X2}{brush.Color.G:X2}{brush.Color.B:X2}";
+        ThemePalette.Apply("Custom", WithField(_themeColors, row.Field, hex));
+    }
+
+    private void StopLiveEditing()
+    {
+        if (_liveEditingRow is { } row)
+            row.PropertyChanged -= OnEditingRowPropertyChanged;
+        _liveEditingRow = null;
+    }
+
+    private static ThemeColors WithField(ThemeColors colors, ThemeColorField field, string hex) => field switch
+    {
+        ThemeColorField.AppBackground => colors with { AppBackground = hex },
+        ThemeColorField.Surface => colors with { Surface = hex },
+        ThemeColorField.SurfaceAlt => colors with { SurfaceAlt = hex },
+        ThemeColorField.AppBorder => colors with { AppBorder = hex },
+        ThemeColorField.TextPrimary => colors with { TextPrimary = hex },
+        ThemeColorField.TextSecondary => colors with { TextSecondary = hex },
+        ThemeColorField.Accent => colors with { Accent = hex },
+        ThemeColorField.AccentSubtle => colors with { AccentSubtle = hex },
+        ThemeColorField.Error => colors with { Error = hex },
+        ThemeColorField.MarkBar => colors with { MarkBar = hex },
+        _ => colors,
+    };
 
     private void SaveThemeColors()
     {
