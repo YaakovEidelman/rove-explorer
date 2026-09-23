@@ -399,7 +399,7 @@ public class TabKeyTests : HeadlessTest
 
         harness.Press(Key.Space);
 
-        Assert.Contains(harness.Model.Palette.Items, e => e.Command.Def.Title == "Rename Tab");
+        Assert.Contains(harness.Model.Palette.Items, row => row.Entry?.Command.Def.Title == "Rename Tab");
     });
 
     [Fact]

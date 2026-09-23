@@ -21,18 +21,40 @@
                  Grid.Row="1"
                  ItemsSource="{Binding Items}"
                  SelectedIndex="{Binding SelectedIndex}">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem" x:DataType="vm:PaletteRow">
+                    <Setter Property="IsEnabled" Value="{Binding IsSelectable}" />
+                    <Setter Property="Focusable" Value="{Binding IsSelectable}" />
+                </Style>
+            </ListBox.Styles>
             <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="vm:PaletteEntry">
-                    <DockPanel>
-                        <TextBlock DockPanel.Dock="Right"
-                                   Text="{Binding Hint}"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                   VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding Command.Def.Title}"
-                                   FontSize="13"
-                                   VerticalAlignment="Center" />
-                    </DockPanel>
+                <DataTemplate x:DataType="vm:PaletteRow">
+                    <Panel>
+                        <TextBlock Classes="settingssection"
+                                   Text="{Binding Header}"
+                                   IsVisible="{Binding IsHeader}" />
+                        <DockPanel IsVisible="{Binding !IsHeader}" Classes.unavailable="{Binding !IsSelectable}">
+                            <TextBlock DockPanel.Dock="Right"
+                                       Text="{Binding Entry.Hint}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" />
+                            <ItemsControl ItemsSource="{Binding Entry.TitleSegments}" VerticalAlignment="Center">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:TitleSegment">
+                                        <TextBlock Text="{Binding Text}"
+                                                   FontSize="13"
+                                                   Classes.paletteMatch="{Binding IsMatch}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DockPanel>
+                    </Panel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

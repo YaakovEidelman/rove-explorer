@@ -23,7 +23,7 @@ public class OpenWithPaletteTests
 
         palette.OpenScoped(CommandDef.OpenWithIdPrefix, "open with…");
 
-        Assert.Equal(["Open with Kate"], palette.Items.Select(entry => entry.Command.Def.Title));
+        Assert.Equal(["Open with Kate"], palette.Items.Select(row => row.Entry!.Command.Def.Title));
     }
 
     [Fact]
@@ -33,7 +33,9 @@ public class OpenWithPaletteTests
 
         palette.TogglePalette();
 
-        Assert.Equal(["Go to Drive…"], palette.Items.Select(entry => entry.Command.Def.Title));
+        Assert.Equal(
+            ["Go to Drive…"],
+            palette.Items.Where(row => !row.IsHeader).Select(row => row.Entry!.Command.Def.Title));
     }
 
     [Fact]
@@ -53,7 +55,7 @@ public class OpenWithPaletteTests
 
         Assert.Equal(
             ["Open with Zed", "Open with Alpha", "Open with Mid"],
-            palette.Items.Select(entry => entry.Command.Def.Title));
+            palette.Items.Select(row => row.Entry!.Command.Def.Title));
     }
 
     [Fact]

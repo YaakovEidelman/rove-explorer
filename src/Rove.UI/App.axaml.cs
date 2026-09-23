@@ -59,7 +59,7 @@ public partial class App : Application
             string? explicitTarget = StartLocation.ExplicitTarget(desktop.Args, Directory.Exists, File.Exists);
             tabs.Open(explicitTarget ?? PathCompare.DefaultStartDirectory());
 
-            PaletteViewModel palette = new(registry);
+            PaletteViewModel palette = new(registry, settings);
             GlobalSearchViewModel globalSearch = new(registry, core, iconCache, () => tabs.Active.SearchRoot);
             palette.Opening += () => tabs.Active.RefreshDriveCommands();
             BookmarksViewModel bookmarkList = new(registry, bookmarks);

@@ -61,13 +61,15 @@ public partial class ContentViewModel
         for (int i = 0; i < apps.Length; i++)
         {
             AppEntry app = apps[i];
-            CommandDef def = new(CommandDef.OpenWithIdPrefix + app.Id, $"Open with {app.Name}", CommandKind.User, i);
+            CommandDef def = new(CommandDef.OpenWithIdPrefix + app.Id, $"Open with {app.Name}", CommandKind.User, i,
+                CommandCategory.Navigation);
             _registry.Register(def, () => _ = OpenWithAsync(item, app));
         }
 
         if (!all)
         {
-            CommandDef others = new(CommandDef.OpenWithOthersId, "Other apps…", CommandKind.User, apps.Length);
+            CommandDef others = new(CommandDef.OpenWithOthersId, "Other apps…", CommandKind.User, apps.Length,
+                CommandCategory.Navigation);
             _registry.Register(others, () => ShowAppPicker(item, null, all: true));
         }
     }

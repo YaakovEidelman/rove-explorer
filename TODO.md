@@ -13,6 +13,8 @@ The following is in no particular order (other then that prod grade is first, bu
 4. if a folder on linux says "Access Denied" and is enterable via sudo, we need to allow that to work.
 5. Redo Open With properly. It is Linux only and needs a real pass on behaviour and tests.
 6. Hand-test the published AOT builds on real Wayland and Windows, not only the headless tests.
+7. keybind config file has to be simpler
+8. bookmark menu has to give more control
 
 ## Important but can still be published without it.
 1. claiming the default file manager now force-kills whatever currently holds org.freedesktop.FileManager1 (e.g. Nautilus) so the claim takes effect right away. Deliberate on whether I actually want that, or whether there should at least be an option to skip the kill and only take over via normal D-Bus activation (i.e. only when nothing is currently running).
@@ -32,14 +34,6 @@ The following is in no particular order (other then that prod grade is first, bu
 3. Admin polish: a clear way to leave admin mode, how long the password stays valid, and what delete means for root (no user trash).
 
 ### Command palette
-1. Give every command a category and a fixed order, so the empty palette is grouped, not A to Z.
-2. Decide the layout: section headers when empty, or a "File: Rename" style title prefix.
-3. Give every command keywords (Delete: remove, trash) and a short, consistent "Verb Object" title.
-4. Search by words in any order across title, category and keywords ("new tab" finds "tab new").
-5. Show a Recent group of the last few commands run when the box is empty, saved in settings.
-6. Hide commands that can't run here (Put Back outside the trash, Extract on a non-archive).
-7. Show a category tag and the matched letters on each row. Update docs/keybindings.md.
-8. Test that every user command has a category, plus tests for the new search and the ordering.
 
 ## Windows - doable, pushed off for a later release
 1. on Windows, going to trash just opens the Windows Recycle Bin instead of showing trashed items inside Rove. Doable - would need to read and list the $Recycle.Bin format instead of just restoring by path - but not needed for this release.

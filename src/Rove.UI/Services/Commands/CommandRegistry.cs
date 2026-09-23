@@ -44,9 +44,12 @@ public class CommandRegistry : ICommandTarget
             _modeBindings[entry.Mode].Remove(entry.Stroke);
     }
 
-    public void Register(CommandDef def, Action method) => _commands[def.Id] = new(def, method);
+    public void Register(CommandDef def, Action method, Func<bool>? canRun = null) =>
+        _commands[def.Id] = new(def, method, canRun);
 
     public void Unregister(string commandId) => _commands.Remove(commandId);
+
+    public bool TryGetCommand(string commandId, out Command command) => _commands.TryGetValue(commandId, out command);
 
     public IEnumerable<string> CommandIdsStartingWith(string prefix) =>
         [.. _commands.Keys.Where(id => id.StartsWith(prefix, StringComparison.Ordinal))];
@@ -79,9 +82,9 @@ public class CommandRegistry : ICommandTarget
     }
 
     public Command[] Commands() =>
-        [.. _commands.Values
-            .Where(c => c.Def.CommandKind == CommandKind.User)
-            .OrderBy(c => c.Def.Order)
+        [.. UserCommands()
+            .OrderBy(c => c.Def.Category)
+            .ThenBy(c => c.Def.Order)
             .ThenBy(c => c.Def.Title, StringComparer.OrdinalIgnoreCase)];
 
     public Command[] FilteredCommands(string filter)
@@ -89,13 +92,18 @@ public class CommandRegistry : ICommandTarget
         if (string.IsNullOrWhiteSpace(filter))
             return Commands();
 
-        return [.. _commands.Values
-            .Where(c => c.Def.CommandKind == CommandKind.User)
-            .Select(c => (Command: c, Matched: FuzzyMatcher.TryMatch(filter, c.Def.Title, out int score), Score: score))
+        return [.. UserCommands()
+            .Select(c => (Command: c, Matched: FuzzyMatcher.TryMatchAnyOrder(filter, SearchFields(c.Def), out int score), Score: score))
             .Where(t => t.Matched)
             .OrderByDescending(t => t.Score)
             .ThenBy(t => t.Command.Def.Order)
             .ThenBy(t => t.Command.Def.Title, StringComparer.OrdinalIgnoreCase)
             .Select(t => t.Command)];
     }
+
+    private IEnumerable<Command> UserCommands() =>
+        _commands.Values.Where(c => c.Def.CommandKind == CommandKind.User);
+
+    private static string[] SearchFields(CommandDef def) =>
+        [def.Title, def.Category.ToString(), .. def.Keywords ?? []];
 }

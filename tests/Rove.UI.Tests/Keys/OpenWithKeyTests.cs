@@ -18,11 +18,11 @@ public class OpenWithKeyTests : HeadlessTest
         harness.Press(Key.Space);
         harness.Model.Palette.PaletteSearchText = "Open With";
         harness.Settle();
-        Assert.Equal("Open With…", harness.Model.Palette.Items[0].Command.Def.Title);
+        Assert.Equal("Open With…", harness.Model.Palette.Items[0].Entry!.Command.Def.Title);
         harness.Press(Key.Enter);
     }
 
-    private static bool IsOthers(PaletteEntry entry) => entry.Command.Def.Id == CommandDef.OpenWithOthersId;
+    private static bool IsOthers(PaletteRow row) => row.Entry?.Command.Def.Id == CommandDef.OpenWithOthersId;
 
     [Fact]
     public Task OpenWithFromThePaletteListsOnlyAppsAndEndsInOtherApps() => OnUiThread(() =>
@@ -44,7 +44,7 @@ public class OpenWithKeyTests : HeadlessTest
         Assert.True(IsOthers(harness.Model.Palette.Items[^1]));
         Assert.All(
             harness.Model.Palette.Items,
-            entry => Assert.StartsWith(CommandDef.OpenWithIdPrefix, entry.Command.Def.Id));
+            row => Assert.StartsWith(CommandDef.OpenWithIdPrefix, row.Entry!.Command.Def.Id));
     });
 
     [Fact]
@@ -104,7 +104,7 @@ public class OpenWithKeyTests : HeadlessTest
         Assert.True(harness.Model.Palette.IsPaletteOpen);
         Assert.All(
             harness.Model.Palette.Items,
-            entry => Assert.StartsWith(CommandDef.DriveIdPrefix, entry.Command.Def.Id));
+            row => Assert.StartsWith(CommandDef.DriveIdPrefix, row.Entry!.Command.Def.Id));
         Assert.Empty(seen);
     });
 
@@ -120,7 +120,7 @@ public class OpenWithKeyTests : HeadlessTest
                 seen.Add(harness.Model.IsQuickAccessOpen);
         };
 
-        harness.Model.Palette.PaletteSearchText = "Show/Hide Hidden";
+        harness.Model.Palette.PaletteSearchText = "Toggle Hidden Files";
         harness.Settle();
         harness.Press(Key.Enter);
 
@@ -129,15 +129,22 @@ public class OpenWithKeyTests : HeadlessTest
     });
 
     [Fact]
-    public Task OpenWithOnAFolderSaysItNeedsAFile() => OnUiThread(() =>
+    public Task OpenWithIsGreyedOutOnAFolderAndDoesNothingWhenChosen() => OnUiThread(() =>
     {
         using WindowHarness harness = WindowHarness.Open(Fill);
         harness.Highlight("docs");
 
-        RunOpenWith(harness);
+        harness.Press(Key.Space);
+        harness.Model.Palette.PaletteSearchText = "Open With";
+        harness.Settle();
 
-        Assert.False(harness.Model.Palette.IsPaletteOpen);
-        Assert.Equal("Open With needs a file highlighted.", harness.Model.StatusInfo);
+        PaletteRow row = harness.Model.Palette.Items[0];
+        Assert.Equal("Open With…", row.Entry!.Command.Def.Title);
+        Assert.False(row.IsSelectable);
+
+        harness.Press(Key.Enter);
+
+        Assert.True(harness.Model.Palette.IsPaletteOpen);
     });
 
     [Fact]
@@ -148,9 +155,9 @@ public class OpenWithKeyTests : HeadlessTest
 
         harness.Press(Key.Space);
 
-        Assert.Contains(harness.Model.Palette.Items, entry => entry.Command.Def.Id == CommandDef.OpenWith.Id);
+        Assert.Contains(harness.Model.Palette.Items, row => row.Entry?.Command.Def.Id == CommandDef.OpenWith.Id);
         Assert.DoesNotContain(
             harness.Model.Palette.Items,
-            entry => CommandDef.IsTransient(entry.Command.Def.Id));
+            row => row.Entry is not null && CommandDef.IsTransient(row.Entry.Command.Def.Id));
     });
 }

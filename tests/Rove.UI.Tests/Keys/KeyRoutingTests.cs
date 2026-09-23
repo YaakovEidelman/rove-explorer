@@ -64,7 +64,7 @@ public class KeyRoutingTests : HeadlessTest
         using WindowHarness harness = WindowHarness.Open(Fill);
 
         harness.Press(Key.Space);
-        harness.Model.Palette.PaletteSearchText = "Show/Hide Hidden";
+        harness.Model.Palette.PaletteSearchText = "Toggle Hidden Files";
         harness.Settle();
         harness.Press(Key.Enter);
 

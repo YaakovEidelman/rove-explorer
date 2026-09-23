@@ -153,7 +153,8 @@ Linux it lists only the apps the system says can open that kind of file, the def
 last entry, "Other apps…", lists every installed app that takes a file, for when the right one
 is not registered for the type. Choosing an app opens the file with it. On Windows it hands off
 to the system's own "Open With" dialog instead of building a list, since Windows already owns
-that picker. It works on files only.
+that picker. It works on files only — with a folder highlighted, it shows greyed out in the
+command palette and cannot be chosen.
 
 When `Enter` opens a file and nothing on the system is set up to open it, Rove puts up the
 same app list (or, on Windows, the same system dialog) instead of only saying so.
@@ -182,6 +183,22 @@ The command palette, deep search, bookmark list, and settings share one card
 on screen — whichever one you opened decides what's showing, and `Tab` /
 `Shift+Tab` move to the next or previous of the four without closing the
 card.
+
+### The command palette
+
+Every entry has a category (File, Navigation, View, Search, Bookmarks, Tabs,
+App). With the search box empty, entries are shown under a heading for their
+category, in a fixed order within it — not alphabetical — and the last few
+commands you ran show first, under a "Recent" heading of their own.
+
+Typing searches the title, the category, and a handful of keywords per
+command (so "trash" finds "Delete", and "remove" finds "Put Back") — the
+words can be typed in any order, so "new tab" and "tab new" both find
+"New Tab". Matched letters in the title are highlighted.
+
+A command that can't do anything right now — "Put Back" outside the trash,
+"Extract Zip Here" without an archive selected — is left out of the list
+rather than shown disabled.
 
 ### Acting on files
 

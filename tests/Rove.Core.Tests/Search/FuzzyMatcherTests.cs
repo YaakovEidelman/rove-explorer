@@ -46,4 +46,30 @@ public class FuzzyMatcherTests
         Assert.True(FuzzyMatcher.TryMatch("vm", "avmxxxxxxx", out int midScore));
         Assert.True(boundaryScore > midScore);
     }
+
+    [Fact]
+    public void TryMatchWithPositions_ReturnsIndicesOfEachMatchedCharacter()
+    {
+        Assert.True(FuzzyMatcher.TryMatchWithPositions("nt", "New Tab", out _, out int[] positions));
+        Assert.Equal([0, 4], positions);
+    }
+
+    [Fact]
+    public void TryMatchAnyOrder_MatchesWordsRegardlessOfOrder()
+    {
+        Assert.True(FuzzyMatcher.TryMatchAnyOrder("tab new", ["New Tab"], out _));
+        Assert.True(FuzzyMatcher.TryMatchAnyOrder("new tab", ["New Tab"], out _));
+    }
+
+    [Fact]
+    public void TryMatchAnyOrder_EachWordMustMatchSomeField()
+    {
+        Assert.False(FuzzyMatcher.TryMatchAnyOrder("tab zzz", ["New Tab"], out _));
+    }
+
+    [Fact]
+    public void TryMatchAnyOrder_WordsCanMatchDifferentFields()
+    {
+        Assert.True(FuzzyMatcher.TryMatchAnyOrder("delete remove", ["Delete", "File", "remove", "trash"], out _));
+    }
 }

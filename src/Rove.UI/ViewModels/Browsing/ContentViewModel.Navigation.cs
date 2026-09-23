@@ -286,7 +286,8 @@ public partial class ContentViewModel
                 ? $"Go to Drive {root}"
                 : $"Go to Drive {root} ({drive.Label})";
             live.Add(id);
-            _registry.Register(new CommandDef(id, title, CommandKind.User),
+            _registry.Register(
+                new CommandDef(id, title, CommandKind.User, Category: CommandCategory.Navigation, Keywords: ["drive", "volume"]),
                 () => _ = SetCurrentDirectoryAsync(root));
         }
 

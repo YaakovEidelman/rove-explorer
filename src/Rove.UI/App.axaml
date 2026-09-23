@@ -667,5 +667,12 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
         </Style>
+        <Style Selector="TextBlock.paletteMatch">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+        </Style>
+        <Style Selector="DockPanel.unavailable">
+            <Setter Property="Opacity" Value="0.4" />
+        </Style>
     </Application.Styles>
 </Application>

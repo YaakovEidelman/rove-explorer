@@ -61,7 +61,7 @@ internal sealed class WindowHarness : IDisposable
 
         tabs.Open(root);
 
-        PaletteViewModel palette = new(registry);
+        PaletteViewModel palette = new(registry, settings);
         GlobalSearchViewModel search =
             new(registry, core, new NullIconCache(), () => tabs.Active.SearchRoot);
         ConfirmViewModel confirm = new(registry);

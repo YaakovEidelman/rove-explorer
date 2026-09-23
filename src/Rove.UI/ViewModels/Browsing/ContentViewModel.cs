@@ -173,15 +173,18 @@ public partial class ContentViewModel : ViewModelBase
         _registry.Register(CommandDef.PathCompleteMoveDown, Completions.MoveDown);
         _registry.Register(CommandDef.PathCompleteDismiss, DismissCompletions);
         _registry.Register(CommandDef.ShowDrives, ShowDrives);
-        _registry.Register(CommandDef.OpenWith, ShowOpenWith);
-        _registry.Register(CommandDef.OpenTerminal, OpenTerminalHere);
+        _registry.Register(CommandDef.OpenWith, ShowOpenWith,
+            canRun: () => !InArchive && !InTrash && !IsAdminView
+                && HighlightedItem is { } highlighted && !highlighted.Item.IsDirectory);
+        _registry.Register(CommandDef.OpenTerminal, OpenTerminalHere, canRun: () => !InArchive && !InTrash);
         _registry.Register(CommandDef.ShowTrash, GoToTrash);
-        _registry.Register(CommandDef.RestoreTrashedItems, RestoreTrashedItems);
-        _registry.Register(CommandDef.RestoreAllTrashedItems, RestoreAllTrashedItems);
-        _registry.Register(CommandDef.EmptyTrash, EmptyTrash);
+        _registry.Register(CommandDef.RestoreTrashedItems, RestoreTrashedItems, canRun: () => InTrash);
+        _registry.Register(CommandDef.RestoreAllTrashedItems, RestoreAllTrashedItems, canRun: () => InTrash);
+        _registry.Register(CommandDef.EmptyTrash, EmptyTrash, canRun: () => InTrash);
         _registry.Register(CommandDef.ToggleLocalSearch, ToggleLocalSearch);
         _registry.Register(CommandDef.ApplyLocalSearch, LeaveLocalSearchTyping);
-        _registry.Register(CommandDef.ToggleRenameItem, ToggleRenameItem);
+        _registry.Register(CommandDef.ToggleRenameItem, ToggleRenameItem,
+            canRun: () => !InArchive && !InTrash && !IsAdminView);
         _registry.Register(CommandDef.ApplyRename, ApplyRename);
         _registry.Register(CommandDef.ToggleResizeColumns, ToggleResizeColumns);
         _registry.Register(CommandDef.ColumnNext, ColumnNext);
@@ -201,14 +204,15 @@ public partial class ContentViewModel : ViewModelBase
         _registry.Register(CommandDef.ClearMarks, ClearMarks);
         _registry.Register(CommandDef.EscapeBrowse, EscapeBrowse);
         _registry.Register(CommandDef.ToggleShowHidden, ToggleShowHidden);
-        _registry.Register(CommandDef.DeleteItems, DeleteItems);
-        _registry.Register(CommandDef.DeleteItemsPermanent, DeleteItemsPermanent);
-        _registry.Register(CommandDef.CopyItems, CopyItems);
-        _registry.Register(CommandDef.CutItems, CutItems);
-        _registry.Register(CommandDef.PasteItems, PasteItems);
+        _registry.Register(CommandDef.DeleteItems, DeleteItems, canRun: () => !InArchive && !IsAdminView && !InTrash);
+        _registry.Register(CommandDef.DeleteItemsPermanent, DeleteItemsPermanent, canRun: () => !InArchive && !IsAdminView);
+        _registry.Register(CommandDef.CopyItems, CopyItems, canRun: () => !InArchive && !IsAdminView);
+        _registry.Register(CommandDef.CutItems, CutItems, canRun: () => !InArchive && !InTrash && !IsAdminView);
+        _registry.Register(CommandDef.PasteItems, PasteItems, canRun: () => !InArchive && !InTrash && !IsAdminView);
         _registry.Register(CommandDef.CopyPath, CopyPath);
-        _registry.Register(CommandDef.ExtractArchives, ExtractItems);
-        _registry.Register(CommandDef.CompressItems, CompressItems);
+        _registry.Register(CommandDef.ExtractArchives, ExtractItems,
+            canRun: () => !InArchive && !InTrash && !IsAdminView && HasArchiveTarget());
+        _registry.Register(CommandDef.CompressItems, CompressItems, canRun: () => !InArchive && !InTrash && !IsAdminView);
         _registry.Register(CommandDef.ToggleBookmark, ToggleBookmark);
 
         for (int slot = 0; slot < BookmarkStore.ShortcutCount; slot++)
@@ -217,10 +221,12 @@ public partial class ContentViewModel : ViewModelBase
             _registry.Register(CommandDef.BookmarkGo(index), () => GoToBookmarkAt(index));
         }
         _registry.Register(CommandDef.UndoLastAction, UndoLastAction);
-        _registry.Register(CommandDef.ToggleCreateFile, ToggleCreateFile);
-        _registry.Register(CommandDef.ToggleCreateFolder, ToggleCreateFolder);
+        _registry.Register(CommandDef.ToggleCreateFile, ToggleCreateFile,
+            canRun: () => !InArchive && !InTrash && !IsAdminView);
+        _registry.Register(CommandDef.ToggleCreateFolder, ToggleCreateFolder,
+            canRun: () => !InArchive && !InTrash && !IsAdminView);
         _registry.Register(CommandDef.ApplyCreate, ApplyCreate);
         _registry.Register(CommandDef.CancelCreate, CancelCreate);
-        _registry.Register(CommandDef.CancelFileOperation, _operation.Cancel);
+        _registry.Register(CommandDef.CancelFileOperation, _operation.Cancel, canRun: () => _operation.IsRunning);
     }
 }

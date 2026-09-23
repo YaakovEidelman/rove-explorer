@@ -12,6 +12,9 @@ public partial class ContentViewModel
             _ = ExtractItemsAsync();
     }
 
+    private bool HasArchiveTarget() =>
+        Targets().Any(t => !t.Item.IsDirectory && ArchiveService.IsArchive(t.Item.FullPath));
+
     private async Task ExtractItemsAsync()
     {
         string[] paths = [.. Targets()
