@@ -140,12 +140,43 @@ public static class KeymapDefaults
                 new(K(Key.Down), CommandDef.SettingsMoveDown.Id),
                 new(K(Key.J), CommandDef.SettingsMoveDown.Id),
                 new(K(Key.K), CommandDef.SettingsMoveUp.Id),
+                new(K(Key.H), CommandDef.SettingsPreviousSection.Id),
+                new(K(Key.L), CommandDef.SettingsNextSection.Id),
+                new(K(Key.Left), CommandDef.SettingsPreviousSection.Id),
+                new(K(Key.Right), CommandDef.SettingsNextSection.Id),
                 new(K(Key.Enter), CommandDef.SettingsActivate.Id),
                 new(K(Key.Space), CommandDef.SettingsActivate.Id),
                 new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
                 new(K(Key.Tab, KeyModifiers.Shift), CommandDef.QuickAccessPreviousTab.Id),
                 new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
                 new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
+            ]
+        },
+        {
+            Mode.ThemeEditor,
+            [
+                new(K(Key.Escape), CommandDef.ThemeEditorClose.Id),
+                new(K(Key.C, KeyModifiers.Control), CommandDef.ThemeEditorClose.Id),
+                new(K(Key.P, KeyModifiers.Control), CommandDef.ThemeEditorMoveUp.Id),
+                new(K(Key.N, KeyModifiers.Control), CommandDef.ThemeEditorMoveDown.Id),
+                new(K(Key.Up), CommandDef.ThemeEditorMoveUp.Id),
+                new(K(Key.Down), CommandDef.ThemeEditorMoveDown.Id),
+                new(K(Key.J), CommandDef.ThemeEditorMoveDown.Id),
+                new(K(Key.K), CommandDef.ThemeEditorMoveUp.Id),
+                new(K(Key.Enter), CommandDef.ThemeEditorActivate.Id),
+                new(K(Key.Space), CommandDef.ThemeEditorActivate.Id),
+                new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
+                new(K(Key.Tab, KeyModifiers.Shift), CommandDef.QuickAccessPreviousTab.Id),
+                new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
+                new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
+            ]
+        },
+        {
+            Mode.ThemeEditorField,
+            [
+                new(K(Key.Escape), CommandDef.ThemeEditorCancelField.Id),
+                new(K(Key.C, KeyModifiers.Control), CommandDef.ThemeEditorCancelField.Id),
+                new(K(Key.Enter), CommandDef.ThemeEditorApplyField.Id),
             ]
         },
         {

@@ -244,4 +244,20 @@ public readonly record struct CommandDef(
     public static readonly CommandDef SettingsMoveUp = new("settings.move_up", "Settings: Move Up", CommandKind.System);
     public static readonly CommandDef SettingsMoveDown = new("settings.move_down", "Settings: Move Down", CommandKind.System);
     public static readonly CommandDef SettingsActivate = new("settings.activate", "Settings: Change Selected", CommandKind.System);
+    public static readonly CommandDef SettingsNextSection = new("settings.next_section", "Settings: Next Section", CommandKind.System);
+    public static readonly CommandDef SettingsPreviousSection =
+        new("settings.previous_section", "Settings: Previous Section", CommandKind.System);
+
+    public static readonly CommandDef ThemeEditorMoveUp =
+        new("settings.theme_editor_move_up", "Custom Theme: Move Up", CommandKind.System);
+    public static readonly CommandDef ThemeEditorMoveDown =
+        new("settings.theme_editor_move_down", "Custom Theme: Move Down", CommandKind.System);
+    public static readonly CommandDef ThemeEditorActivate =
+        new("settings.theme_editor_activate", "Custom Theme: Edit Selected", CommandKind.System);
+    public static readonly CommandDef ThemeEditorClose =
+        new("settings.theme_editor_close", "Custom Theme: Back to Settings", CommandKind.System);
+    public static readonly CommandDef ThemeEditorApplyField =
+        new("settings.theme_editor_apply_field", "Custom Theme: Apply Color", CommandKind.System);
+    public static readonly CommandDef ThemeEditorCancelField =
+        new("settings.theme_editor_cancel_field", "Custom Theme: Cancel Edit", CommandKind.System);
 }

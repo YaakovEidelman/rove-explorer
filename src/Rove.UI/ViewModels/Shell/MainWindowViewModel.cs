@@ -101,6 +101,7 @@ public partial class MainWindowViewModel : ViewModelBase
             _ = ContentPage.SetCurrentDirectoryAsync(dir, highlight);
         Bookmarks.GoRequested += path => ContentPage.GoToBookmark(path);
         Bookmarks.InfoRaised += message => StatusInfo = message;
+        Settings.InfoRaised += message => StatusInfo = message;
 
         FileOperation.InfoRaised += message => StatusInfo = message;
         FileOperation.PropertyChanged += OnSurfaceChanged;

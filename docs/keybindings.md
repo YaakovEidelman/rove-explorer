@@ -79,6 +79,9 @@ A mode is whatever surface is currently in front of you.
 | `bookmarks`     | the bookmark list            |
 | `addbookmark`   | typing a path to bookmark    |
 | `addbookmarkcompletion` | the Tab completions under that path box |
+| `settings`      | the settings list             |
+| `themeeditor`   | the custom color list        |
+| `themeeditorfield` | typing a hex color for one row |
 
 ### Writing a key
 
@@ -209,6 +212,37 @@ words can be typed in any order, so "new tab" and "tab new" both find
 A command that can't do anything right now — "Put Back" outside the trash,
 "Extract Zip Here" without an archive selected — is left out of the list
 rather than shown disabled.
+
+### Settings
+
+| Command                          | What it does                       |
+| --------------------------------- | ----------------------------------- |
+| `app.settings`                    | Open/close settings                |
+| `settings.move_up`                | Settings: move up                  |
+| `settings.move_down`              | Settings: move down                |
+| `settings.next_section`           | Settings: next section (`l`)       |
+| `settings.previous_section`       | Settings: previous section (`h`)   |
+| `settings.activate`               | Settings: change the selected row  |
+| `settings.theme_editor_move_up`   | Custom colors: move up             |
+| `settings.theme_editor_move_down` | Custom colors: move down           |
+| `settings.theme_editor_activate`  | Custom colors: edit/toggle the selected row |
+| `settings.theme_editor_close`     | Custom colors: back to settings (`Esc`) |
+| `settings.theme_editor_apply_field` | Custom colors: apply the typed hex |
+| `settings.theme_editor_cancel_field` | Custom colors: cancel the edit  |
+
+Settings is grouped into sections (Appearance, Behavior, Updates, and — on Linux — Integration).
+`h`/`l` (or `Left`/`Right`) switch sections; `j`/`k` move within the current one, same as
+everywhere else. Each setting takes effect and saves the moment you change it — there is no
+separate save step.
+
+"Edit custom colors…" (in Appearance) opens the custom color editor on top of the settings card,
+switching the active theme to Custom so you see every change live. `j`/`k` move through the list;
+`Enter` toggles the "Base" (Light/Dark) row, or starts typing a hex value (`#2f6fde`, or any color
+name Avalonia understands) for a color row. `Enter` again applies it — an invalid value is
+rejected with a message in the status bar and leaves the box open — and `Esc` cancels the one
+field, or backs out of the editor to the settings list if nothing is being typed. Colors are saved
+to `theme.json` in the same config folder as `keybindings.json` (see the table at the top of this
+file) as you edit them.
 
 ### Acting on files
 

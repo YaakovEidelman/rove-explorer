@@ -13,6 +13,11 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly FilePickerPortal? _portal;
     private readonly ConfirmViewModel? _confirm;
 
+    private readonly List<SettingsRow> _master = [];
+    private readonly Dictionary<SettingsRowKind, SettingsRow> _rowsByKind = [];
+
+    public event Action<string>? InfoRaised;
+
     public SettingsViewModel(
         CommandRegistry registry, SettingsStore store, FilePickerPortal? portal = null, ConfirmViewModel? confirm = null)
     {
@@ -33,6 +38,15 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private int _selectedIndex;
 
+    [ObservableProperty]
+    private ObservableCollection<string> _sections = [];
+
+    [ObservableProperty]
+    private int _selectedSectionIndex;
+
+    [ObservableProperty]
+    private ObservableCollection<SettingsSectionTab> _sectionTabs = [];
+
     public void Toggle()
     {
         if (IsOpen)
@@ -43,51 +57,75 @@ public partial class SettingsViewModel : ViewModelBase
 
     private void Open()
     {
-        Rebuild();
-        SelectedIndex = Rows.Count > 0 ? 0 : -1;
+        RebuildMaster();
+        SelectedSectionIndex = 0;
+        RebuildSections();
+        RebuildVisibleRows();
         IsOpen = true;
     }
 
-    private void Close() => IsOpen = false;
-
-    private void Rebuild()
+    private void Close()
     {
-        AppSettings s = _store.Current;
-        int count = 0;
-        SetRow(count++, "Theme", s.Theme, section: "Appearance");
-        SetRow(count++, "Show hidden files by default", s.ShowHiddenByDefault ? "On" : "Off",
-            section: "Behavior", isToggle: true, isOn: s.ShowHiddenByDefault);
-        SetRow(count++, "Default view", s.DefaultView);
-        SetRow(count++, "Sort the Downloads folder by time", s.SortDownloadsByTime ? "On" : "Off",
-            isToggle: true, isOn: s.SortDownloadsByTime);
-        SetRow(count++, "Group by date when sorted by date modified", s.GroupByDate ? "On" : "Off",
-            isToggle: true, isOn: s.GroupByDate);
-        SetRow(count++, "Auto-update", s.AutoUpdate ? "On" : "Off",
-            section: "Updates", isToggle: true, isOn: s.AutoUpdate);
-        if (OperatingSystem.IsLinux() && _portal is not null)
-            SetRow(count++, "Default for opening files and folders", PortalStatusLabel(_portal.Status),
-                section: "Integration");
-
-        while (Rows.Count > count)
-            Rows.RemoveAt(Rows.Count - 1);
+        IsOpen = false;
+        CloseThemeEditor();
     }
 
-    private void SetRow(int index, string label, string value, string? section = null, bool isToggle = false,
-        bool isOn = false)
+    private void RebuildMaster()
     {
-        if (index < Rows.Count)
+        AppSettings s = _store.Current;
+        SetRow(SettingsRowKind.Theme, "Theme", s.Theme, "Appearance");
+        SetRow(SettingsRowKind.EditCustomColors, "Edit custom colors…", "", "Appearance");
+        SetRow(SettingsRowKind.ShowHidden, "Show hidden files by default", s.ShowHiddenByDefault ? "On" : "Off",
+            "Behavior", isToggle: true, isOn: s.ShowHiddenByDefault);
+        SetRow(SettingsRowKind.DefaultView, "Default view", s.DefaultView, "Behavior");
+        SetRow(SettingsRowKind.SortDownloadsByTime, "Sort the Downloads folder by time",
+            s.SortDownloadsByTime ? "On" : "Off", "Behavior", isToggle: true, isOn: s.SortDownloadsByTime);
+        SetRow(SettingsRowKind.GroupByDate, "Group by date when sorted by date modified",
+            s.GroupByDate ? "On" : "Off", "Behavior", isToggle: true, isOn: s.GroupByDate);
+        SetRow(SettingsRowKind.AutoUpdate, "Auto-update", s.AutoUpdate ? "On" : "Off",
+            "Updates", isToggle: true, isOn: s.AutoUpdate);
+        if (OperatingSystem.IsLinux() && _portal is not null)
+            SetRow(SettingsRowKind.PortalIntegration, "Default for opening files and folders",
+                PortalStatusLabel(_portal.Status), "Integration");
+    }
+
+    private void SetRow(SettingsRowKind kind, string label, string value, string section,
+        bool isToggle = false, bool isOn = false)
+    {
+        if (_rowsByKind.TryGetValue(kind, out SettingsRow? row))
         {
-            SettingsRow row = Rows[index];
             row.Label = label;
             row.Value = value;
-            row.Section = section;
             row.IsToggle = isToggle;
             row.IsOn = isOn;
+            return;
         }
-        else
+
+        row = new SettingsRow(kind, label, value, section, isToggle, isOn);
+        _rowsByKind[kind] = row;
+        _master.Add(row);
+    }
+
+    private void RebuildSections()
+    {
+        List<string> sections = [];
+        foreach (SettingsRow row in _master)
         {
-            Rows.Add(new SettingsRow(label, value, section, isToggle, isOn));
+            if (!sections.Contains(row.Section))
+                sections.Add(row.Section);
         }
+        Sections = new ObservableCollection<string>(sections);
+        SectionTabs = new ObservableCollection<SettingsSectionTab>(
+            sections.Select((name, index) => new SettingsSectionTab(name, index == SelectedSectionIndex)));
+    }
+
+    private void RebuildVisibleRows()
+    {
+        string? current = SelectedSectionIndex >= 0 && SelectedSectionIndex < Sections.Count
+            ? Sections[SelectedSectionIndex]
+            : null;
+        Rows = new ObservableCollection<SettingsRow>(_master.Where(r => r.Section == current));
+        SelectedIndex = Rows.Count > 0 ? 0 : -1;
     }
 
     private static string PortalStatusLabel(PortalStatus status) => status switch
@@ -111,51 +149,65 @@ public partial class SettingsViewModel : ViewModelBase
         SelectedIndex = SelectedIndex >= Rows.Count - 1 ? 0 : SelectedIndex + 1;
     }
 
+    public void NextSection() => ChangeSection(1);
+
+    public void PreviousSection() => ChangeSection(-1);
+
+    private void ChangeSection(int direction)
+    {
+        if (Sections.Count == 0)
+            return;
+        SelectedSectionIndex = (SelectedSectionIndex + direction + Sections.Count) % Sections.Count;
+        RebuildSections();
+        RebuildVisibleRows();
+    }
+
     public void Activate()
     {
         if (SelectedIndex < 0 || SelectedIndex >= Rows.Count)
             return;
 
-        if (OperatingSystem.IsLinux() && _portal is not null && SelectedIndex == Rows.Count - 1)
+        SettingsRow row = Rows[SelectedIndex];
+
+        if (row.Kind == SettingsRowKind.EditCustomColors)
+        {
+            OpenThemeEditor();
+            return;
+        }
+
+        if (OperatingSystem.IsLinux() && row.Kind == SettingsRowKind.PortalIntegration && _portal is not null)
         {
             if (_portal.Status == PortalStatus.OwnedByRove)
             {
                 _portal.Disable();
-                RebuildKeepingSelection();
+                RebuildMaster();
             }
             else if (_confirm is not null)
                 ConfirmAndEnablePortal(_portal, _confirm);
             else
             {
                 _portal.Enable();
-                RebuildKeepingSelection();
+                RebuildMaster();
             }
             return;
         }
 
         AppSettings s = _store.Current;
-        _store.Update(SelectedIndex switch
+        _store.Update(row.Kind switch
         {
-            0 => s with { Theme = NextTheme(s.Theme) },
-            1 => s with { ShowHiddenByDefault = !s.ShowHiddenByDefault },
-            2 => s with { DefaultView = s.DefaultView == "Icons" ? "List" : "Icons" },
-            3 => s with { SortDownloadsByTime = !s.SortDownloadsByTime },
-            4 => s with { GroupByDate = !s.GroupByDate },
-            5 => s with { AutoUpdate = !s.AutoUpdate },
+            SettingsRowKind.Theme => s with { Theme = NextTheme(s.Theme) },
+            SettingsRowKind.ShowHidden => s with { ShowHiddenByDefault = !s.ShowHiddenByDefault },
+            SettingsRowKind.DefaultView => s with { DefaultView = s.DefaultView == "Icons" ? "List" : "Icons" },
+            SettingsRowKind.SortDownloadsByTime => s with { SortDownloadsByTime = !s.SortDownloadsByTime },
+            SettingsRowKind.GroupByDate => s with { GroupByDate = !s.GroupByDate },
+            SettingsRowKind.AutoUpdate => s with { AutoUpdate = !s.AutoUpdate },
             _ => s,
         });
 
-        if (SelectedIndex == 0)
+        if (row.Kind == SettingsRowKind.Theme)
             ApplyTheme();
 
-        RebuildKeepingSelection();
-    }
-
-    private void RebuildKeepingSelection()
-    {
-        int selected = SelectedIndex;
-        Rebuild();
-        SelectedIndex = selected;
+        RebuildMaster();
     }
 
     [SupportedOSPlatform("linux")]
@@ -163,7 +215,7 @@ public partial class SettingsViewModel : ViewModelBase
         confirm.Request(FilePickerPortal.ClaimWarning, () =>
         {
             portal.Enable();
-            RebuildKeepingSelection();
+            RebuildMaster();
         });
 
     private static string NextTheme(string theme)
@@ -183,5 +235,13 @@ public partial class SettingsViewModel : ViewModelBase
         _registry.Register(CommandDef.SettingsMoveUp, MoveUp);
         _registry.Register(CommandDef.SettingsMoveDown, MoveDown);
         _registry.Register(CommandDef.SettingsActivate, Activate);
+        _registry.Register(CommandDef.SettingsNextSection, NextSection);
+        _registry.Register(CommandDef.SettingsPreviousSection, PreviousSection);
+        _registry.Register(CommandDef.ThemeEditorMoveUp, ThemeMoveUp);
+        _registry.Register(CommandDef.ThemeEditorMoveDown, ThemeMoveDown);
+        _registry.Register(CommandDef.ThemeEditorActivate, ThemeActivate);
+        _registry.Register(CommandDef.ThemeEditorClose, CloseThemeEditor);
+        _registry.Register(CommandDef.ThemeEditorApplyField, ApplyThemeField);
+        _registry.Register(CommandDef.ThemeEditorCancelField, CancelThemeField);
     }
 }

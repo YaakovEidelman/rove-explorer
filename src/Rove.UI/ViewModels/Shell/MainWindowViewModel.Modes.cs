@@ -39,7 +39,11 @@ public partial class MainWindowViewModel
             return Bookmarks.InAddBookmark ? Mode.AddBookmark : Mode.Bookmarks;
         }
         if (Settings.IsOpen)
+        {
+            if (Settings.InThemeEditor)
+                return Settings.InThemeEditorField ? Mode.ThemeEditorField : Mode.ThemeEditor;
             return Mode.Settings;
+        }
         if (Tabs.Items.Any(t => t.IsRenaming))
             return Mode.RenameTab;
         if (ContentPage.DirectoryListing.InLocalSearch)
@@ -67,7 +71,9 @@ public partial class MainWindowViewModel
             "type to narrow · Ctrl+N/Ctrl+P move · Ctrl+Shift+N/P reorder · Enter go/add · Ctrl+D forget · Tab switch tab · Esc close",
         Mode.AddBookmark => "type a path · Tab complete · Enter add · Esc cancel",
         Mode.AddBookmarkCompletion => "Ctrl+N/Ctrl+P move · Tab go deeper · Enter add · Esc close list",
-        Mode.Settings => "j/k move · Enter/Space change · Tab switch tab · Esc close",
+        Mode.Settings => "j/k move · h/l section · Enter/Space change · Tab switch tab · Esc close",
+        Mode.ThemeEditor => "j/k move · Enter edit/toggle · Esc back to settings",
+        Mode.ThemeEditorField => "type a hex color · Enter apply · Esc cancel",
         Mode.EditPath => "type a path · Tab complete · Enter go · Esc cancel",
         Mode.PathCompletion => "Ctrl+N/Ctrl+P move · Tab go deeper · Enter go · Esc close list",
         Mode.RenameItem => "Enter apply · Esc cancel",

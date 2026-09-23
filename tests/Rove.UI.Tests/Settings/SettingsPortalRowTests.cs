@@ -32,6 +32,7 @@ public sealed class SettingsPortalRowTests : IDisposable
             return;
         SettingsViewModel settings = New(out _);
         settings.Toggle();
+        settings.PreviousSection();
 
         Assert.Equal("Not installed", settings.Rows[^1].Value);
     }
@@ -43,7 +44,7 @@ public sealed class SettingsPortalRowTests : IDisposable
             return;
         SettingsViewModel settings = New(out FilePickerPortal portal);
         settings.Toggle();
-        settings.MoveUp();
+        settings.PreviousSection();
 
         settings.Activate();
 
@@ -58,7 +59,7 @@ public sealed class SettingsPortalRowTests : IDisposable
             return;
         SettingsViewModel settings = New(out FilePickerPortal portal);
         settings.Toggle();
-        settings.MoveUp();
+        settings.PreviousSection();
         settings.Activate();
 
         settings.Activate();

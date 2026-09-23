@@ -4,6 +4,33 @@ namespace Rove.Core.Services;
 
 public static class CustomTheme
 {
+    public static readonly ThemeColors Default = new(
+        Mode: "dark",
+        AppBackground: "#17191D",
+        Surface: "#1F2228",
+        SurfaceAlt: "#14161A",
+        AppBorder: "#2E323A",
+        TextPrimary: "#E6E8EB",
+        TextSecondary: "#9AA1AC",
+        Accent: "#6FA3F5",
+        AccentSubtle: "#263650",
+        Error: "#E5715C",
+        MarkBar: "#D9A62E");
+
+    public static void Save(ThemeColors colors)
+    {
+        string path = RovePaths.CustomThemeFile;
+        try
+        {
+            if (Path.GetDirectoryName(path) is { Length: > 0 } parent)
+                Directory.CreateDirectory(parent);
+            File.WriteAllText(path, JsonSerializer.Serialize(colors, ThemeColorsJson.Default.ThemeColors));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+        }
+    }
+
     public static ThemeColors? Load()
     {
         string path = RovePaths.CustomThemeFile;

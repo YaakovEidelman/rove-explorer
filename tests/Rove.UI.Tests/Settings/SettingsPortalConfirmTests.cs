@@ -34,7 +34,7 @@ public sealed class SettingsPortalConfirmTests : IDisposable
             return;
         SettingsViewModel settings = New(out FilePickerPortal portal, out ConfirmViewModel confirm);
         settings.Toggle();
-        settings.MoveUp();
+        settings.PreviousSection();
 
         settings.Activate();
 
@@ -49,7 +49,7 @@ public sealed class SettingsPortalConfirmTests : IDisposable
             return;
         SettingsViewModel settings = New(out FilePickerPortal portal, out ConfirmViewModel confirm);
         settings.Toggle();
-        settings.MoveUp();
+        settings.PreviousSection();
         settings.Activate();
 
         confirm.Accept();
@@ -65,7 +65,7 @@ public sealed class SettingsPortalConfirmTests : IDisposable
             return;
         SettingsViewModel settings = New(out FilePickerPortal portal, out ConfirmViewModel confirm);
         settings.Toggle();
-        settings.MoveUp();
+        settings.PreviousSection();
         settings.Activate();
 
         confirm.Cancel();
@@ -80,7 +80,7 @@ public sealed class SettingsPortalConfirmTests : IDisposable
             return;
         SettingsViewModel settings = New(out FilePickerPortal portal, out ConfirmViewModel confirm);
         settings.Toggle();
-        settings.MoveUp();
+        settings.PreviousSection();
         settings.Activate();
         confirm.Accept();
 

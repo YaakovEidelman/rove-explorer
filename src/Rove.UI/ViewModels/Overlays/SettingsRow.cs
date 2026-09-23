@@ -4,6 +4,10 @@ namespace Rove.UI.ViewModels;
 
 public partial class SettingsRow : ObservableObject
 {
+    public SettingsRowKind Kind { get; }
+
+    public string Section { get; }
+
     [ObservableProperty]
     private string _label;
 
@@ -11,22 +15,18 @@ public partial class SettingsRow : ObservableObject
     private string _value;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasSection))]
-    private string? _section;
-
-    [ObservableProperty]
     private bool _isToggle;
 
     [ObservableProperty]
     private bool _isOn;
 
-    public bool HasSection => Section is not null;
-
-    public SettingsRow(string label, string value, string? section = null, bool isToggle = false, bool isOn = false)
+    public SettingsRow(
+        SettingsRowKind kind, string label, string value, string section, bool isToggle = false, bool isOn = false)
     {
+        Kind = kind;
+        Section = section;
         _label = label;
         _value = value;
-        _section = section;
         _isToggle = isToggle;
         _isOn = isOn;
     }
