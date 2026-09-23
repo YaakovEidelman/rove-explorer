@@ -15,5 +15,6 @@ public enum Mode
     ResizeColumns,
     Bookmarks,
     AddBookmark,
+    AddBookmarkCompletion,
     Settings,
 }

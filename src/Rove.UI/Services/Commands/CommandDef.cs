@@ -171,6 +171,17 @@ public readonly record struct CommandDef(
     public static readonly CommandDef RemoveBookmark = new("bookmark.remove", "Bookmarks: Remove Selected", CommandKind.System);
     public static readonly CommandDef ApplyAddBookmark = new("bookmark.add_apply", "Bookmarks: Add Path", CommandKind.System);
     public static readonly CommandDef CancelAddBookmark = new("bookmark.add_cancel", "Bookmarks: Cancel Add", CommandKind.System);
+    public static readonly CommandDef BookmarkCompletePath = new("bookmark.add_path_complete", "Bookmarks: Complete Path", CommandKind.System);
+    public static readonly CommandDef BookmarkPathCompleteMoveUp =
+        new("bookmark.add_path_complete_up", "Bookmarks: Completions Move Up", CommandKind.System);
+    public static readonly CommandDef BookmarkPathCompleteMoveDown =
+        new("bookmark.add_path_complete_down", "Bookmarks: Completions Move Down", CommandKind.System);
+    public static readonly CommandDef BookmarkPathCompleteDismiss =
+        new("bookmark.add_path_complete_dismiss", "Bookmarks: Close Completions", CommandKind.System);
+    public static readonly CommandDef BookmarkMoveEntryUp =
+        new("bookmark.reorder_up", "Bookmarks: Move Selected Up", CommandKind.System);
+    public static readonly CommandDef BookmarkMoveEntryDown =
+        new("bookmark.reorder_down", "Bookmarks: Move Selected Down", CommandKind.System);
 
     public static CommandDef BookmarkGo(int index) =>
         new($"{BookmarkGoIdPrefix}{index}", $"Go to Bookmark {index + 1}", CommandKind.System);

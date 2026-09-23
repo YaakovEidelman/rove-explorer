@@ -156,4 +156,88 @@ public class BookmarkKeyTests : HeadlessTest
         Assert.Equal(harness.Root, only.Path);
         Assert.True(only.IsDirectory);
     });
+
+    [Fact]
+    public Task CtrlShiftNAndPReorderBookmarksAndTheirShortcuts() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(Fill);
+        Keep(harness, "alpha");
+        Keep(harness, "beta");
+
+        harness.Press(Key.B, RawInputModifiers.Shift);
+        Assert.Equal(["alpha", "beta"], harness.Bookmarks.Items.Select(b => b.Name));
+
+        harness.Press(Key.N, RawInputModifiers.Control | RawInputModifiers.Shift);
+
+        Assert.Equal(["beta", "alpha"], harness.Bookmarks.Items.Select(b => b.Name));
+        Assert.Equal(2, harness.Model.Bookmarks.SelectedIndex);
+        Assert.Equal("Ctrl+2", harness.Model.Bookmarks.Items[2].Entry!.Shortcut);
+
+        harness.Press(Key.P, RawInputModifiers.Control | RawInputModifiers.Shift);
+
+        Assert.Equal(["alpha", "beta"], harness.Bookmarks.Items.Select(b => b.Name));
+        Assert.Equal(1, harness.Model.Bookmarks.SelectedIndex);
+    });
+
+    [Fact]
+    public Task TypingMoreAfterTabNarrowsTheSuggestionsLikeThePathBar() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(root =>
+        {
+            Fill(root);
+            Directory.CreateDirectory(Path.Combine(root, "alsoalpha"));
+        });
+        harness.Press(Key.B, RawInputModifiers.Shift);
+        harness.Model.Bookmarks.SelectedIndex = 0;
+        harness.Press(Key.Enter);
+
+        harness.Model.Bookmarks.AddBookmarkPath = Path.Combine(harness.Root, "al");
+        harness.Press(Key.Tab);
+
+        Assert.True(harness.Model.Bookmarks.Completions.IsOpen);
+        Assert.Equal(
+            ["alpha", "alsoalpha"],
+            harness.Model.Bookmarks.Completions.Items.Select(e => e.Name).Order().ToArray());
+
+        harness.Model.Bookmarks.AddBookmarkPath = Path.Combine(harness.Root, "alp");
+        harness.Settle();
+
+        Assert.Equal(["alpha"], harness.Model.Bookmarks.Completions.Items.Select(e => e.Name).ToArray());
+    });
+
+    [Fact]
+    public Task TabWhileAddingABookmarkCompletesThePathRatherThanLeavingTheOverlay() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(Fill);
+        harness.Press(Key.B, RawInputModifiers.Shift);
+        harness.Model.Bookmarks.SelectedIndex = 0;
+        harness.Press(Key.Enter);
+
+        harness.Model.Bookmarks.AddBookmarkPath = Path.Combine(harness.Root, "alp");
+        harness.Settle();
+
+        harness.Press(Key.Tab);
+
+        Assert.True(harness.Model.Bookmarks.IsOpen);
+        Assert.True(harness.Model.Bookmarks.InAddBookmark);
+        Assert.NotEqual(Mode.Browse, harness.Model.GetCurrentMode());
+        Assert.Equal(
+            Path.Combine(harness.Root, "alpha") + Path.DirectorySeparatorChar,
+            harness.Model.Bookmarks.AddBookmarkPath);
+    });
+
+    [Fact]
+    public Task TypingAPathAndPressingEnterAddsTheBookmark() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(Fill);
+        harness.Press(Key.B, RawInputModifiers.Shift);
+        harness.Model.Bookmarks.SelectedIndex = 0;
+        harness.Press(Key.Enter);
+
+        harness.Model.Bookmarks.AddBookmarkPath = harness.Root;
+        harness.Press(Key.Enter);
+
+        Assert.False(harness.Model.Bookmarks.InAddBookmark);
+        Assert.Equal([harness.Root], harness.Bookmarks.Items.Select(b => b.Path));
+    });
 }

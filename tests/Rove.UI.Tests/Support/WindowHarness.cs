@@ -67,7 +67,7 @@ internal sealed class WindowHarness : IDisposable
         ConfirmViewModel confirm = new(registry);
         PreviewViewModel preview = new(registry, core, new NullPreviewLoader());
 
-        BookmarksViewModel bookmarkList = new(registry, bookmarks);
+        BookmarksViewModel bookmarkList = new(registry, bookmarks, core);
         SettingsViewModel settingsPage = new(registry, settings);
         MainWindowViewModel model = new(
             registry, tabs, palette, search, bookmarkList, confirm, preview, fileClipboard, operation, settingsPage);
@@ -106,7 +106,7 @@ internal sealed class WindowHarness : IDisposable
         {
             Dispatcher.UIThread.RunJobs();
             quiet = Content.IsLoading || Model.Preview.IsLoading || Model.FileOperation.IsRunning
-                || Content.Completions.IsReading
+                || Content.Completions.IsReading || Model.Bookmarks.Completions.IsReading
                 ? 0
                 : quiet + 1;
             Thread.Sleep(1);

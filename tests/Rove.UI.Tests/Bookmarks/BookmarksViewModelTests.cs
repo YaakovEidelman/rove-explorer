@@ -1,3 +1,4 @@
+using Rove.Core;
 using Rove.Core.Services;
 using Rove.UI.Services;
 using Rove.UI.ViewModels;
@@ -13,10 +14,14 @@ public class BookmarksViewModelTests : IDisposable
     private readonly string _root =
         Path.Combine(Path.GetTempPath(), "rove-bookmark-add-" + Guid.NewGuid().ToString("N"));
 
+    private readonly List<RoveCore> _cores = [];
+
     private (BookmarksViewModel Bookmarks, CommandRegistry Registry) New()
     {
         CommandRegistry registry = new(KeymapLoad.Empty);
-        BookmarksViewModel bookmarks = new(registry, new BookmarkStore(_bookmarkFile));
+        RoveCore core = new();
+        _cores.Add(core);
+        BookmarksViewModel bookmarks = new(registry, new BookmarkStore(_bookmarkFile), core);
         return (bookmarks, registry);
     }
 
@@ -82,6 +87,8 @@ public class BookmarksViewModelTests : IDisposable
 
     public void Dispose()
     {
+        foreach (RoveCore core in _cores)
+            core.Dispose();
         try
         {
             File.Delete(_bookmarkFile);

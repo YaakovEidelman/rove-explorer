@@ -59,6 +59,21 @@ public sealed class BookmarkStore
         return true;
     }
 
+    public bool MoveUp(string path) => Move(path, -1);
+
+    public bool MoveDown(string path) => Move(path, 1);
+
+    private bool Move(string path, int direction)
+    {
+        int index = IndexOf(path);
+        int target = index + direction;
+        if (index < 0 || target < 0 || target >= _items.Count)
+            return false;
+        (_items[index], _items[target]) = (_items[target], _items[index]);
+        Save();
+        return true;
+    }
+
     private void Save()
     {
         Changed?.Invoke();

@@ -93,6 +93,10 @@ public static class KeymapDefaults
                 new(K(Key.Down), CommandDef.BookmarkMoveDown.Id),
                 new(K(Key.Enter), CommandDef.BookmarkExecute.Id),
                 new(K(Key.D, KeyModifiers.Control), CommandDef.RemoveBookmark.Id),
+                new(K(Key.P, KeyModifiers.Control | KeyModifiers.Shift), CommandDef.BookmarkMoveEntryUp.Id),
+                new(K(Key.N, KeyModifiers.Control | KeyModifiers.Shift), CommandDef.BookmarkMoveEntryDown.Id),
+                new(K(Key.Up, KeyModifiers.Control | KeyModifiers.Shift), CommandDef.BookmarkMoveEntryUp.Id),
+                new(K(Key.Down, KeyModifiers.Control | KeyModifiers.Shift), CommandDef.BookmarkMoveEntryDown.Id),
                 new(K(Key.Tab), CommandDef.QuickAccessNextTab.Id),
                 new(K(Key.Tab, KeyModifiers.Shift), CommandDef.QuickAccessPreviousTab.Id),
                 new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
@@ -106,6 +110,22 @@ public static class KeymapDefaults
                 new(K(Key.Escape), CommandDef.CancelAddBookmark.Id),
                 new(K(Key.C, KeyModifiers.Control), CommandDef.CancelAddBookmark.Id),
                 new(K(Key.Enter), CommandDef.ApplyAddBookmark.Id),
+                new(K(Key.Tab), CommandDef.BookmarkCompletePath.Id),
+            ]
+        },
+        {
+            Mode.AddBookmarkCompletion,
+            [
+                new(K(Key.Escape), CommandDef.BookmarkPathCompleteDismiss.Id),
+                new(K(Key.C, KeyModifiers.Control), CommandDef.BookmarkPathCompleteDismiss.Id),
+                new(K(Key.Enter), CommandDef.ApplyAddBookmark.Id),
+                new(K(Key.Tab), CommandDef.BookmarkCompletePath.Id),
+                new(K(Key.N, KeyModifiers.Control), CommandDef.BookmarkPathCompleteMoveDown.Id),
+                new(K(Key.P, KeyModifiers.Control), CommandDef.BookmarkPathCompleteMoveUp.Id),
+                new(K(Key.Down), CommandDef.BookmarkPathCompleteMoveDown.Id),
+                new(K(Key.Up), CommandDef.BookmarkPathCompleteMoveUp.Id),
+                new(K(Key.W, KeyModifiers.Control), CommandDef.CloseTab.Id),
+                new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
             ]
         },
         {

@@ -78,6 +78,7 @@ A mode is whatever surface is currently in front of you.
 | `resizecolumns` | the column-width bar         |
 | `bookmarks`     | the bookmark list            |
 | `addbookmark`   | typing a path to bookmark    |
+| `addbookmarkcompletion` | the Tab completions under that path box |
 
 ### Writing a key
 
@@ -123,6 +124,12 @@ and `f1`–`f12`. Punctuation is written as itself: `/`, `.`, `,`, `-`, `=`,
 | `bookmark.remove`        | Bookmarks: forget selected |
 | `bookmark.add_apply`     | Bookmarks: add the typed path |
 | `bookmark.add_cancel`    | Bookmarks: cancel adding a path |
+| `bookmark.add_path_complete` | Bookmarks: complete the typed path |
+| `bookmark.add_path_complete_up` | Bookmarks: completions move up |
+| `bookmark.add_path_complete_down` | Bookmarks: completions move down |
+| `bookmark.add_path_complete_dismiss` | Bookmarks: close the completions list |
+| `bookmark.reorder_up`    | Bookmarks: move the selected bookmark up |
+| `bookmark.reorder_down`  | Bookmarks: move the selected bookmark down |
 | `bookmark.go:0` … `:8`   | Go straight to bookmark 1-9 |
 
 `content.edit_path` opens the path at the top as a text box holding where
@@ -274,12 +281,20 @@ bookmark simply has no key until something ahead of it is forgotten. A
 bookmarked folder opens; a bookmarked file puts you in the folder holding it,
 with the file under the highlight.
 
+`Ctrl+Shift+N` and `Ctrl+Shift+P` (or `Ctrl+Shift+Down`/`Ctrl+Shift+Up`) move
+the highlighted bookmark itself, rather than the highlight, one place down or
+up the list — this is how you change which of Ctrl+1 through Ctrl+9 a
+bookmark answers to, since the key follows position rather than the
+bookmark.
+
 The bookmark list always has an "Add a bookmark by path…" row pinned at the
-top. `Enter` on it opens a text box — type any path (`~`, an environment
-variable, or a plain absolute path all work) and `Enter` bookmarks it,
-`Esc` cancels. This is the only way to bookmark a folder you cannot get
-`bookmark.toggle` to land on directly, such as `/` once something inside it
-is highlighted.
+top. `Enter` on it opens a text box that works like the path box at the top
+of the window: type any path (`~`, an environment variable, or a plain
+absolute path all work), `Tab` completes it against what is really on disk
+the same way, and `Enter` bookmarks whatever the box holds. `Esc` cancels —
+first closing the completion list if one is open, same as the path box.
+This is the only way to bookmark a folder you cannot get `bookmark.toggle`
+to land on directly, such as `/` once something inside it is highlighted.
 
 ### Columns
 

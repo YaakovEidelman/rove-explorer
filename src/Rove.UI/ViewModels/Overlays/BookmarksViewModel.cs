@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using Rove.Core;
 using Rove.Core.Services;
 using Rove.UI.Services;
 using System.Collections.ObjectModel;
@@ -9,15 +10,20 @@ public partial class BookmarksViewModel : ViewModelBase
 {
     private readonly CommandRegistry _registry;
     private readonly BookmarkStore _store;
+    private bool _completionIsWriting;
 
     public event Action<Bookmark>? GoRequested;
 
     public event Action<string>? InfoRaised;
 
-    public BookmarksViewModel(CommandRegistry registry, BookmarkStore store)
+    public PathCompletionViewModel Completions { get; }
+
+    public BookmarksViewModel(CommandRegistry registry, BookmarkStore store, RoveCore core)
     {
         _registry = registry;
         _store = store;
+        Completions = new(core);
+        Completions.Filled += SetAddBookmarkPathText;
         _store.Changed += () =>
         {
             if (IsOpen)
@@ -53,6 +59,15 @@ public partial class BookmarksViewModel : ViewModelBase
             Rebuild();
     }
 
+    partial void OnAddBookmarkPathChanged(string value)
+    {
+        if (_completionIsWriting)
+            return;
+        _ = Completions.NarrowAsync(value, BaseDirectory);
+    }
+
+    private static string BaseDirectory => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
     public void Toggle()
     {
         if (IsOpen)
@@ -72,6 +87,7 @@ public partial class BookmarksViewModel : ViewModelBase
     {
         IsOpen = false;
         InAddBookmark = false;
+        Completions.Close();
         SearchText = string.Empty;
         Items = [];
         SelectedIndex = -1;
@@ -138,13 +154,71 @@ public partial class BookmarksViewModel : ViewModelBase
             InfoRaised?.Invoke($"Removed the bookmark for {entry.Bookmark.Name}.");
     }
 
+    private void ReorderUp() => Reorder(-1);
+
+    private void ReorderDown() => Reorder(1);
+
+    private void Reorder(int direction)
+    {
+        if (SelectedIndex < 0 || SelectedIndex >= Items.Count)
+            return;
+        if (Items[SelectedIndex].Entry is not { } entry)
+            return;
+
+        string path = entry.Bookmark.Path;
+        bool moved = direction < 0 ? _store.MoveUp(path) : _store.MoveDown(path);
+        if (!moved)
+            return;
+
+        int index = IndexOfPath(path);
+        if (index >= 0)
+            SelectedIndex = index;
+    }
+
+    private int IndexOfPath(string path)
+    {
+        for (int i = 0; i < Items.Count; i++)
+        {
+            if (Items[i].Entry?.Bookmark.Path == path)
+                return i;
+        }
+        return -1;
+    }
+
     private void StartAddBookmark()
     {
         AddBookmarkPath = string.Empty;
         InAddBookmark = true;
     }
 
-    private void CancelAddBookmark() => InAddBookmark = false;
+    private void CancelAddBookmark()
+    {
+        InAddBookmark = false;
+        Completions.Close();
+    }
+
+    private void CompleteAddBookmarkPath() => _ = CompleteAddBookmarkPathAsync();
+
+    private async Task CompleteAddBookmarkPathAsync()
+    {
+        if (await Completions.ExpandAsync(AddBookmarkPath, BaseDirectory) is { } completed)
+            SetAddBookmarkPathText(completed);
+    }
+
+    private void DismissAddBookmarkCompletions() => Completions.Close();
+
+    private void SetAddBookmarkPathText(string text)
+    {
+        _completionIsWriting = true;
+        try
+        {
+            AddBookmarkPath = text;
+        }
+        finally
+        {
+            _completionIsWriting = false;
+        }
+    }
 
     private void ApplyAddBookmark()
     {
@@ -152,11 +226,11 @@ public partial class BookmarksViewModel : ViewModelBase
         if (typed.Length == 0)
         {
             InAddBookmark = false;
+            Completions.Close();
             return;
         }
 
-        string baseDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        if (PathResolver.Resolve(typed, baseDir) is not { } path)
+        if (PathResolver.Resolve(typed, BaseDirectory) is not { } path)
         {
             InfoRaised?.Invoke($"That is not a path: {typed}.");
             return;
@@ -175,6 +249,7 @@ public partial class BookmarksViewModel : ViewModelBase
             name = LongPath.Display(path);
 
         InAddBookmark = false;
+        Completions.Close();
         bool added = _store.Toggle(new Bookmark(path, name, isDirectory));
         InfoRaised?.Invoke(added ? $"Bookmarked {name}." : $"Removed the bookmark for {name}.");
         Rebuild();
@@ -189,7 +264,13 @@ public partial class BookmarksViewModel : ViewModelBase
         _registry.Register(CommandDef.BookmarkMoveDown, MoveDown);
         _registry.Register(CommandDef.BookmarkExecute, GoToSelected);
         _registry.Register(CommandDef.RemoveBookmark, RemoveSelected);
+        _registry.Register(CommandDef.BookmarkMoveEntryUp, ReorderUp);
+        _registry.Register(CommandDef.BookmarkMoveEntryDown, ReorderDown);
         _registry.Register(CommandDef.ApplyAddBookmark, ApplyAddBookmark);
         _registry.Register(CommandDef.CancelAddBookmark, CancelAddBookmark);
+        _registry.Register(CommandDef.BookmarkCompletePath, CompleteAddBookmarkPath);
+        _registry.Register(CommandDef.BookmarkPathCompleteMoveUp, Completions.MoveUp);
+        _registry.Register(CommandDef.BookmarkPathCompleteMoveDown, Completions.MoveDown);
+        _registry.Register(CommandDef.BookmarkPathCompleteDismiss, DismissAddBookmarkCompletions);
     }
 }

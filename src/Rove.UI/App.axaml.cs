@@ -62,7 +62,7 @@ public partial class App : Application
             PaletteViewModel palette = new(registry, settings);
             GlobalSearchViewModel globalSearch = new(registry, core, iconCache, () => tabs.Active.SearchRoot);
             palette.Opening += () => tabs.Active.RefreshDriveCommands();
-            BookmarksViewModel bookmarkList = new(registry, bookmarks);
+            BookmarksViewModel bookmarkList = new(registry, bookmarks, core);
             ConfirmViewModel confirm = new(registry);
             PreviewViewModel preview = new(registry, core, new ImagePreviewLoader());
             SettingsViewModel settingsPage = new(registry, settings, confirm: confirm);
