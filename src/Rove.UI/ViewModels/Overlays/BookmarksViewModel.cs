@@ -30,7 +30,7 @@ public partial class BookmarksViewModel : ViewModelBase
     private bool _isOpen;
 
     [ObservableProperty]
-    private ObservableCollection<BookmarkEntry> _items = [];
+    private ObservableCollection<BookmarkRow> _items = [];
 
     [ObservableProperty]
     private int _selectedIndex;
@@ -38,9 +38,14 @@ public partial class BookmarksViewModel : ViewModelBase
     [ObservableProperty]
     private string _searchText = string.Empty;
 
-    public bool IsEmpty => Items.Count == 0;
+    [ObservableProperty]
+    private bool _isEmpty;
 
-    partial void OnItemsChanged(ObservableCollection<BookmarkEntry> value) => OnPropertyChanged(nameof(IsEmpty));
+    [ObservableProperty]
+    private bool _inAddBookmark;
+
+    [ObservableProperty]
+    private string _addBookmarkPath = string.Empty;
 
     partial void OnSearchTextChanged(string value)
     {
@@ -66,6 +71,7 @@ public partial class BookmarksViewModel : ViewModelBase
     private void Close()
     {
         IsOpen = false;
+        InAddBookmark = false;
         SearchText = string.Empty;
         Items = [];
         SelectedIndex = -1;
@@ -73,12 +79,18 @@ public partial class BookmarksViewModel : ViewModelBase
 
     private void Rebuild()
     {
-        Items =
+        BookmarkEntry[] entries =
         [
             .. _store.Items
                 .Select((bookmark, index) => new BookmarkEntry(bookmark, BookmarkStore.ShortcutFor(index)))
                 .Where(entry => Matches(entry.Bookmark))
         ];
+        Items =
+        [
+            new BookmarkRow(IsAddNew: true, Entry: null),
+            .. entries.Select(entry => new BookmarkRow(IsAddNew: false, Entry: entry)),
+        ];
+        IsEmpty = entries.Length == 0;
         ResetSelection();
     }
 
@@ -105,7 +117,13 @@ public partial class BookmarksViewModel : ViewModelBase
     {
         if (SelectedIndex < 0 || SelectedIndex >= Items.Count)
             return;
-        Bookmark bookmark = Items[SelectedIndex].Bookmark;
+        BookmarkRow row = Items[SelectedIndex];
+        if (row.IsAddNew)
+        {
+            StartAddBookmark();
+            return;
+        }
+        Bookmark bookmark = row.Entry!.Bookmark;
         Close();
         GoRequested?.Invoke(bookmark);
     }
@@ -114,17 +132,55 @@ public partial class BookmarksViewModel : ViewModelBase
     {
         if (SelectedIndex < 0 || SelectedIndex >= Items.Count)
             return;
-        Bookmark bookmark = Items[SelectedIndex].Bookmark;
-        if (_store.Remove(bookmark.Path))
-            InfoRaised?.Invoke($"Removed the bookmark for {bookmark.Name}.");
+        if (Items[SelectedIndex].Entry is not { } entry)
+            return;
+        if (_store.Remove(entry.Bookmark.Path))
+            InfoRaised?.Invoke($"Removed the bookmark for {entry.Bookmark.Name}.");
     }
 
-    private void ResetSelection()
+    private void StartAddBookmark()
     {
-        SelectedIndex = -1;
-        if (Items.Count > 0)
-            SelectedIndex = 0;
+        AddBookmarkPath = string.Empty;
+        InAddBookmark = true;
     }
+
+    private void CancelAddBookmark() => InAddBookmark = false;
+
+    private void ApplyAddBookmark()
+    {
+        string typed = AddBookmarkPath.Trim();
+        if (typed.Length == 0)
+        {
+            InAddBookmark = false;
+            return;
+        }
+
+        string baseDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (PathResolver.Resolve(typed, baseDir) is not { } path)
+        {
+            InfoRaised?.Invoke($"That is not a path: {typed}.");
+            return;
+        }
+
+        string io = LongPath.ForIo(path);
+        bool isDirectory = Directory.Exists(io);
+        if (!isDirectory && !File.Exists(io))
+        {
+            InfoRaised?.Invoke($"There is nothing at {path}.");
+            return;
+        }
+
+        string name = Path.GetFileName(Path.TrimEndingDirectorySeparator(LongPath.Display(path)));
+        if (name.Length == 0)
+            name = LongPath.Display(path);
+
+        InAddBookmark = false;
+        bool added = _store.Toggle(new Bookmark(path, name, isDirectory));
+        InfoRaised?.Invoke(added ? $"Bookmarked {name}." : $"Removed the bookmark for {name}.");
+        Rebuild();
+    }
+
+    private void ResetSelection() => SelectedIndex = Items.Count > 1 ? 1 : 0;
 
     private void RegisterBindings()
     {
@@ -133,5 +189,7 @@ public partial class BookmarksViewModel : ViewModelBase
         _registry.Register(CommandDef.BookmarkMoveDown, MoveDown);
         _registry.Register(CommandDef.BookmarkExecute, GoToSelected);
         _registry.Register(CommandDef.RemoveBookmark, RemoveSelected);
+        _registry.Register(CommandDef.ApplyAddBookmark, ApplyAddBookmark);
+        _registry.Register(CommandDef.CancelAddBookmark, CancelAddBookmark);
     }
 }

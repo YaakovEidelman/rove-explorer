@@ -1,4 +1,5 @@
 using Rove.Core.Services;
+using Rove.UI.Models;
 using System.IO.Enumeration;
 
 namespace Rove.UI.ViewModels;
@@ -24,10 +25,30 @@ public partial class DirectoryListing
         IReadOnlyList<ListViewItem> shown = Shown();
         IReadOnlyList<ListViewItem> target = SearchCurrentDirectoryText.Length > 0 ? Filtered(shown) : shown;
 
+        AssignGroupLabels(target);
+
         ListSelection.Detach();
         SyncItems(target);
         EmptyDirectory = Items.Count == 0;
         ListSelection.Reconcile();
+    }
+
+    private void AssignGroupLabels(IReadOnlyList<ListViewItem> target)
+    {
+        bool grouping = GroupByDate && SortBy == SortKey.Modified;
+        DateTime now = DateTime.Now;
+        string? previousLabel = null;
+        for (int i = 0; i < target.Count; i++)
+        {
+            if (!grouping)
+            {
+                target[i].GroupLabel = null;
+                continue;
+            }
+            string label = DateGroupLabeler.LabelFor(target[i].Item.LastWriteTime, now);
+            target[i].GroupLabel = label == previousLabel ? null : label;
+            previousLabel = label;
+        }
     }
 
     private List<ListViewItem>? _lastMatches;

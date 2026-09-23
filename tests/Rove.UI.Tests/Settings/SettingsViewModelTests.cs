@@ -16,7 +16,7 @@ public class SettingsViewModelTests : IDisposable
         return new SettingsViewModel(new CommandRegistry(KeymapLoad.Empty), store);
     }
 
-    private static int ExpectedRowCount => OperatingSystem.IsLinux() ? 6 : 5;
+    private static int ExpectedRowCount => OperatingSystem.IsLinux() ? 7 : 6;
 
     [Fact]
     public void OpeningBuildsARowForEverySetting()

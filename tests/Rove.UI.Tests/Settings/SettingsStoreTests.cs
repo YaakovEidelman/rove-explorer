@@ -19,6 +19,7 @@ public class SettingsStoreTests : IDisposable
         Assert.False(settings.ShowHiddenByDefault);
         Assert.Equal("List", settings.DefaultView);
         Assert.True(settings.SortDownloadsByTime);
+        Assert.True(settings.GroupByDate);
         Assert.False(settings.AutoUpdate);
     }
 

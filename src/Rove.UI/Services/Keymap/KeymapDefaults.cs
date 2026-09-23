@@ -101,6 +101,14 @@ public static class KeymapDefaults
             ]
         },
         {
+            Mode.AddBookmark,
+            [
+                new(K(Key.Escape), CommandDef.CancelAddBookmark.Id),
+                new(K(Key.C, KeyModifiers.Control), CommandDef.CancelAddBookmark.Id),
+                new(K(Key.Enter), CommandDef.ApplyAddBookmark.Id),
+            ]
+        },
+        {
             Mode.Settings,
             [
                 new(K(Key.Escape), CommandDef.ShowSettings.Id),

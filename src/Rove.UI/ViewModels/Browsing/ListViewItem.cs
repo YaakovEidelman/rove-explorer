@@ -28,6 +28,12 @@ public partial class ListViewItem : ObservableObject
     private bool _isMarked;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasGroupLabel))]
+    private string? _groupLabel;
+
+    public bool HasGroupLabel => GroupLabel is not null;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RowOpacity))]
     private bool _isCut;
 

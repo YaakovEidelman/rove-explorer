@@ -77,6 +77,7 @@ A mode is whatever surface is currently in front of you.
 | `confirm`       | the confirm bar              |
 | `resizecolumns` | the column-width bar         |
 | `bookmarks`     | the bookmark list            |
+| `addbookmark`   | typing a path to bookmark    |
 
 ### Writing a key
 
@@ -120,6 +121,8 @@ and `f1`–`f12`. Punctuation is written as itself: `/`, `.`, `,`, `-`, `=`,
 | `bookmark.move_down`     | Bookmarks: move down      |
 | `bookmark.execute`       | Bookmarks: go to selected |
 | `bookmark.remove`        | Bookmarks: forget selected |
+| `bookmark.add_apply`     | Bookmarks: add the typed path |
+| `bookmark.add_cancel`    | Bookmarks: cancel adding a path |
 | `bookmark.go:0` … `:8`   | Go straight to bookmark 1-9 |
 
 `content.edit_path` opens the path at the top as a text box holding where
@@ -271,6 +274,13 @@ bookmark simply has no key until something ahead of it is forgotten. A
 bookmarked folder opens; a bookmarked file puts you in the folder holding it,
 with the file under the highlight.
 
+The bookmark list always has an "Add a bookmark by path…" row pinned at the
+top. `Enter` on it opens a text box — type any path (`~`, an environment
+variable, or a plain absolute path all work) and `Enter` bookmarks it,
+`Esc` cancels. This is the only way to bookmark a folder you cannot get
+`bookmark.toggle` to land on directly, such as `/` once something inside it
+is highlighted.
+
 ### Columns
 
 | Command                        | What it does           |
@@ -286,9 +296,18 @@ with the file under the highlight.
 
 ### View
 
-| Command              | What it does                          |
-| -------------------- | -------------------------------------- |
-| `content.toggle_view` | Cycle: list → small icons → medium → large → list |
+| Command                     | What it does                          |
+| ---------------------------- | -------------------------------------- |
+| `content.toggle_view`        | Cycle: list → small icons → medium → large → list |
+| `content.toggle_group_by_date` | Group by date when sorted by date modified |
+
+`content.toggle_group_by_date` (palette-only, like the sort commands) splits the list view into
+date headings — Today, Yesterday, Earlier This Week, Last Week, Earlier This Month, Last Month,
+Earlier This Year, Last Year, then by calendar year — whenever the folder is sorted by date
+modified. It does nothing while sorted by name, type, or size, and it does nothing in icon view.
+It starts on, and the Downloads folder sorts by date modified by default, so a fresh Downloads
+folder already shows the date headings; "Group by date when sorted by date modified" in Settings
+changes the default for new tabs.
 
 `content.toggle_view` (`i`) is the one key for all of it: press it again to
 step to the next size, and once more past the largest to land back on the

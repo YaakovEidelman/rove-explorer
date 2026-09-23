@@ -44,7 +44,7 @@ public class BookmarkKeyTests : HeadlessTest
 
         Assert.True(harness.Model.Bookmarks.IsOpen);
         Assert.Equal(Mode.Bookmarks, harness.Model.GetCurrentMode());
-        Assert.Equal(["alpha"], harness.Model.Bookmarks.Items.Select(e => e.Bookmark.Name));
+        Assert.Equal(["alpha"], harness.Model.Bookmarks.Items.Where(r => !r.IsAddNew).Select(r => r.Entry!.Bookmark.Name));
 
         harness.Press(Key.Escape);
 
@@ -60,13 +60,13 @@ public class BookmarkKeyTests : HeadlessTest
         Keep(harness, "beta");
 
         harness.Press(Key.B, RawInputModifiers.Shift);
-        Assert.Equal(0, harness.Model.Bookmarks.SelectedIndex);
-
-        harness.Press(Key.N, RawInputModifiers.Control);
         Assert.Equal(1, harness.Model.Bookmarks.SelectedIndex);
 
+        harness.Press(Key.N, RawInputModifiers.Control);
+        Assert.Equal(2, harness.Model.Bookmarks.SelectedIndex);
+
         harness.Press(Key.P, RawInputModifiers.Control);
-        Assert.Equal(0, harness.Model.Bookmarks.SelectedIndex);
+        Assert.Equal(1, harness.Model.Bookmarks.SelectedIndex);
 
         harness.Press(Key.N, RawInputModifiers.Control);
         harness.Press(Key.Enter);
@@ -124,7 +124,7 @@ public class BookmarkKeyTests : HeadlessTest
         harness.Model.Bookmarks.SearchText = "beta";
         harness.Settle();
 
-        BookmarkEntry only = Assert.Single(harness.Model.Bookmarks.Items);
+        BookmarkEntry only = Assert.Single(harness.Model.Bookmarks.Items, r => !r.IsAddNew).Entry!;
         Assert.Equal("beta", only.Bookmark.Name);
         Assert.Equal("Ctrl+2", only.Shortcut);
     });
@@ -141,8 +141,8 @@ public class BookmarkKeyTests : HeadlessTest
 
         Assert.True(harness.Model.Bookmarks.IsOpen);
         Assert.Equal(["beta"], harness.Bookmarks.Items.Select(b => b.Name));
-        Assert.Equal(["beta"], harness.Model.Bookmarks.Items.Select(e => e.Bookmark.Name));
-        Assert.Equal("Ctrl+1", harness.Model.Bookmarks.Items[0].Shortcut);
+        Assert.Equal(["beta"], harness.Model.Bookmarks.Items.Where(r => !r.IsAddNew).Select(r => r.Entry!.Bookmark.Name));
+        Assert.Equal("Ctrl+1", harness.Model.Bookmarks.Items[1].Entry!.Shortcut);
     });
 
     [Fact]

@@ -33,7 +33,7 @@ public partial class MainWindowViewModel
         if (GlobalSearch.IsOpen)
             return Mode.GlobalSearch;
         if (Bookmarks.IsOpen)
-            return Mode.Bookmarks;
+            return Bookmarks.InAddBookmark ? Mode.AddBookmark : Mode.Bookmarks;
         if (Settings.IsOpen)
             return Mode.Settings;
         if (Tabs.Items.Any(t => t.IsRenaming))
@@ -60,7 +60,8 @@ public partial class MainWindowViewModel
         Mode.LocalSearch => "type to filter · Enter keeps filter, back to browsing · Esc clears",
         Mode.GlobalSearch => "type to search · Enter jump · Tab switch tab · Esc close",
         Mode.Bookmarks =>
-            "type to narrow · Ctrl+N/Ctrl+P move · Enter go · Ctrl+D forget · Tab switch tab · Esc close",
+            "type to narrow · Ctrl+N/Ctrl+P move · Enter go/add · Ctrl+D forget · Tab switch tab · Esc close",
+        Mode.AddBookmark => "type a path · Enter add · Esc cancel",
         Mode.Settings => "j/k move · Enter/Space change · Tab switch tab · Esc close",
         Mode.EditPath => "type a path · Tab complete · Enter go · Esc cancel",
         Mode.PathCompletion => "Ctrl+N/Ctrl+P move · Tab go deeper · Enter go · Esc close list",

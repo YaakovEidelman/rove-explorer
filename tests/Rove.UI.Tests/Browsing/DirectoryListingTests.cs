@@ -427,4 +427,44 @@ public class DirectoryListingTests
         Assert.Equal(SortKey.Modified, listing.SortBy);
         Assert.True(listing.SortDescending);
     }
+
+    [Fact]
+    public void GroupByDateLabelsOnlyTheFirstItemOfEachGroup()
+    {
+        DateTime now = DateTime.Now;
+        DirectoryListing listing = Listing(
+            Item("today-a.txt") with { LastWriteTime = now },
+            Item("today-b.txt") with { LastWriteTime = now.AddHours(-1) },
+            Item("old.txt") with { LastWriteTime = now.AddYears(-2) });
+
+        listing.SetSort(SortKey.Modified);
+        listing.GroupByDate = true;
+
+        Assert.Equal("Today", listing.Items[0].GroupLabel);
+        Assert.Null(listing.Items[1].GroupLabel);
+        Assert.NotNull(listing.Items[2].GroupLabel);
+        Assert.NotEqual("Today", listing.Items[2].GroupLabel);
+    }
+
+    [Fact]
+    public void GroupByDateOnlyAppliesWhenSortedByModified()
+    {
+        DirectoryListing listing = Listing(Item("a.txt"), Item("b.txt"));
+        listing.GroupByDate = true;
+
+        Assert.All(listing.Items, item => Assert.Null(item.GroupLabel));
+    }
+
+    [Fact]
+    public void TurningGroupByDateOffClearsLabels()
+    {
+        DirectoryListing listing = Listing(Item("a.txt"), Item("b.txt"));
+        listing.SetSort(SortKey.Modified);
+        listing.GroupByDate = true;
+        Assert.NotNull(listing.Items[0].GroupLabel);
+
+        listing.GroupByDate = false;
+
+        Assert.All(listing.Items, item => Assert.Null(item.GroupLabel));
+    }
 }

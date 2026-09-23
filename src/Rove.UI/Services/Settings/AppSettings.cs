@@ -7,6 +7,7 @@ public sealed record AppSettings(
     [property: JsonPropertyName("showHiddenByDefault")] bool ShowHiddenByDefault = false,
     [property: JsonPropertyName("defaultView")] string DefaultView = "List",
     [property: JsonPropertyName("sortDownloadsByTime")] bool SortDownloadsByTime = true,
+    [property: JsonPropertyName("groupByDate")] bool GroupByDate = true,
     [property: JsonPropertyName("autoUpdate")] bool AutoUpdate = false,
     [property: JsonPropertyName("recentCommandIds")] string[]? RecentCommandIds = null
 );

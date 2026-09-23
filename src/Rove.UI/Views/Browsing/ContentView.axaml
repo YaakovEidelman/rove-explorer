@@ -52,38 +52,43 @@
                      IsVisible="{Binding IsListView}">
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ListViewItem">
-                        <Border Classes="row" Classes.marked="{Binding IsMarked}"
-                                Opacity="{Binding RowOpacity}">
-                            <StackPanel Orientation="Horizontal">
-                                <Grid ColumnDefinitions="Auto, *"
-                                      Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[0].Width}">
-                                    <Image Grid.Column="0" Source="{Binding Icon}"
-                                           Width="16" Height="16" Margin="0,0,8,0"
-                                           VerticalAlignment="Center" />
-                                    <Panel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Name}"
-                                                   FontSize="13"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   IsVisible="{Binding !IsRenaming}" />
-                                        <TextBox Classes="rename" Text="{Binding EditText}"
-                                                 IsVisible="{Binding IsRenaming}"
-                                                 behaviors:FocusOnTrue.Focus="{Binding IsRenaming}" />
-                                    </Panel>
-                                </Grid>
-                                <TextBlock Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[1].Width}"
-                                           Text="{Binding TypeText}" FontSize="12"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[2].Width}"
-                                           Text="{Binding SizeText}" FontSize="12"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[3].Width}"
-                                           Text="{Binding ModifiedText}" FontSize="12"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                           VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
+                        <StackPanel>
+                            <Border Classes="dategroupheader" IsVisible="{Binding HasGroupLabel}">
+                                <TextBlock Text="{Binding GroupLabel}" />
+                            </Border>
+                            <Border Classes="row" Classes.marked="{Binding IsMarked}"
+                                    Opacity="{Binding RowOpacity}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid ColumnDefinitions="Auto, *"
+                                          Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[0].Width}">
+                                        <Image Grid.Column="0" Source="{Binding Icon}"
+                                               Width="16" Height="16" Margin="0,0,8,0"
+                                               VerticalAlignment="Center" />
+                                        <Panel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="13"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       IsVisible="{Binding !IsRenaming}" />
+                                            <TextBox Classes="rename" Text="{Binding EditText}"
+                                                     IsVisible="{Binding IsRenaming}"
+                                                     behaviors:FocusOnTrue.Focus="{Binding IsRenaming}" />
+                                        </Panel>
+                                    </Grid>
+                                    <TextBlock Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[1].Width}"
+                                               Text="{Binding TypeText}" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[2].Width}"
+                                               Text="{Binding SizeText}" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[3].Width}"
+                                               Text="{Binding ModifiedText}" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

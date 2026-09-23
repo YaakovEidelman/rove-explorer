@@ -22,22 +22,33 @@
                  ItemsSource="{Binding Items}"
                  SelectedIndex="{Binding SelectedIndex}">
             <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="vm:BookmarkEntry">
-                    <DockPanel>
-                        <TextBlock DockPanel.Dock="Right"
-                                   Text="{Binding Shortcut}"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="8,0,0,0" />
-                        <StackPanel>
-                            <TextBlock Text="{Binding Bookmark.Name}" FontSize="13" />
-                            <TextBlock Text="{Binding Bookmark.Path}"
+                <DataTemplate x:DataType="vm:BookmarkRow">
+                    <Panel>
+                        <DockPanel IsVisible="{Binding IsAddNew}">
+                            <TextBlock Text="+ Add a bookmark by path…"
+                                       FontSize="13"
+                                       IsVisible="{Binding !#bookmark_list.((vm:BookmarksViewModel)DataContext).InAddBookmark}" />
+                            <TextBox Text="{Binding #bookmark_list.((vm:BookmarksViewModel)DataContext).AddBookmarkPath}"
+                                     PlaceholderText="/path/to/somewhere"
+                                     IsVisible="{Binding #bookmark_list.((vm:BookmarksViewModel)DataContext).InAddBookmark}"
+                                     behaviors:FocusOnTrue.Focus="{Binding #bookmark_list.((vm:BookmarksViewModel)DataContext).InAddBookmark}" />
+                        </DockPanel>
+                        <DockPanel IsVisible="{Binding !IsAddNew}">
+                            <TextBlock DockPanel.Dock="Right"
+                                       Text="{Binding Entry.Shortcut}"
                                        FontSize="11"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
-                                       TextTrimming="CharacterEllipsis" />
-                        </StackPanel>
-                    </DockPanel>
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0" />
+                            <StackPanel>
+                                <TextBlock Text="{Binding Entry.Bookmark.Name}" FontSize="13" />
+                                <TextBlock Text="{Binding Entry.Bookmark.Path}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Panel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
@@ -46,20 +57,30 @@
                    Foreground="{DynamicResource TextSecondaryBrush}"
                    FontSize="12"
                    HorizontalAlignment="Center"
-                   Margin="0,10"
+                   Margin="0,40,0,0"
+                   VerticalAlignment="Top"
                    IsVisible="{Binding IsEmpty}" />
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0"
+                    IsVisible="{Binding !InAddBookmark}">
             <Border Classes="kbd"><TextBlock Text="Ctrl+N/P" /></Border>
             <TextBlock Classes="hint" Text="move" />
             <TextBlock Classes="hintsep" Text="·" />
             <Border Classes="kbd"><TextBlock Text="Enter" /></Border>
-            <TextBlock Classes="hint" Text="go" />
+            <TextBlock Classes="hint" Text="go / add" />
             <TextBlock Classes="hintsep" Text="·" />
             <Border Classes="kbd"><TextBlock Text="Ctrl+D" /></Border>
             <TextBlock Classes="hint" Text="forget" />
             <TextBlock Classes="hintsep" Text="·" />
             <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
             <TextBlock Classes="hint" Text="close" />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0"
+                    IsVisible="{Binding InAddBookmark}">
+            <Border Classes="kbd"><TextBlock Text="Enter" /></Border>
+            <TextBlock Classes="hint" Text="add bookmark" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+            <TextBlock Classes="hint" Text="cancel" />
         </StackPanel>
     </Grid>
 </UserControl>

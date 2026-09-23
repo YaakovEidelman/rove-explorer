@@ -205,6 +205,14 @@ public partial class ContentViewModel
             : "Hiding hidden items.");
     }
 
+    private void ToggleGroupByDate()
+    {
+        DirectoryListing.GroupByDate = !DirectoryListing.GroupByDate;
+        InfoRaised?.Invoke(DirectoryListing.GroupByDate
+            ? "Grouping by date when sorted by date modified."
+            : "Not grouping by date.");
+    }
+
     private void ToggleMarkItem()
     {
         if (HighlightedItem is not { } selected)

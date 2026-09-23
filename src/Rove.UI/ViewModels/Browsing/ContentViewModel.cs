@@ -59,6 +59,7 @@ public partial class ContentViewModel : ViewModelBase
 
         AppSettings defaults = _settings.Current;
         DirectoryListing.ShowHidden = defaults.ShowHiddenByDefault;
+        DirectoryListing.GroupByDate = defaults.GroupByDate;
         if (defaults.DefaultView == "Icons")
             ViewMode = ContentViewMode.Icons;
 
@@ -200,6 +201,7 @@ public partial class ContentViewModel : ViewModelBase
         _registry.Register(CommandDef.SortBySize, () => SortBy(SortKey.Size));
         _registry.Register(CommandDef.SortByModified, () => SortBy(SortKey.Modified));
         _registry.Register(CommandDef.ToggleContentView, CycleContentView);
+        _registry.Register(CommandDef.ToggleGroupByDate, ToggleGroupByDate);
         _registry.Register(CommandDef.ToggleMarkItem, ToggleMarkItem);
         _registry.Register(CommandDef.ClearMarks, ClearMarks);
         _registry.Register(CommandDef.EscapeBrowse, EscapeBrowse);

@@ -60,6 +60,8 @@ public partial class SettingsViewModel : ViewModelBase
         SetRow(count++, "Default view", s.DefaultView);
         SetRow(count++, "Sort the Downloads folder by time", s.SortDownloadsByTime ? "On" : "Off",
             isToggle: true, isOn: s.SortDownloadsByTime);
+        SetRow(count++, "Group by date when sorted by date modified", s.GroupByDate ? "On" : "Off",
+            isToggle: true, isOn: s.GroupByDate);
         SetRow(count++, "Auto-update", s.AutoUpdate ? "On" : "Off",
             section: "Updates", isToggle: true, isOn: s.AutoUpdate);
         if (OperatingSystem.IsLinux() && _portal is not null)
@@ -138,7 +140,8 @@ public partial class SettingsViewModel : ViewModelBase
             1 => s with { ShowHiddenByDefault = !s.ShowHiddenByDefault },
             2 => s with { DefaultView = s.DefaultView == "Icons" ? "List" : "Icons" },
             3 => s with { SortDownloadsByTime = !s.SortDownloadsByTime },
-            4 => s with { AutoUpdate = !s.AutoUpdate },
+            4 => s with { GroupByDate = !s.GroupByDate },
+            5 => s with { AutoUpdate = !s.AutoUpdate },
             _ => s,
         });
 

@@ -461,6 +461,16 @@
             <Setter Property="Height" Value="32" />
             <Setter Property="Padding" Value="10,0" />
         </Style>
+        <Style Selector="Border.dategroupheader">
+            <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+            <Setter Property="Padding" Value="11,12,10,4" />
+        </Style>
+        <Style Selector="Border.dategroupheader TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="LetterSpacing" Value="0.4" />
+        </Style>
         <Style Selector="TextBox.rename">
             <Setter Property="FontSize" Value="13" />
             <Setter Property="MinHeight" Value="28" />

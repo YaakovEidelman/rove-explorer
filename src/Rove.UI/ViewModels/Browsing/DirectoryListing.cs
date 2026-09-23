@@ -82,6 +82,11 @@ public partial class DirectoryListing : ObservableObject
     [ObservableProperty]
     private bool _showHidden;
 
+    [ObservableProperty]
+    private bool _groupByDate;
+
+    partial void OnGroupByDateChanged(bool value) => ApplyView();
+
     public ListSelection ListSelection { get; }
 
     private static bool IsKept(FolderItem item) => !item.Attributes.HasFlag(FileAttributes.System);

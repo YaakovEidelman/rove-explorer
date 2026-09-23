@@ -133,6 +133,9 @@ public readonly record struct CommandDef(
     public static readonly CommandDef ToggleContentView =
         new("content.toggle_view", "Cycle View", CommandKind.User, 5, CommandCategory.View,
             ["icons", "thumbnails", "grid", "list view"]);
+    public static readonly CommandDef ToggleGroupByDate =
+        new("content.toggle_group_by_date", "Group by Date", CommandKind.User, 6, CommandCategory.View,
+            ["group", "cluster", "date headers", "explorer", "today", "yesterday"]);
 
     public const string DriveIdPrefix = "nav.drive:";
     public const string OpenWithIdPrefix = "open.with:";
@@ -166,6 +169,8 @@ public readonly record struct CommandDef(
     public static readonly CommandDef BookmarkMoveDown = new("bookmark.move_down", "Bookmarks: Move Down", CommandKind.System);
     public static readonly CommandDef BookmarkExecute = new("bookmark.execute", "Bookmarks: Go to Selected", CommandKind.System);
     public static readonly CommandDef RemoveBookmark = new("bookmark.remove", "Bookmarks: Remove Selected", CommandKind.System);
+    public static readonly CommandDef ApplyAddBookmark = new("bookmark.add_apply", "Bookmarks: Add Path", CommandKind.System);
+    public static readonly CommandDef CancelAddBookmark = new("bookmark.add_cancel", "Bookmarks: Cancel Add", CommandKind.System);
 
     public static CommandDef BookmarkGo(int index) =>
         new($"{BookmarkGoIdPrefix}{index}", $"Go to Bookmark {index + 1}", CommandKind.System);
