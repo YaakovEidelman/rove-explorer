@@ -62,7 +62,7 @@ public class SettingsKeyTests : HeadlessTest
         Assert.Equal(Mode.ThemeEditorField, harness.Model.GetCurrentMode());
 
         SettingsViewModel settings = harness.Model.Settings;
-        settings.ThemeRows[settings.ThemeSelectedIndex].EditText = "#445566";
+        settings.ThemeRows[settings.ThemeSelectedIndex].EditText = "445566";
         harness.Press(Key.Enter);
 
         Assert.Equal(Mode.ThemeEditor, harness.Model.GetCurrentMode());

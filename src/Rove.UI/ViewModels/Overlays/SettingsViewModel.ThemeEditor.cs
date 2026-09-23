@@ -122,8 +122,7 @@ public partial class SettingsViewModel
             return;
         }
 
-        row.EditText = row.Value;
-        row.IsEditing = true;
+        row.BeginEditing(row.Value.TrimStart('#'));
         InThemeEditorField = true;
     }
 
@@ -136,14 +135,14 @@ public partial class SettingsViewModel
         }
 
         ThemeEditorRow row = ThemeRows[ThemeSelectedIndex];
-        string typed = row.EditText.Trim();
+        string typed = "#" + row.EditText.Trim();
         try
         {
             _ = Color.Parse(typed);
         }
         catch (FormatException)
         {
-            InfoRaised?.Invoke($"\"{typed}\" isn't a color — try a hex value like #2F6FDE.");
+            InfoRaised?.Invoke($"\"{typed}\" isn't a color — try a hex value like 2F6FDE.");
             return;
         }
 

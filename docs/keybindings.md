@@ -237,12 +237,13 @@ separate save step.
 
 "Edit custom colors…" (in Appearance) opens the custom color editor on top of the settings card,
 switching the active theme to Custom so you see every change live. `j`/`k` move through the list;
-`Enter` toggles the "Base" (Light/Dark) row, or starts typing a hex value (`#2f6fde`, or any color
-name Avalonia understands) for a color row. `Enter` again applies it — an invalid value is
-rejected with a message in the status bar and leaves the box open — and `Esc` cancels the one
-field, or backs out of the editor to the settings list if nothing is being typed. Colors are saved
-to `theme.json` in the same config folder as `keybindings.json` (see the table at the top of this
-file) as you edit them.
+`Enter` toggles the "Base" (Light/Dark) row, or starts editing a color row. The `#` is fixed in
+place, so type just the six hex digits (`2f6fde`) — or click and drag the R/G/B sliders shown
+below the row, which stay in sync with the typed digits either way. `Enter` applies the value —
+an invalid one is rejected with a message in the status bar and leaves the box open — and `Esc`
+cancels the one field, or backs out of the editor to the settings list if nothing is being typed.
+Colors are saved to `theme.json` in the same config folder as `keybindings.json` (see the table
+at the top of this file) as you edit them.
 
 ### Acting on files
 

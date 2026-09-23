@@ -69,25 +69,55 @@
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:ThemeEditorRow">
-                    <Border Classes="settingsrow">
-                        <DockPanel>
-                            <TextBox DockPanel.Dock="Right" Width="140"
-                                     Text="{Binding EditText}"
-                                     IsVisible="{Binding IsEditing}"
-                                     behaviors:FocusOnTrue.Focus="{Binding IsEditing}" />
-                            <Border DockPanel.Dock="Right" Classes="valuechip"
-                                    IsVisible="{Binding !IsEditing}">
-                                <TextBlock Text="{Binding Value}" />
-                            </Border>
-                            <Ellipse DockPanel.Dock="Right" Width="14" Height="14"
-                                     Fill="{Binding Swatch}"
-                                     IsVisible="{Binding IsColor}"
-                                     Margin="0,0,8,0" />
-                            <TextBlock Text="{Binding Label}" FontSize="13"
-                                       VerticalAlignment="Center"
-                                       Margin="0,0,10,0" />
-                        </DockPanel>
-                    </Border>
+                    <StackPanel Spacing="4">
+                        <Border Classes="settingsrow">
+                            <Grid ColumnDefinitions="130,24,*">
+                                <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="13"
+                                           VerticalAlignment="Center" Margin="0,0,10,0" />
+                                <Ellipse Grid.Column="1" Width="14" Height="14"
+                                         Fill="{Binding Swatch}"
+                                         IsVisible="{Binding IsColor}"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2"
+                                            HorizontalAlignment="Right"
+                                            IsVisible="{Binding IsEditing}">
+                                    <TextBlock Text="#" VerticalAlignment="Center" />
+                                    <TextBox Width="110" Text="{Binding EditText}"
+                                             behaviors:FocusOnTrue.Focus="{Binding IsEditing}" />
+                                </StackPanel>
+                                <Border Grid.Column="2" Classes="valuechip"
+                                        HorizontalAlignment="Right"
+                                        IsVisible="{Binding !IsEditing}">
+                                    <TextBlock Text="{Binding Value}" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                        <Grid ColumnDefinitions="154,*" IsVisible="{Binding IsEditing}">
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="0,0,0,6">
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Left" Text="R" Width="16"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Red}" Width="32"
+                                               TextAlignment="Right" VerticalAlignment="Center" />
+                                    <Slider Minimum="0" Maximum="255" Value="{Binding Red}" />
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Left" Text="G" Width="16"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Green}" Width="32"
+                                               TextAlignment="Right" VerticalAlignment="Center" />
+                                    <Slider Minimum="0" Maximum="255" Value="{Binding Green}" />
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Left" Text="B" Width="16"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding Blue}" Width="32"
+                                               TextAlignment="Right" VerticalAlignment="Center" />
+                                    <Slider Minimum="0" Maximum="255" Value="{Binding Blue}" />
+                                </DockPanel>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

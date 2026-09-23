@@ -113,11 +113,33 @@ public class SettingsViewModelTests : IDisposable
         settings.ThemeActivate();
         Assert.True(settings.InThemeEditorField);
 
-        settings.ThemeRows[settings.ThemeSelectedIndex].EditText = "#112233";
+        settings.ThemeRows[settings.ThemeSelectedIndex].EditText = "112233";
         registry.TryExecute(CommandDef.ThemeEditorApplyField.Id);
 
         Assert.False(settings.InThemeEditorField);
         Assert.Equal("#112233", settings.ThemeRows[settings.ThemeSelectedIndex].Value);
+    }
+
+    [Fact]
+    public void EditingSeedsRgbSlidersAndKeepsThemInSyncWithTheTypedHex()
+    {
+        (SettingsViewModel settings, _, _) = New();
+        settings.Toggle();
+        settings.MoveDown();
+        settings.Activate();
+        settings.ThemeMoveDown();
+
+        settings.ThemeActivate();
+        ThemeEditorRow row = settings.ThemeRows[settings.ThemeSelectedIndex];
+        Assert.Equal(row.EditText, $"{row.Red:X2}{row.Green:X2}{row.Blue:X2}");
+
+        row.EditText = "00FF80";
+        Assert.Equal(0, row.Red);
+        Assert.Equal(255, row.Green);
+        Assert.Equal(0x80, row.Blue);
+
+        row.Red = 255;
+        Assert.Equal("FFFF80", row.EditText);
     }
 
     [Fact]
