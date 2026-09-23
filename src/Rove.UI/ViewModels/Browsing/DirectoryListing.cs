@@ -167,10 +167,11 @@ public partial class DirectoryListing : ObservableObject
             _ => static (a, b) => string.Compare(a.Item.Name, b.Item.Name, StringComparison.OrdinalIgnoreCase),
         };
         bool descending = SortDescending;
+        bool foldersFirst = SortBy != SortKey.Modified;
 
         _unfilteredContent.Sort((a, b) =>
         {
-            if (a.Item.IsDirectory != b.Item.IsDirectory)
+            if (foldersFirst && a.Item.IsDirectory != b.Item.IsDirectory)
                 return a.Item.IsDirectory ? -1 : 1;
             int primary = byKey(a, b);
             if (descending)
