@@ -1,0 +1,87 @@
+# ── build output ──
+bin/
+obj/
+out/
+stage/
+[Dd]ebug/
+[Rr]elease/
+[Bb]uild/
+artifacts/
+publish/
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# ── dev-release artifacts ──
+rove-linux-x64.tar.gz
+rove-win-x64.zip
+
+# ── NuGet ──
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+project.lock.json
+project.assets.json
+*.nuget.props
+*.nuget.targets
+
+# ── Visual Studio ──
+.vs/
+*.user
+*.suo
+*.userprefs
+*.vsp
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.ipdb
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.log
+*.vspx
+*.sap
+
+# ── Rider / JetBrains ──
+.idea/
+*.sln.iml
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# ── VS Code ──
+.vscode/*
+!.vscode/extensions.json
+
+# ── test / coverage ──
+[Tt]est[Rr]esult*/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+BenchmarkDotNet.Artifacts/
+
+# ── Avalonia ──
+# XAML compiler and previewer leftovers
+*.xaml.g.cs
+*.axaml.g.cs
+*.g.resources
+.avalonia/
+
+# ── OS noise ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── local tooling ──
+.claude/settings.local.json
+/TODO.md

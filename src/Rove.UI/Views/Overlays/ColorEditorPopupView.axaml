@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Rove.UI.ViewModels"
+             xmlns:behaviors="using:Rove.UI.Behaviors"
+             mc:Ignorable="d"
+             x:Class="Rove.UI.Views.ColorEditorPopupView"
+             x:DataType="vm:ThemeEditorRow">
+    <StackPanel Spacing="14">
+        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <Border Width="34" Height="34" CornerRadius="8"
+                    Background="{Binding Swatch}"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1" />
+            <StackPanel Spacing="4" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
+                <StackPanel Orientation="Horizontal" Spacing="2">
+                    <TextBlock Text="#" VerticalAlignment="Center" />
+                    <TextBox Width="110" Text="{Binding EditText}"
+                             behaviors:FocusOnTrue.Focus="{Binding IsEditing}" />
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Spacing="4">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" Text="R" Width="14"
+                           VerticalAlignment="Center" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Red}" Width="26"
+                           TextAlignment="Right" VerticalAlignment="Center" />
+                <Slider Minimum="0" Maximum="255" Value="{Binding Red}" />
+            </DockPanel>
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" Text="G" Width="14"
+                           VerticalAlignment="Center" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Green}" Width="26"
+                           TextAlignment="Right" VerticalAlignment="Center" />
+                <Slider Minimum="0" Maximum="255" Value="{Binding Green}" />
+            </DockPanel>
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" Text="B" Width="14"
+                           VerticalAlignment="Center" />
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Blue}" Width="26"
+                           TextAlignment="Right" VerticalAlignment="Center" />
+                <Slider Minimum="0" Maximum="255" Value="{Binding Blue}" />
+            </DockPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <Border Classes="kbd"><TextBlock Text="Enter" /></Border>
+            <TextBlock Classes="hint" Text="apply" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+            <TextBlock Classes="hint" Text="cancel" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,48 @@
+name: Dev build
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: dev-build
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: dev
+  # Every build gets a number, so a newer download can tell it is newer than
+  # whatever the machine already has installed.
+  VERSION: 0.2.${{ github.run_number }}
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      version: 0.2.${{ github.run_number }}
+
+  release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Replace dev release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete "$TAG" --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" || true
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Dev build (latest main)" \
+            --notes "Version \`$VERSION\` — \`main\` @ \`${GITHUB_SHA:0:7}\`, $(date -u '+%Y-%m-%d %H:%M UTC').
+
+          Unpack it and run Rove. It installs itself the first time, and a newer build replaces the installed one when you run it. See \`docs/installing.md\`." \
+            dist/rove-win-x64.zip \
+            dist/rove-linux-x64.tar.gz

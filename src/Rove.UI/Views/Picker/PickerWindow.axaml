@@ -1,0 +1,175 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:Rove.UI.ViewModels"
+        xmlns:views="using:Rove.UI.Views"
+        xmlns:behaviors="using:Rove.UI.Behaviors"
+        xmlns:core="using:Rove.Core.Services"
+        mc:Ignorable="d"
+        x:Class="Rove.UI.Views.PickerWindow"
+        x:DataType="vm:PickerWindowViewModel"
+        Width="900" Height="620"
+        Background="{DynamicResource AppBackgroundBrush}"
+        FontFamily="{StaticResource InterFont}"
+        Title="Rove"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        WindowDecorations="BorderOnly">
+
+    <Panel>
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Classes="topbar">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="2" Margin="0,0,6,0">
+                        <Button Classes="navbutton" Command="{Binding ContentPage.GoBackCommand}"
+                                IsEnabled="{Binding ContentPage.CanGoBack}">
+                            <Path Classes="navarrow" Data="M6.5,1 L1.5,5 L6.5,9" />
+                        </Button>
+                        <Button Classes="navbutton" Command="{Binding ContentPage.GoForwardCommand}"
+                                IsEnabled="{Binding ContentPage.CanGoForward}">
+                            <Path Classes="navarrow" Data="M1.5,1 L6.5,5 L1.5,9" />
+                        </Button>
+                    </StackPanel>
+                    <Panel ClipToBounds="True">
+                        <ItemsControl ItemsSource="{Binding ContentPage.DirectoryListing.Crumbs}"
+                                      IsVisible="{Binding !ContentPage.InEditPath}"
+                                      VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="1" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="core:PathCrumb">
+                                    <StackPanel Orientation="Horizontal" Spacing="1">
+                                        <Border Classes="crumb" Classes.last="{Binding IsLast}">
+                                            <TextBlock Text="{Binding Label}" />
+                                        </Border>
+                                        <TextBlock Classes="crumbsep" Text="/" IsVisible="{Binding !IsLast}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBox x:Name="path_box"
+                                 Classes="pathedit"
+                                 Text="{Binding ContentPage.EditPathText}"
+                                 CaretIndex="{Binding ContentPage.EditPathCaret}"
+                                 IsVisible="{Binding ContentPage.InEditPath}"
+                                 behaviors:FocusOnTrue.Focus="{Binding ContentPage.InEditPath}"
+                                 behaviors:FocusOnTrue.SelectAll="False"
+                                 PlaceholderText="type a path…" />
+
+                        <Popup PlacementTarget="{Binding #path_box}"
+                               Placement="BottomEdgeAlignedLeft"
+                               IsLightDismissEnabled="False"
+                               IsOpen="{Binding ContentPage.Completions.IsOpen}"
+                               Width="{Binding #path_box.Bounds.Width}">
+                            <Border Classes="completions" MaxHeight="320">
+                                <ListBox x:Name="completion_list"
+                                         ItemsSource="{Binding ContentPage.Completions.Items}"
+                                         SelectedIndex="{Binding ContentPage.Completions.SelectedIndex}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:PathCompletionEntry">
+                                            <TextBlock Text="{Binding Display}" FontSize="13"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       VerticalAlignment="Center" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Popup>
+                    </Panel>
+                </DockPanel>
+            </Border>
+            <Border DockPanel.Dock="Bottom" Classes="statusbar">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="14">
+                        <TextBlock Classes="hint" Text="{Binding ClipboardSummary}" />
+                        <TextBlock Classes="hint" Text="{Binding ItemSummary}" />
+                    </StackPanel>
+                    <Panel>
+                        <TextBlock Classes="hint"
+                                   Text="{Binding StatusLine}"
+                                   IsVisible="{Binding !IsErrorShown}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Classes="error"
+                                   Text="{Binding StatusLine}"
+                                   IsVisible="{Binding IsErrorShown}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </Panel>
+                </DockPanel>
+            </Border>
+            <Border DockPanel.Dock="Bottom" Classes="opbar" IsVisible="{Binding FileOperation.IsRunning}">
+                <DockPanel>
+                    <TextBlock Classes="optitle" Text="{Binding FileOperation.Title}" />
+                    <TextBlock DockPanel.Dock="Right" Classes="hint" Text="Ctrl+C cancel" Margin="12,0,0,0" />
+                    <ProgressBar DockPanel.Dock="Right"
+                                 Value="{Binding FileOperation.Percent}"
+                                 IsIndeterminate="{Binding FileOperation.IsIndeterminate}"
+                                 Minimum="0" Maximum="100" />
+                    <TextBlock Classes="hint" Margin="0,0,12,0"
+                               Text="{Binding FileOperation.Detail}"
+                               TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+            </Border>
+            <Border DockPanel.Dock="Bottom" Classes="inputrow"
+                    IsVisible="{Binding ContentPage.DirectoryListing.InLocalSearch}">
+                <DockPanel>
+                    <TextBlock Classes="inputlabel" Text="Filter" />
+                    <TextBox Text="{Binding ContentPage.DirectoryListing.SearchCurrentDirectoryText}"
+                             behaviors:FocusOnTrue.Focus="{Binding ContentPage.DirectoryListing.InLocalSearch}"
+                             PlaceholderText="fuzzy filter this folder…" />
+                </DockPanel>
+            </Border>
+            <Border DockPanel.Dock="Bottom" Classes="inputrow"
+                    IsVisible="{Binding ContentPage.InCreateItem}">
+                <DockPanel>
+                    <TextBlock Classes="inputlabel" Text="{Binding ContentPage.CreateItemLabel}" />
+                    <TextBox Text="{Binding ContentPage.CreateItemText}"
+                             behaviors:FocusOnTrue.Focus="{Binding ContentPage.InCreateItem}"
+                             PlaceholderText="name…" />
+                </DockPanel>
+            </Border>
+            <Border DockPanel.Dock="Bottom" Classes="inputrow"
+                    IsVisible="{Binding ContentPage.InResizeColumns}">
+                <DockPanel>
+                    <TextBlock Classes="inputlabel" Text="Columns" />
+                    <TextBlock DockPanel.Dock="Right" Classes="hint"
+                               Text="h/l narrower/wider · Shift bigger · Tab next · s sort · 0 reset · Esc done" />
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{Binding ContentPage.ActiveColumn.Name}"
+                                   FontSize="12" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Classes="hint"
+                                   Text="{Binding ContentPage.ActiveColumn.Width, StringFormat='{}{0:0} px'}" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+            <views:ContentView DataContext="{Binding ContentPage}" />
+        </DockPanel>
+        <Panel Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Confirm.IsOpen}">
+            <Border Classes="overlaycard confirmcard" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="18">
+                    <Border Classes="warnbadge">
+                        <Path Classes="warnicon" Data="M9,1 L17,16 L1,16 Z M9,6.5 L9,11.5 M9,13.6 L9,13.7" />
+                    </Border>
+                    <TextBlock Classes="confirmmessage" Text="{Binding Confirm.Message}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" IsHitTestVisible="False">
+                        <Button Classes="dialogbtn" Classes.selected="{Binding Confirm.CancelHighlighted}"
+                                Content="Cancel" Focusable="False" />
+                        <Button Classes="dialogbtn danger" Classes.selected="{Binding !Confirm.CancelHighlighted}"
+                                Content="Confirm" Focusable="False" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
+                        <Border Classes="kbd"><TextBlock Text="h/l" /></Border>
+                        <TextBlock Classes="hint" Text="choose" />
+                        <TextBlock Classes="hintsep" Text="·" />
+                        <Border Classes="kbd"><TextBlock Text="y/n/Enter" /></Border>
+                        <TextBlock Classes="hint" Text="confirm/cancel" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Panel>
+    </Panel>
+</Window>

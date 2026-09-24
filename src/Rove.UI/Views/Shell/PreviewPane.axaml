@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Rove.UI.ViewModels"
+             mc:Ignorable="d"
+             x:Class="Rove.UI.Views.PreviewPane"
+             x:DataType="vm:PreviewViewModel">
+
+    <Border Classes="previewpane">
+        <Grid RowDefinitions="Auto, Auto, Auto, *">
+            <StackPanel Grid.Row="0" Spacing="2">
+                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"
+                           TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding Kind}" FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
+                    <TextBlock Text="Loading…" FontSize="11"
+                               Foreground="{DynamicResource AccentBrush}"
+                               IsVisible="{Binding IsLoading}" />
+                </StackPanel>
+            </StackPanel>
+
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding Rows}" Margin="0,12,0,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MetaRow">
+                        <Grid ColumnDefinitions="76, *" Margin="0,0,0,6">
+                            <TextBlock Grid.Column="0" Classes="metalabel" Text="{Binding Label}" />
+                            <TextBlock Grid.Column="1" Classes="metavalue" Text="{Binding Value}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Grid.Row="2" Height="1" Margin="0,6"
+                    Background="{DynamicResource AppBorderBrush}"
+                    IsVisible="{Binding HasPreviewBody}" />
+
+            <ScrollViewer Grid.Row="3" IsVisible="{Binding HasTextPreview}">
+                <TextBlock Text="{Binding PreviewText}"
+                           FontFamily="Consolas,Menlo,monospace"
+                           FontSize="11"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           TextWrapping="Wrap" />
+            </ScrollViewer>
+
+            <ScrollViewer Grid.Row="3" IsVisible="{Binding HasImagePreview}">
+                <Border Classes="imagepreview">
+                    <Image Source="{Binding PreviewImage}"
+                           Stretch="Uniform" StretchDirection="DownOnly"
+                           HorizontalAlignment="Center" VerticalAlignment="Top" />
+                </Border>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

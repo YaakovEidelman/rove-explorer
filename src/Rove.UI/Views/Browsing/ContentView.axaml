@@ -1,0 +1,147 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Rove.UI.ViewModels"
+             xmlns:behaviors="using:Rove.UI.Behaviors"
+             mc:Ignorable="d"
+             x:DataType="vm:ContentViewModel"
+             x:Class="Rove.UI.Views.ContentView">
+
+    <Grid RowDefinitions="Auto, *">
+        <Border Grid.Row="0"
+                IsVisible="{Binding IsListView}"
+                BorderBrush="{DynamicResource AppBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="17,10,4,10">
+            <StackPanel Orientation="Horizontal">
+                <Panel Width="{Binding Columns[0].Width}" IsVisible="{Binding Columns[0].IsVisible}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Classes="colheader" Classes.active="{Binding Columns[0].IsActive}"
+                                   Text="{Binding Columns[0].Name}" />
+                        <TextBlock Classes="colheader" Text="{Binding DirectoryListing.NameSortIndicator}" />
+                    </StackPanel>
+                </Panel>
+                <Panel Width="{Binding Columns[1].Width}" IsVisible="{Binding Columns[1].IsVisible}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Classes="colheader" Classes.active="{Binding Columns[1].IsActive}"
+                                   Text="{Binding Columns[1].Name}" />
+                        <TextBlock Classes="colheader" Text="{Binding DirectoryListing.TypeSortIndicator}" />
+                    </StackPanel>
+                </Panel>
+                <Panel Width="{Binding Columns[2].Width}" IsVisible="{Binding Columns[2].IsVisible}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Classes="colheader" Classes.active="{Binding Columns[2].IsActive}"
+                                   Text="{Binding Columns[2].Name}" />
+                        <TextBlock Classes="colheader" Text="{Binding DirectoryListing.SizeSortIndicator}" />
+                    </StackPanel>
+                </Panel>
+                <Panel Width="{Binding Columns[3].Width}" IsVisible="{Binding Columns[3].IsVisible}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Classes="colheader" Classes.active="{Binding Columns[3].IsActive}"
+                                   Text="{Binding Columns[3].Name}" />
+                        <TextBlock Classes="colheader" Text="{Binding DirectoryListing.ModifiedSortIndicator}" />
+                    </StackPanel>
+                </Panel>
+            </StackPanel>
+        </Border>
+        <Panel Grid.Row="1" IsVisible="{Binding !DirectoryListing.EmptyDirectory}">
+            <ListBox x:Name="content_list"
+                     ItemsSource="{Binding DirectoryListing.Items}"
+                     SelectedIndex="{Binding DirectoryListing.ListSelection.Index}"
+                     IsVisible="{Binding IsListView}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ListViewItem">
+                        <StackPanel>
+                            <Border Classes="dategroupheader" IsVisible="{Binding HasGroupLabel}">
+                                <TextBlock Text="{Binding GroupLabel}" />
+                            </Border>
+                            <Border Classes="row" Classes.marked="{Binding IsMarked}"
+                                    Opacity="{Binding RowOpacity}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid ColumnDefinitions="Auto, *"
+                                          Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[0].Width}">
+                                        <Image Grid.Column="0" Source="{Binding Icon}"
+                                               Width="16" Height="16" Margin="0,0,8,0"
+                                               VerticalAlignment="Center" />
+                                        <Panel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="13"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       IsVisible="{Binding !IsRenaming}" />
+                                            <TextBox Classes="rename" Text="{Binding EditText}"
+                                                     IsVisible="{Binding IsRenaming}"
+                                                     behaviors:FocusOnTrue.Focus="{Binding IsRenaming}" />
+                                        </Panel>
+                                    </Grid>
+                                    <TextBlock Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[1].Width}"
+                                               Text="{Binding TypeText}" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[2].Width}"
+                                               Text="{Binding SizeText}" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Width="{Binding #content_list.((vm:ContentViewModel)DataContext).Columns[3].Width}"
+                                               Text="{Binding ModifiedText}" FontSize="12"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <ListBox x:Name="icon_list"
+                     ItemsSource="{Binding DirectoryListing.Items}"
+                     SelectedIndex="{Binding DirectoryListing.ListSelection.Index}"
+                     IsVisible="{Binding IsIconView}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"
+                                   ItemWidth="{Binding IconCellWidth}"
+                                   ItemHeight="{Binding IconCellHeight}" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ListViewItem">
+                        <Border Classes="iconcell" Classes.marked="{Binding IsMarked}"
+                                Opacity="{Binding RowOpacity}">
+                            <StackPanel Spacing="4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Image Source="{Binding Icon}"
+                                       Width="{Binding #icon_list.((vm:ContentViewModel)DataContext).IconPixelSize}"
+                                       Height="{Binding #icon_list.((vm:ContentViewModel)DataContext).IconPixelSize}"
+                                       HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="12"
+                                           TextAlignment="Center"
+                                           TextWrapping="Wrap"
+                                           MaxLines="2"
+                                           TextTrimming="CharacterEllipsis"
+                                           IsVisible="{Binding !IsRenaming}" />
+                                <TextBox Classes="rename" Text="{Binding EditText}"
+                                         IsVisible="{Binding IsRenaming}"
+                                         behaviors:FocusOnTrue.Focus="{Binding IsRenaming}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Panel>
+        <StackPanel Grid.Row="1"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Spacing="4"
+                    IsVisible="{Binding DirectoryListing.EmptyDirectory}">
+            <TextBlock Text="This folder is empty."
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center" />
+        </StackPanel>
+        <Border Grid.Row="1"
+                HorizontalAlignment="Center" VerticalAlignment="Top"
+                Margin="0,10,0,0"
+                IsVisible="{Binding IsLoading}">
+            <TextBlock Text="Loading…" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" />
+        </Border>
+    </Grid>
+</UserControl>

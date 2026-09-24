@@ -1,0 +1,97 @@
+name: Build
+
+# The windows/linux publish+package steps dev builds and tagged releases both
+# need. Shared as a reusable workflow so there is exactly one copy of them.
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Rove.Portal.Tests exercises Rove.Portal, which is Linux-only (see
+      # src/Rove.Portal/TODO.md) and never published for Windows below —
+      # some of its tests build Unix-style file:// URIs that Uri parses
+      # differently on Windows, so they don't apply here.
+      - name: Test
+        run: >
+          dotnet test tests/Rove.Core.Tests/Rove.Core.Tests.csproj -c Release --nologo
+          && dotnet test tests/Rove.UI.Tests/Rove.UI.Tests.csproj -c Release --nologo
+
+      - name: Publish win-x64
+        run: >
+          dotnet publish src/Rove.UI/Rove.UI.csproj
+          -c Release -r win-x64
+          -p:Version=${{ inputs.version }}
+          -p:DebugType=none
+          -o out/win
+
+      - name: Package
+        shell: pwsh
+        run: |
+          Remove-Item out/win/*.pdb -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Path stage/Rove -Force | Out-Null
+          Copy-Item out/win/* stage/Rove/
+          Compress-Archive -Path stage/Rove -DestinationPath rove-win-x64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-x64
+          path: rove-win-x64.zip
+          retention-days: 1
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # What the native compiler needs to link a binary at the end.
+      - name: Install the toolchain
+        run: sudo apt-get update && sudo apt-get install -y clang zlib1g-dev
+
+      - name: Test
+        run: dotnet test Rove.slnx -c Release --nologo
+
+      - name: Publish linux-x64
+        run: >
+          dotnet publish src/Rove.UI/Rove.UI.csproj
+          -c Release -r linux-x64
+          -p:Version=${{ inputs.version }}
+          -p:DebugType=none
+          -o out/linux
+
+      - name: Publish rove-portal linux-x64
+        run: >
+          dotnet publish src/Rove.Portal/Rove.Portal.csproj
+          -c Release -r linux-x64
+          -p:Version=${{ inputs.version }}
+          -p:DebugType=none
+          -o out/linux
+
+      - name: Package
+        run: |
+          rm -f out/linux/*.pdb out/linux/*.dbg
+          mkdir -p stage/rove
+          cp out/linux/* stage/rove/
+          chmod +x stage/rove/Rove stage/rove/rove-portal
+          tar -czf rove-linux-x64.tar.gz -C stage rove
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64
+          path: rove-linux-x64.tar.gz
+          retention-days: 1

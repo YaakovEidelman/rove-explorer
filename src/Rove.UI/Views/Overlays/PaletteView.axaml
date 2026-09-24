@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Rove.UI.ViewModels"
+             xmlns:behaviors="using:Rove.UI.Behaviors"
+             mc:Ignorable="d"
+             x:Class="Rove.UI.Views.PaletteView"
+             x:DataType="vm:PaletteViewModel">
+    <Grid RowDefinitions="Auto, *">
+        <TextBox Grid.Row="0"
+                 Text="{Binding PaletteSearchText}"
+                 PlaceholderText="{Binding Placeholder}"
+                 behaviors:FocusOnTrue.Focus="{Binding IsPaletteOpen}"
+                 Margin="0,0,0,8">
+            <TextBox.InnerLeftContent>
+                <Path Classes="overlayicon" Data="M10,1 L3,11 L8,11 L7,17 L15,7 L9,7 Z" />
+            </TextBox.InnerLeftContent>
+        </TextBox>
+        <ListBox x:Name="palette_list"
+                 Grid.Row="1"
+                 ItemsSource="{Binding Items}"
+                 SelectedIndex="{Binding SelectedIndex}">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem" x:DataType="vm:PaletteRow">
+                    <Setter Property="IsEnabled" Value="{Binding IsSelectable}" />
+                    <Setter Property="Focusable" Value="{Binding IsSelectable}" />
+                </Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:PaletteRow">
+                    <Panel>
+                        <TextBlock Classes="settingssection"
+                                   Text="{Binding Header}"
+                                   IsVisible="{Binding IsHeader}" />
+                        <DockPanel IsVisible="{Binding !IsHeader}" Classes.unavailable="{Binding !IsSelectable}">
+                            <TextBlock DockPanel.Dock="Right"
+                                       Text="{Binding Entry.Hint}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" />
+                            <ItemsControl ItemsSource="{Binding Entry.TitleSegments}" VerticalAlignment="Center">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:TitleSegment">
+                                        <TextBlock Text="{Binding Text}"
+                                                   FontSize="13"
+                                                   Classes.paletteMatch="{Binding IsMatch}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DockPanel>
+                    </Panel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

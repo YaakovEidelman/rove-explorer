@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\rove.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <RootNamespace>Rove.UI</RootNamespace>
+    <!-- What the published program is called on disk: Rove.exe, or Rove. -->
+    <AssemblyName>Rove</AssemblyName>
+    <Version>0.2.0</Version>
+    <!-- The generated COM interop for the Start Menu shortcut is unsafe code. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Published builds are compiled to native code: no runtime, no JIT. The
+         analyzers keep anything that would need one from creeping back in. -->
+    <PublishAot>true</PublishAot>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Wayland" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.1" />
+    <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.17" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets/rove.ico" LogicalName="rove.ico" />
+    <EmbeddedResource Include="Assets/rove.svg" LogicalName="rove.svg" />
+    <EmbeddedResource Include="Assets/rove-symbolic.svg" LogicalName="rove-symbolic.svg" />
+    <EmbeddedResource Include="Assets/png/rove-*.png" LogicalName="png/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rove.Core\Rove.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Rove.UI.Tests" />
+  </ItemGroup>
+</Project>

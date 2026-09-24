@@ -1,0 +1,119 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Rove.UI.ViewModels"
+             xmlns:behaviors="using:Rove.UI.Behaviors"
+             mc:Ignorable="d"
+             x:Class="Rove.UI.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+    <Grid RowDefinitions="Auto, *, Auto">
+        <DockPanel Grid.Row="0" IsVisible="{Binding !InThemeEditor}" Margin="0,0,0,8">
+            <TextBlock DockPanel.Dock="Right" Classes="hint" Text="{Binding VersionLabel}" />
+            <ItemsControl ItemsSource="{Binding SectionTabs}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SettingsSectionTab">
+                        <Border Classes="settingstab" Classes.active="{Binding IsSelected}">
+                            <TextBlock Text="{Binding Name}" FontSize="12" />
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DockPanel>
+
+        <ListBox x:Name="settings_list"
+                 Grid.Row="1"
+                 ItemsSource="{Binding Rows}"
+                 SelectedIndex="{Binding SelectedIndex}"
+                 IsVisible="{Binding !InThemeEditor}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:SettingsRow">
+                    <Border Classes="settingsrow">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Right" Classes="toggletrack"
+                                    Classes.on="{Binding IsOn}"
+                                    IsVisible="{Binding IsToggle}">
+                                <Ellipse Classes="togglethumb" />
+                            </Border>
+                            <Border DockPanel.Dock="Right" Classes="valuechip"
+                                    IsVisible="{Binding !IsToggle}">
+                                <TextBlock Text="{Binding Value}" />
+                            </Border>
+                            <TextBlock Text="{Binding Label}" FontSize="13"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,10,0" />
+                        </DockPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <ListBox x:Name="theme_list"
+                 Grid.Row="1"
+                 ItemsSource="{Binding ThemeRows}"
+                 SelectedIndex="{Binding ThemeSelectedIndex}"
+                 IsVisible="{Binding InThemeEditor}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ThemeEditorRow">
+                    <Border Classes="settingsrow">
+                        <Grid ColumnDefinitions="130,24,*">
+                            <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="13"
+                                       VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <Ellipse Grid.Column="1" Width="14" Height="14"
+                                     Fill="{Binding Swatch}"
+                                     IsVisible="{Binding IsColor}"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Border Grid.Column="2" Classes="valuechip" HorizontalAlignment="Right">
+                                <TextBlock Text="{Binding Value}" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0"
+                    IsVisible="{Binding !InThemeEditor}">
+            <Border Classes="kbd"><TextBlock Text="j/k" /></Border>
+            <TextBlock Classes="hint" Text="move" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="h/l" /></Border>
+            <TextBlock Classes="hint" Text="section" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Enter/Space" /></Border>
+            <TextBlock Classes="hint" Text="change" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Tab" /></Border>
+            <TextBlock Classes="hint" Text="switch tab" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+            <TextBlock Classes="hint" Text="close" />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0"
+                    IsVisible="{Binding InThemeEditor}">
+            <Border Classes="kbd"><TextBlock Text="j/k" /></Border>
+            <TextBlock Classes="hint" Text="move" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Enter" /></Border>
+            <TextBlock Classes="hint" Text="edit / toggle" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+            <TextBlock Classes="hint" Text="back to settings" />
+        </StackPanel>
+    </Grid>
+</UserControl>
