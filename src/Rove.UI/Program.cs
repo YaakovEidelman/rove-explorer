@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Threading;
 using Avalonia.X11;
 using Rove.UI.Services;
 using System;
@@ -40,5 +41,6 @@ sealed class Program
             .With(new X11PlatformOptions { WmClass = "rove" })
             .UseWaylandWithFallback()
             .WithInterFont()
+            .AfterSetup(_ => DispatcherClock.Align(Dispatcher.UIThread))
             .LogToTrace();
 }
