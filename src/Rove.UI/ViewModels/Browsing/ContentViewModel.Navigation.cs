@@ -293,7 +293,7 @@ public partial class ContentViewModel
 
         foreach (string id in _registry.CommandIdsStartingWith(CommandDef.DriveIdPrefix))
         {
-            if (!live.Contains(id))
+            if (!live.Contains(id) && !id.StartsWith(CommandDef.MountIdPrefix, StringComparison.Ordinal))
                 _registry.Unregister(id);
         }
     }

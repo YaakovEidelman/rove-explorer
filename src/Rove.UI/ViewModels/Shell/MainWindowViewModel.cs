@@ -1,5 +1,6 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Rove.Core.Services;
 using Rove.UI.Services;
 using System.ComponentModel;
 
@@ -19,6 +20,8 @@ public partial class MainWindowViewModel : ViewModelBase
     public GlobalSearchViewModel GlobalSearch { get; }
     public BookmarksViewModel Bookmarks { get; }
     public ConfirmViewModel Confirm { get; }
+    public PromptViewModel Prompt { get; }
+    public MountsViewModel? Mounts { get; }
     public PreviewViewModel Preview { get; }
     public FileOperationViewModel FileOperation { get; }
     public SettingsViewModel Settings { get; }
@@ -62,7 +65,8 @@ public partial class MainWindowViewModel : ViewModelBase
         FileOperationViewModel fileOperation,
         SettingsViewModel settings,
         string? startupWarning = null,
-        UpdateService? updates = null
+        UpdateService? updates = null,
+        IMountService? mountService = null
     )
     {
         _registry = registry;
@@ -76,6 +80,10 @@ public partial class MainWindowViewModel : ViewModelBase
         Preview = preview;
         FileOperation = fileOperation;
         Settings = settings;
+        Prompt = new(registry);
+        if (mountService is not null)
+            Mounts = new(registry, mountService, new OverlayMountPrompter(Prompt, Confirm),
+                path => ContentPage.SetCurrentDirectoryAsync(path), () => ContentPage.DirectoryListing.CurrentDir);
 
         _registry.Register(CommandDef.CloseApp, CloseApp);
         _registry.Register(CommandDef.ToggleTheme, ToggleTheme);
@@ -91,6 +99,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Tabs.DrivePickerRequested +=
             () => Palette.OpenScoped(CommandDef.DriveIdPrefix, "pick a drive…");
         Tabs.AppPickerRequested += loading => _ = ShowAppPickerAsync(loading);
+        Tabs.ConnectRequested += Connect;
         Tabs.SurfaceChanged += RefreshStatusBar;
         Tabs.SelectionChanged += () => Preview.ShowFor(ContentPage.HighlightedItem?.Item, ContentPage.IsAdminView);
         Tabs.ActiveChanged += OnActiveTabChanged;
@@ -123,7 +132,25 @@ public partial class MainWindowViewModel : ViewModelBase
         GlobalSearch.PropertyChanged += OnSurfaceChanged;
         Bookmarks.PropertyChanged += OnSurfaceChanged;
         Confirm.PropertyChanged += OnSurfaceChanged;
+        Prompt.PropertyChanged += OnSurfaceChanged;
+
+        if (Mounts is not null)
+        {
+            Mounts.ErrorRaised += message => StatusError = message;
+            Mounts.InfoRaised += message => StatusInfo = message;
+            Mounts.Start();
+        }
         Settings.PropertyChanged += OnSurfaceChanged;
+    }
+
+    private void Connect(string address)
+    {
+        if (Mounts is null)
+        {
+            StatusError = "Connecting to servers needs gio (part of GLib), which isn't available here.";
+            return;
+        }
+        _ = Mounts.ConnectAsync(address);
     }
 
     private void OnActiveTabChanged()

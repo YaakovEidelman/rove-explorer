@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Rove.Core.Protocol;
+using Rove.Core.Services;
 
 namespace Rove.UI.ViewModels;
 
@@ -76,6 +77,13 @@ public partial class ContentViewModel
         if (typed.Trim().Length == 0)
         {
             InEditPath = false;
+            return;
+        }
+
+        if (MountAddress.LooksRemote(typed) && ConnectRequested is { } connect)
+        {
+            InEditPath = false;
+            connect(typed.Trim());
             return;
         }
 

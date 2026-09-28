@@ -12,6 +12,7 @@ public enum Mode
     EditPath,
     PathCompletion,
     Confirm,
+    Prompt,
     ResizeColumns,
     Bookmarks,
     AddBookmark,

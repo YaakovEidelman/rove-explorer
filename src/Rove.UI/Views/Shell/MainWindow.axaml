@@ -279,6 +279,30 @@
                 <views:ColorEditorPopupView DataContext="{Binding Settings.SelectedThemeRow}" />
             </Border>
         </Panel>
+        <Panel Classes="overlaydim" Classes.open="{Binding Prompt.IsOpen}"
+               Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Prompt.IsOpen}">
+            <Border Classes="overlaycard confirmcard" Classes.open="{Binding Prompt.IsOpen}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="14">
+                    <TextBlock Classes="confirmmessage" Text="{Binding Prompt.Message}" />
+                    <StackPanel Spacing="6">
+                        <TextBlock Classes="cardtitle" Margin="0" Text="{Binding Prompt.Label}" />
+                        <TextBox Text="{Binding Prompt.Text}" IsVisible="{Binding !Prompt.IsSecret}"
+                                 behaviors:FocusOnTrue.Focus="{Binding Prompt.FocusPlain}" />
+                        <TextBox Text="{Binding Prompt.Text}" IsVisible="{Binding Prompt.IsSecret}"
+                                 PasswordChar="•"
+                                 behaviors:FocusOnTrue.Focus="{Binding Prompt.FocusSecret}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
+                        <Border Classes="kbd"><TextBlock Text="Enter" /></Border>
+                        <TextBlock Classes="hint" Text="submit" />
+                        <TextBlock Classes="hintsep" Text="·" />
+                        <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+                        <TextBlock Classes="hint" Text="cancel" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Panel>
         <Panel Classes="overlaydim" Classes.open="{Binding Confirm.IsOpen}"
                Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Confirm.IsOpen}">
             <Border Classes="overlaycard confirmcard" Classes.open="{Binding Confirm.IsOpen}"

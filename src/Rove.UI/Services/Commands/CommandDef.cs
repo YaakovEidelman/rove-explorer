@@ -167,6 +167,12 @@ public readonly record struct CommandDef(
     public static readonly CommandDef ShowDrives =
         new("nav.drives", "Go to Drive…", CommandKind.User, 7, CommandCategory.Navigation,
             ["drives", "volumes", "disks"]);
+    public const string MountIdPrefix = DriveIdPrefix + "mount:";
+    public static readonly CommandDef ConnectToServer =
+        new("nav.connect_server", "Connect to Server…", CommandKind.User, 8, CommandCategory.Navigation,
+            ["network", "sftp", "ssh", "smb", "samba", "ftp", "ftps", "nfs", "webdav", "share", "remote"]);
+    public static readonly CommandDef PromptApply = new("prompt.apply", "Prompt: Submit", CommandKind.System);
+    public static readonly CommandDef PromptCancel = new("prompt.cancel", "Prompt: Cancel", CommandKind.System);
     public static readonly CommandDef ShowTrash =
         new("nav.trash", $"Go to the {TrashService.DisplayName}", CommandKind.User, 10, CommandCategory.Navigation,
             ["recycle bin", "deleted items"]);

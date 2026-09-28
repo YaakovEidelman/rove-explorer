@@ -62,6 +62,7 @@ public static class KeymapDefaults
                 new(K(Key.W), CommandDef.ToggleResizeColumns.Id),
                 new(K(Key.I), CommandDef.ToggleContentView.Id),
                 new(K(Key.G), CommandDef.ShowDrives.Id),
+                new(K(Key.G, KeyModifiers.Control), CommandDef.ConnectToServer.Id),
                 new(K(Key.T), CommandDef.ShowTrash.Id),
                 new(K(Key.U, KeyModifiers.Shift), CommandDef.RestoreTrashedItems.Id),
                 new(K(Key.U, KeyModifiers.Control | KeyModifiers.Shift), CommandDef.RestoreAllTrashedItems.Id),
@@ -314,6 +315,14 @@ public static class KeymapDefaults
                 new(K(Key.Enter), CommandDef.ConfirmSelect.Id),
                 new(K(Key.H), CommandDef.ConfirmMoveLeft.Id),
                 new(K(Key.L), CommandDef.ConfirmMoveRight.Id),
+            ]
+        },
+        {
+            Mode.Prompt,
+            [
+                new(K(Key.Enter), CommandDef.PromptApply.Id),
+                new(K(Key.Escape), CommandDef.PromptCancel.Id),
+                new(K(Key.C, KeyModifiers.Control), CommandDef.PromptCancel.Id),
             ]
         },
     };

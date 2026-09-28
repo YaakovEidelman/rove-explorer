@@ -21,6 +21,8 @@ internal sealed class WindowHarness : IDisposable
 
     public BookmarkStore Bookmarks { get; }
 
+    public CommandRegistry Registry { get; }
+
     public ContentViewModel Content => Model.ContentPage;
 
     public TabsViewModel Tabs => Model.Tabs;
@@ -31,8 +33,9 @@ internal sealed class WindowHarness : IDisposable
 
     private WindowHarness(
         string root, RoveCore core, MainWindow window, MainWindowViewModel model,
-        BookmarkStore bookmarks, string bookmarkFile, string settingsFile)
+        BookmarkStore bookmarks, string bookmarkFile, string settingsFile, CommandRegistry registry)
     {
+        Registry = registry;
         Root = root;
         Core = core;
         Window = window;
@@ -42,7 +45,7 @@ internal sealed class WindowHarness : IDisposable
         _settingsFile = settingsFile;
     }
 
-    public static WindowHarness Open(Action<string> fill, IAdminSession? admin = null)
+    public static WindowHarness Open(Action<string> fill, IAdminSession? admin = null, IMountService? mounts = null)
     {
         string root = Path.Combine(Path.GetTempPath(), "rove-ui-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -70,12 +73,13 @@ internal sealed class WindowHarness : IDisposable
         BookmarksViewModel bookmarkList = new(registry, bookmarks, core);
         SettingsViewModel settingsPage = new(registry, settings);
         MainWindowViewModel model = new(
-            registry, tabs, palette, search, bookmarkList, confirm, preview, fileClipboard, operation, settingsPage);
+            registry, tabs, palette, search, bookmarkList, confirm, preview, fileClipboard, operation, settingsPage,
+            mountService: mounts);
 
         MainWindow window = new() { DataContext = model };
         window.Show();
 
-        WindowHarness harness = new(root, core, window, model, bookmarks, bookmarkFile, settingsFile);
+        WindowHarness harness = new(root, core, window, model, bookmarks, bookmarkFile, settingsFile, registry);
         harness.GoTo(root);
         return harness;
     }

@@ -28,6 +28,8 @@ public partial class MainWindowViewModel
     {
         if (Confirm.IsOpen)
             return Mode.Confirm;
+        if (Prompt.IsOpen)
+            return Mode.Prompt;
         if (Palette.IsPaletteOpen)
             return Mode.Palette;
         if (GlobalSearch.IsOpen)
@@ -80,6 +82,7 @@ public partial class MainWindowViewModel
         Mode.RenameTab => "Enter apply · Esc cancel",
         Mode.CreateItem => "Enter create · Esc cancel",
         Mode.Confirm => "y/Enter confirm · n/Esc cancel",
+        Mode.Prompt => "type an answer · Enter submit · Esc cancel",
         Mode.ResizeColumns => "h/l narrower/wider · Shift for bigger steps · Tab next column · s sort · 0 reset · Esc done",
         _ => "",
     };

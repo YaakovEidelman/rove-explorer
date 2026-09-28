@@ -72,8 +72,9 @@ public partial class App : Application
             UpdateService updates = new(updateHttp);
             _ = Task.Run(() => updates.CheckInBackgroundAsync(settings.Current.AutoUpdate, default));
 
+            IMountService? mounts = MountServiceChooser.CreateForHost();
             MainWindowViewModel main = new(registry, tabs, palette, globalSearch, bookmarkList, confirm,
-                preview, fileClipboard, fileOperation, settingsPage, keymap.Summary, updates);
+                preview, fileClipboard, fileOperation, settingsPage, keymap.Summary, updates, mounts);
             desktop.MainWindow = new MainWindow
             {
                 DataContext = main,
@@ -88,6 +89,7 @@ public partial class App : Application
                 tabs.Dispose();
                 core.Dispose();
                 updateHttp.Dispose();
+                mounts?.Dispose();
             };
         }
 

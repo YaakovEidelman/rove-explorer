@@ -6,6 +6,7 @@ namespace Rove.UI.ViewModels;
 public partial class ConfirmViewModel : ViewModelBase
 {
     private Action? _pending;
+    private Action? _onCancel;
 
     public ConfirmViewModel(CommandRegistry registry)
     {
@@ -25,10 +26,16 @@ public partial class ConfirmViewModel : ViewModelBase
     [ObservableProperty]
     private bool _cancelHighlighted = true;
 
-    public void Request(string message, Action onAccept)
+    public void Request(string message, Action onAccept) => Request(message, onAccept, onCancel: null);
+
+    public void Request(string message, Action onAccept, Action? onCancel)
     {
+        Action? dropped = _onCancel;
+        _onCancel = null;
+        dropped?.Invoke();
         Message = message;
         _pending = onAccept;
+        _onCancel = onCancel;
         CancelHighlighted = true;
         IsOpen = true;
     }
@@ -36,11 +43,18 @@ public partial class ConfirmViewModel : ViewModelBase
     public void Accept()
     {
         Action? pending = _pending;
+        _onCancel = null;
         Close();
         pending?.Invoke();
     }
 
-    public void Cancel() => Close();
+    public void Cancel()
+    {
+        Action? onCancel = _onCancel;
+        _onCancel = null;
+        Close();
+        onCancel?.Invoke();
+    }
 
     public void Select()
     {

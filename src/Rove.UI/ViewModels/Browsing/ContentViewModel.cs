@@ -29,6 +29,8 @@ public partial class ContentViewModel : ViewModelBase
 
     public event Action? DrivePickerRequested;
 
+    public event Action<string>? ConnectRequested;
+
     public event Action<Task>? AppPickerRequested;
 
     public ContentViewModel(

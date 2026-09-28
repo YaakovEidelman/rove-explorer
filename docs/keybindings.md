@@ -89,6 +89,7 @@ these names for the `"mode"` form above.
 | `editpath`      | the path box at the top      |
 | `pathcompletion` | the Tab completions under the path box |
 | `confirm`       | the confirm bar              |
+| `prompt`        | the question box (server address, user, password) |
 | `resizecolumns` | the column-width bar         |
 | `bookmarks`     | the bookmark list            |
 | `addbookmark`   | typing a path to bookmark    |
@@ -130,6 +131,7 @@ and `f1`–`f12`. Punctuation is written as itself: `/`, `.`, `,`, `-`, `=`,
 | `content.path_complete_down` | Completions: move down |
 | `content.path_complete_dismiss` | Completions: close the list |
 | `nav.drives`             | Go to drive…              |
+| `nav.connect_server`     | Connect to a server (`Ctrl+G`) |
 | `content.open_with`      | Open the highlighted file with a chosen app |
 | `content.open_terminal`  | Open a terminal in the current folder |
 | `nav.trash`              | Go to the trash           |
@@ -163,6 +165,25 @@ filled into the path box, so `Enter` always goes to what the box holds. `Tab`
 keeps completing from what is in the box, and `Esc` closes the list without
 leaving the path box. Completing a folder leaves the separator on the end, so
 `Tab` again carries on inside it.
+
+### Drives, phones and servers (Linux)
+
+Rove uses `gio`, the same GNOME tool Nautilus and Thunar use, so it needs GLib and
+gvfs. `g` ("Go to Drive…") lists what `gio` sees, next to the normal drives:
+
+- **USB drives and disks that aren't mounted yet.** "Open USB Drive …" mounts one and goes there.
+- **Phones and cameras** plugged in over USB (MTP). "Open Phone …" does the same.
+- **Mounted USB drives.** "Eject USB Drive …" unmounts and powers it off, so it's safe to pull.
+- **Connected servers.** "Go to Server …" and "Disconnect Server …".
+
+`Ctrl+G` ("Connect to Server…") asks for an address. You can also type one straight into the path
+bar (`Ctrl+L`). Any gvfs address works: `sftp://me@host/folder` (or `ssh://`),
+`smb://nas/share`, `ftp://`, `ftps://`, `nfs://`, `dav://`/`davs://` (WebDAV) and `afp://`.
+Without a user in the address, Rove tries an anonymous login first. When a server wants a user or
+password, or asks you to trust an unknown SSH host key, Rove asks in a box. `Esc` gives up.
+
+The list updates on its own when something is plugged in or removed. On Windows, USB drives show
+up as normal drive letters. Connecting to servers and phones is Linux-only for now.
 
 ### Open Terminal Here
 
@@ -295,6 +316,8 @@ at the top of this file) as you edit them.
 | `confirm.select`            | Confirm: run the highlighted button (`Enter`) |
 | `confirm.move_left`         | Confirm: highlight Cancel (`h`) |
 | `confirm.move_right`        | Confirm: highlight Confirm (`l`) |
+| `prompt.apply`              | Question box: submit (`Enter`) |
+| `prompt.cancel`             | Question box: cancel (`Esc`)   |
 
 `content.toggle_mark` (`v`) marks or unmarks one item at a time, wherever the
 highlight is — mark item 1, jump to item 5, mark that too, and both stay

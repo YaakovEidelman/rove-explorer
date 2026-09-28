@@ -28,6 +28,8 @@ public partial class TabsViewModel : ViewModelBase, IDisposable
 
     public event Action? DrivePickerRequested;
 
+    public event Action<string>? ConnectRequested;
+
     public event Action<Task>? AppPickerRequested;
 
     public event Action? SurfaceChanged;
@@ -194,6 +196,7 @@ public partial class TabsViewModel : ViewModelBase, IDisposable
         content.ConfirmRequested += (message, act) =>
             FromFront(content, () => ConfirmRequested?.Invoke(message, act));
         content.DrivePickerRequested += () => FromFront(content, () => DrivePickerRequested?.Invoke());
+        content.ConnectRequested += address => FromFront(content, () => ConnectRequested?.Invoke(address));
         content.AppPickerRequested += loading => FromFront(content, () => AppPickerRequested?.Invoke(loading));
 
         content.PropertyChanged += (_, _) => FromFront(content, RaiseSurface);

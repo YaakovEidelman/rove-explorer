@@ -16,6 +16,9 @@ beyond scope for now:
   open as Rove. It exists on Linux; a Windows version hasn't been built.
 - **Registering Rove as the default file manager**, the way it can on
   Linux. Doable on Windows too, just not implemented yet.
+- **Phones and servers.** On Linux, Rove opens phones over USB and connects
+  to SFTP, SMB, FTP and other servers through gvfs. Windows has no gvfs, so
+  that needs its own version there.
 
 Everyday browsing, tabs, search, archives, and previews all work the same
 on both.
