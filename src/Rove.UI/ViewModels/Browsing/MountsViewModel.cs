@@ -244,7 +244,8 @@ public sealed class MountsViewModel
     {
         string trimmed = Path.TrimEndingDirectorySeparator(root);
         return PathCompare.PathMatches(directory, trimmed)
-            || directory.StartsWith(trimmed + Path.DirectorySeparatorChar, PathCompare.Comparison);
+            || directory.StartsWith(trimmed + Path.DirectorySeparatorChar, PathCompare.Comparison)
+            || directory.StartsWith(trimmed + Path.AltDirectorySeparatorChar, PathCompare.Comparison);
     }
 
     private static string Label(MountEntry entry) => entry.Number is { } number
