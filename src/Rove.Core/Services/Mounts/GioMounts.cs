@@ -19,6 +19,8 @@ public sealed partial class GioMounts(string gio) : IMountService
         remove => _change.Fired -= value;
     }
 
+    public IReadOnlyList<MountTool> Missing => [];
+
     public async Task<MountEntry[]> ListAsync(CancellationToken ct)
     {
         GioRun listed = await RunAsync(["mount", "-li"], prompter: null, ct).ConfigureAwait(false);

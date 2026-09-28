@@ -169,9 +169,9 @@ leaving the path box. Completing a folder leaves the separator on the end, so
 
 ### Drives, phones and servers (Linux)
 
-USB drives and disks come straight from UDisks, the system disk service, so they need no extra
-tools. Phones and servers go through `gio`, the same GNOME tool Nautilus and Thunar use, so those
-need GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drives:
+USB drives and disks come straight from UDisks, the system disk service (`udisks2` and `polkit`).
+Phones and servers go through `gio`, the same GNOME tool Nautilus and Thunar use, so those need
+GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drives:
 
 - **USB drives and disks that aren't mounted yet.** "Open USB 1: STICK" mounts one and goes there.
   An encrypted (LUKS) drive asks for its passphrase first.
@@ -184,6 +184,9 @@ need GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal 
   ones this system has tools for are shown), asks for a name, and warns before erasing anything.
   The drive keeps its number.
 - **Connected servers.** "Go to Server …" and "Disconnect Server …".
+- **Missing tools.** If UDisks or `gio` isn't installed, "Set up USB drives" or "Set up phones and
+  servers" shows up instead, and says what to install. Desktops like GNOME and KDE include both;
+  a bare Arch install doesn't.
 
 A USB drive is named by its model, with the volume name after it: `USB 1: SanDisk 3.2Gen1
 (ARCH_202605)`. Like drive letters on Windows, each drive gets a number that it keeps: plug the

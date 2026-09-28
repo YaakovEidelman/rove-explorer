@@ -15,6 +15,10 @@ internal sealed class FakeMountService : IMountService
 
     public event Action? Changed;
 
+    public List<MountTool> Missing { get; } = [];
+
+    IReadOnlyList<MountTool> IMountService.Missing => Missing;
+
     public void StartWatching() => Calls.Add("watch");
 
     public Task<MountEntry[]> ListAsync(CancellationToken ct) => Task.FromResult(Entries.ToArray());

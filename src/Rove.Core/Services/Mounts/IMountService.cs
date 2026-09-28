@@ -6,6 +6,8 @@ public interface IMountService : IDisposable
 {
     event Action? Changed;
 
+    IReadOnlyList<MountTool> Missing { get; }
+
     void StartWatching();
 
     Task<MountEntry[]> ListAsync(CancellationToken ct);

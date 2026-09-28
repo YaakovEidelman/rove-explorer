@@ -12,6 +12,7 @@ public sealed partial class UDisksMounts(string home) : IMountService
     private IDisposable? _watch;
     private bool _watching;
     private bool _disposed;
+    private volatile bool _missing;
 
     public event Action? Changed
     {
@@ -19,16 +20,24 @@ public sealed partial class UDisksMounts(string home) : IMountService
         remove => _change.Fired -= value;
     }
 
+    public IReadOnlyList<MountTool> Missing => _missing ? [MountTool.UDisks] : [];
+
     public async Task<MountEntry[]> ListAsync(CancellationToken ct)
     {
         if (await ConnectionAsync().ConfigureAwait(false) is not { } connection)
+        {
+            _missing = true;
             return [];
+        }
         try
         {
-            return UDisksMountList.Build(await ObjectsAsync(connection).ConfigureAwait(false), home);
+            MountEntry[] entries = UDisksMountList.Build(await ObjectsAsync(connection).ConfigureAwait(false), home);
+            _missing = false;
+            return entries;
         }
-        catch (DBusErrorReplyException)
+        catch (DBusErrorReplyException ex)
         {
+            _missing = ex.ErrorName == ServiceUnknown;
             return [];
         }
         catch (DBusExceptionBase)

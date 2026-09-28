@@ -132,6 +132,34 @@ public class MountsViewModelTests : HeadlessTest
     });
 
     [Fact]
+    public Task AMissingToolShowsUpAsASetupEntryThatExplainsWhat() => OnUiThread(() =>
+    {
+        Setup setup = new();
+        string? error = null;
+        setup.Model.ErrorRaised += message => error = message;
+        setup.Service.Missing.Add(MountTool.UDisks);
+
+        setup.Model.Show([]);
+        setup.Run("Set up USB drives");
+
+        Assert.Equal(["Set up USB drives (UDisks isn't installed)"], setup.Titles());
+        Assert.Contains("udisks2", error);
+    });
+
+    [Fact]
+    public Task TheSetupEntryGoesAwayOnceTheToolIsThere() => OnUiThread(() =>
+    {
+        Setup setup = new();
+        setup.Service.Missing.Add(MountTool.UDisks);
+        setup.Model.Show([]);
+
+        setup.Service.Missing.Clear();
+        setup.Model.Show([UnmountedStick]);
+
+        Assert.Equal(["Format USB Drive STICK…", "Open USB Drive STICK"], setup.Titles());
+    });
+
+    [Fact]
     public Task CommandsForDrivesThatAreGoneAreDropped() => OnUiThread(() =>
     {
         Setup setup = new();

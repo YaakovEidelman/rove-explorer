@@ -41,6 +41,19 @@ public class LinuxMountsTests
     }
 
     [Fact]
+    public void MissingToolsComeFromBothServicesAndAnAbsentGio()
+    {
+        FakeMountService drives = new("udisks");
+        drives.Missing.Add(MountTool.UDisks);
+
+        using LinuxMounts withoutGio = new(drives, remote: null);
+        using LinuxMounts withGio = new(new FakeMountService("udisks"), new FakeMountService("gio"));
+
+        Assert.Equal([MountTool.UDisks, MountTool.Gio], withoutGio.Missing);
+        Assert.Empty(withGio.Missing);
+    }
+
+    [Fact]
     public async Task WithoutGioServersSayWhy()
     {
         using LinuxMounts mounts = new(new FakeMountService("udisks"), remote: null);

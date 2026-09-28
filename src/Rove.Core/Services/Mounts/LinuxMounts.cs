@@ -20,6 +20,8 @@ public sealed class LinuxMounts(IMountService drives, IMountService? remote) : I
         }
     }
 
+    public IReadOnlyList<MountTool> Missing => [.. drives.Missing, .. remote?.Missing ?? [MountTool.Gio]];
+
     public void StartWatching()
     {
         drives.StartWatching();

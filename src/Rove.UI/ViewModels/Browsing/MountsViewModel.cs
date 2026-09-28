@@ -77,6 +77,16 @@ public sealed class MountsViewModel
             }
         }
 
+        foreach (MountTool tool in _service.Missing)
+        {
+            string id = $"{CommandDef.MountIdPrefix}setup:{tool}";
+            live.Add(id);
+            _registry.Register(
+                new CommandDef(id, SetupTitle(tool), CommandKind.User, Category: CommandCategory.Navigation,
+                    Keywords: ["setup", "install", "missing", .. Keywords(Needs(tool))]),
+                () => ErrorRaised?.Invoke(SetupHelp(tool)));
+        }
+
         foreach (string id in _registry.CommandIdsStartingWith(CommandDef.MountIdPrefix))
         {
             if (!live.Contains(id))
@@ -259,6 +269,17 @@ public sealed class MountsViewModel
         MountKind.Network => "Server",
         _ => "Disk",
     };
+
+    private static MountKind Needs(MountTool tool) => tool == MountTool.UDisks ? MountKind.Removable : MountKind.Network;
+
+    private static string SetupTitle(MountTool tool) => tool == MountTool.UDisks
+        ? "Set up USB drives (UDisks isn't installed)"
+        : "Set up phones and servers (gio isn't installed)";
+
+    private static string SetupHelp(MountTool tool) => tool == MountTool.UDisks
+        ? "Rove can't see USB drives because UDisks, the system disk service, isn't installed. "
+            + "Install the udisks2 and polkit packages, then open Rove again."
+        : "Phones and servers need gio and gvfs. Install the glib2 and gvfs packages, then open Rove again.";
 
     private static string[] Keywords(MountKind kind) => kind switch
     {

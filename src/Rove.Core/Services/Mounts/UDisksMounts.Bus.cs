@@ -10,6 +10,7 @@ public sealed partial class UDisksMounts
     private const string ManagerInterface = "org.freedesktop.UDisks2.Manager";
     private const string NotAuthorized = "org.freedesktop.UDisks2.Error.NotAuthorized";
     private const string AlreadyMounted = "org.freedesktop.UDisks2.Error.AlreadyMounted";
+    private const string ServiceUnknown = "org.freedesktop.DBus.Error.ServiceUnknown";
 
     private static readonly string[] _watchedInterfaces =
         [UDisksObjects.BlockInterface, UDisksObjects.FilesystemInterface, UDisksObjects.EncryptedInterface];
