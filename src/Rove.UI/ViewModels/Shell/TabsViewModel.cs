@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Rove.Core;
+using Rove.Core.Services;
 using Rove.UI.Services;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -70,6 +71,8 @@ public partial class TabsViewModel : ViewModelBase, IDisposable
     private int _activeIndex = -1;
 
     public ContentViewModel Active => Items[ActiveIndex].Content;
+
+    public DrivePlaces Places => _core.Places;
 
     public bool IsStripVisible => Items.Count > 0;
 

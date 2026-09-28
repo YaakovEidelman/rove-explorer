@@ -24,9 +24,10 @@ public class UDisksMountListTests
         bool filesystem = true,
         bool encrypted = false,
         bool ignore = false,
-        string? backing = null) =>
+        string? backing = null,
+        string uuid = "") =>
         new(BlockRoot + name, "/dev/" + name, label, 16_000_000_000, backing is null ? drive : null, ignore,
-            filesystem, mountPoints ?? [], encrypted, backing is null ? null : BlockRoot + backing);
+            filesystem, mountPoints ?? [], encrypted, backing is null ? null : BlockRoot + backing, uuid);
 
     private static MountEntry[] Build(params UDisksBlock[] blocks) =>
         UDisksMountList.Build(new UDisksObjects(blocks, _drives), Home);
@@ -97,6 +98,16 @@ public class UDisksMountListTests
         Assert.Equal("/dev/sdb1", drive.Device);
         Assert.Equal(MountKind.Removable, drive.Kind);
         Assert.Equal("/run/media/me/SECRET", drive.LocalPath);
+    }
+
+    [Fact]
+    public void AnEncryptedDriveKeepsTheSameIdLockedOrUnlocked()
+    {
+        UDisksBlock outer = Block("sdb1", filesystem: false, encrypted: true, uuid: "outer");
+        UDisksBlock inner = Block("dm-1", label: "SECRET", backing: "sdb1", uuid: "inner");
+
+        Assert.Equal("outer", Assert.Single(Build(outer)).VolumeId);
+        Assert.Equal("outer", Assert.Single(Build(outer, inner)).VolumeId);
     }
 
     [Fact]

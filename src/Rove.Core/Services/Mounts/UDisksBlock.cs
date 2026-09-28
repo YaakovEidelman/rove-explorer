@@ -10,5 +10,6 @@ public sealed record UDisksBlock(
     bool HasFilesystem,
     string[] MountPoints,
     bool IsEncrypted,
-    string? CryptoBackingDevice
+    string? CryptoBackingDevice,
+    string Uuid = ""
 );

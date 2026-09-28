@@ -282,6 +282,8 @@ public partial class ContentViewModel
         {
             string id = CommandDef.DriveIdPrefix + drive.RootPath;
             string root = drive.RootPath;
+            if (_core.Places.IsDriveRoot(root))
+                continue;
             string title = drive.Label is null
                 ? $"Go to Drive {root}"
                 : $"Go to Drive {root} ({drive.Label})";

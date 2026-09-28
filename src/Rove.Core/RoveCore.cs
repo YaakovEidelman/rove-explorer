@@ -9,6 +9,7 @@ public class RoveCore : IDisposable
 
     public Actions Actions { get; } = new();
     public GlobalSearchService Search { get; } = new();
+    public DrivePlaces Places { get; } = new();
 
     public IAdminSession? Admin { get; }
 

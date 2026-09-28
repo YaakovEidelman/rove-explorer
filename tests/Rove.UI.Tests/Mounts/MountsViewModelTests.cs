@@ -39,6 +39,7 @@ public class MountsViewModelTests : HeadlessTest
     {
         public CommandRegistry Registry { get; } = new();
         public FakeMountService Service { get; } = new();
+        public DrivePlaces Places { get; } = new();
         public List<string> Visited { get; } = [];
         public string Current { get; set; } = "/home/me";
         public MountsViewModel Model { get; }
@@ -51,7 +52,7 @@ public class MountsViewModelTests : HeadlessTest
                 Service.Calls.Add("go " + path);
                 Current = path;
                 return Task.CompletedTask;
-            }, () => Current);
+            }, () => Current, new DriveNumbers(null), Places);
         }
 
         public string[] Titles() =>
@@ -88,13 +89,39 @@ public class MountsViewModelTests : HeadlessTest
     });
 
     [Fact]
-    public Task AMountedUsbDriveCanBeEjectedButIsReachedThroughTheDriveList() => OnUiThread(() =>
+    public Task AMountedUsbDriveCanBeOpenedAndEjected() => OnUiThread(() =>
     {
         Setup setup = new();
 
         setup.Model.Show([MountedStick]);
 
-        Assert.Equal(["Eject USB Drive STICK"], setup.Titles());
+        Assert.Equal(["Eject USB Drive STICK", "Go to USB Drive STICK"], setup.Titles());
+    });
+
+    [Fact]
+    public Task ADriveWithAVolumeIdGetsANumberThatStaysAcrossReplugs() => OnUiThread(() =>
+    {
+        Setup setup = new();
+        MountEntry other = UnmountedStick with { Name = "OTHER", Device = "/dev/sdc1", VolumeId = "BBBB" };
+        MountEntry stick = UnmountedStick with { VolumeId = "AAAA" };
+
+        setup.Model.Show([stick]);
+        setup.Model.Show([]);
+        setup.Model.Show([other, stick]);
+
+        Assert.Equal(["Open USB 1: STICK", "Open USB 2: OTHER"], setup.Titles());
+    });
+
+    [Fact]
+    public Task AMountedDriveNamesItsFolderInThePathBar() => OnUiThread(() =>
+    {
+        Setup setup = new();
+
+        setup.Model.Show([MountedStick with { VolumeId = "AAAA" }, Server]);
+
+        Assert.Equal(
+            [("/run/media/me/STICK", "USB 1: STICK"), (Server.LocalPath!, "Server nas")],
+            setup.Places.All);
     });
 
     [Fact]

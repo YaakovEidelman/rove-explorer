@@ -9,7 +9,9 @@ public sealed record MountEntry(
     string? LocalPath,
     bool CanMount,
     bool CanUnmount,
-    bool CanEject
+    bool CanEject,
+    string? VolumeId = null,
+    int? Number = null
 )
 {
     public bool IsMounted => MountUri is not null;

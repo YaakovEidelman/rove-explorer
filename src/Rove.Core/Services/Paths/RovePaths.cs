@@ -93,4 +93,6 @@ public static class RovePaths
     public static string MimeDefaultStateFile => Path.Combine(StateDirectory, "mime-default.json");
 
     public static string UpdateCheckStateFile => Path.Combine(StateDirectory, "update-check.json");
+
+    public static string DriveNumbersFile => Path.Combine(StateDirectory, "drive-numbers.txt");
 }

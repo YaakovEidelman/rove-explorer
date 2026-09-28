@@ -63,7 +63,8 @@ public sealed class UDisksObjects(IEnumerable<UDisksBlock> blocks, IEnumerable<U
             fs is not null,
             mountPoints,
             interfaces.ContainsKey(EncryptedInterface),
-            ObjectPath(block, "CryptoBackingDevice"));
+            ObjectPath(block, "CryptoBackingDevice"),
+            Text(block, "IdUUID"));
     }
 
     private static UDisksDrive ReadDrive(string path, Dictionary<string, VariantValue> drive) =>

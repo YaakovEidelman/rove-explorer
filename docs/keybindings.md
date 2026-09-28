@@ -172,12 +172,17 @@ USB drives and disks come straight from UDisks, the system disk service, so they
 tools. Phones and servers go through `gio`, the same GNOME tool Nautilus and Thunar use, so those
 need GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drives:
 
-- **USB drives and disks that aren't mounted yet.** "Open USB Drive …" mounts one and goes there.
+- **USB drives and disks that aren't mounted yet.** "Open USB 1: STICK" mounts one and goes there.
   An encrypted (LUKS) drive asks for its passphrase first.
 - **Phones and cameras** plugged in over USB (MTP). "Open Phone …" does the same.
-- **Mounted USB drives.** "Eject USB Drive …" unmounts every part of the drive, locks it if it's
-  encrypted, and powers it off, so it's safe to pull.
+- **Mounted USB drives.** "Go to USB 1: STICK", and "Eject USB 1: STICK", which unmounts every
+  part of the drive, locks it if it's encrypted, and powers it off, so it's safe to pull.
 - **Connected servers.** "Go to Server …" and "Disconnect Server …".
+
+Like drive letters on Windows, each drive gets a number that it keeps: plug the same stick in
+next week and it's still `USB 1`. Numbers are saved in `drive-numbers.txt` in Rove's state folder.
+Inside a drive, the path bar and tab show its name (`USB 1: STICK › photos`) instead of the
+`/run/media/…` folder it's mounted on. Phones and servers are shown by name the same way.
 
 `Ctrl+G` ("Connect to Server…") asks for an address. You can also type one straight into the path
 bar (`Ctrl+L`). Any gvfs address works: `sftp://me@host/folder` (or `ssh://`),

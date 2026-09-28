@@ -39,7 +39,9 @@ public sealed partial class FolderTab : ObservableObject, IDisposable
         CloseCommand = new RelayCommand(() => close(this));
     }
 
-    public string Title => CustomTitle is { Length: > 0 } custom ? custom : NameOf(Content.DirectoryListing.CurrentDir);
+    public string Title => CustomTitle is { Length: > 0 } custom ? custom
+        : Content.DirectoryListing.Crumbs is [.., PathCrumb last] ? last.Label
+        : NameOf(Content.DirectoryListing.CurrentDir);
 
     public bool IsAdmin => Content.IsAdminView;
 

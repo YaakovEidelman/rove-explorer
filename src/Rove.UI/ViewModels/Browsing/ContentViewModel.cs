@@ -55,7 +55,7 @@ public partial class ContentViewModel : ViewModelBase
         _undo = undo;
         _settings = settings;
         _watcher = core.NewWatcher();
-        _directoryListing = new(_cache, _settings);
+        _directoryListing = new(_cache, _settings, _core.Places);
         Completions = new(_core);
         Completions.Filled += SetEditPathText;
 

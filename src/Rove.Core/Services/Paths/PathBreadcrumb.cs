@@ -5,10 +5,11 @@ public static class PathBreadcrumb
     private static readonly char[] _separators =
         [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
 
-    public static PathCrumb[] Of(string path, (string Root, string Label)? collapse = null)
+    public static PathCrumb[] Of(string path, params (string Root, string Label)[] folds)
     {
-        if (string.IsNullOrWhiteSpace(path) || collapse is not { } fold
-            || !PathGuard.IsSameOrDescendant(fold.Root, path))
+        if (string.IsNullOrWhiteSpace(path)
+            || folds.Where(f => PathGuard.IsSameOrDescendant(f.Root, path)).OrderByDescending(f => f.Root.Length)
+                .Select(f => ((string Root, string Label)?)f).FirstOrDefault() is not { } fold)
         {
             return Of(path ?? string.Empty);
         }

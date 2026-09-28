@@ -110,6 +110,19 @@ public class PathBreadcrumbTests
     }
 
     [Fact]
+    public void TheDeepestMatchingPlaceWins()
+    {
+        using TempDir tmp = new();
+        string outer = tmp.Dir("media");
+        string drive = tmp.Dir(System.IO.Path.Combine("media", "STICK"));
+        string inside = tmp.Dir(System.IO.Path.Combine("media", "STICK", "photos"));
+
+        PathCrumb[] crumbs = PathBreadcrumb.Of(inside, (outer, "Media"), (drive, "USB 1: STICK"));
+
+        Assert.Equal(["USB 1: STICK", "photos"], [.. crumbs.Select(c => c.Label)]);
+    }
+
+    [Fact]
     public void CollapseIgnoresAPathThatIsNotUnderTheRoot()
     {
         using TempDir tmp = new();

@@ -83,7 +83,8 @@ public partial class MainWindowViewModel : ViewModelBase
         Prompt = new(registry);
         if (mountService is not null)
             Mounts = new(registry, mountService, new OverlayMountPrompter(Prompt, Confirm),
-                path => ContentPage.SetCurrentDirectoryAsync(path), () => ContentPage.DirectoryListing.CurrentDir);
+                path => ContentPage.SetCurrentDirectoryAsync(path), () => ContentPage.DirectoryListing.CurrentDir,
+                new DriveNumbers(RovePaths.DriveNumbersFile), tabs.Places);
 
         _registry.Register(CommandDef.CloseApp, CloseApp);
         _registry.Register(CommandDef.ToggleTheme, ToggleTheme);

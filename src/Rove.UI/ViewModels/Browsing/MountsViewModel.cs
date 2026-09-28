@@ -14,6 +14,8 @@ public sealed class MountsViewModel
     private readonly IMountPrompter _prompter;
     private readonly Func<string, Task> _navigate;
     private readonly Func<string> _currentDirectory;
+    private readonly DriveNumbers _numbers;
+    private readonly DrivePlaces _places;
     private bool _busy;
 
     public MountsViewModel(
@@ -21,13 +23,17 @@ public sealed class MountsViewModel
         IMountService service,
         IMountPrompter prompter,
         Func<string, Task> navigate,
-        Func<string> currentDirectory)
+        Func<string> currentDirectory,
+        DriveNumbers? numbers = null,
+        DrivePlaces? places = null)
     {
         _registry = registry;
         _service = service;
         _prompter = prompter;
         _navigate = navigate;
         _currentDirectory = currentDirectory;
+        _numbers = numbers ?? new DriveNumbers(null);
+        _places = places ?? new DrivePlaces();
         _registry.Register(CommandDef.ConnectToServer, () => _ = ConnectToServerAsync());
     }
 
@@ -50,8 +56,13 @@ public sealed class MountsViewModel
 
     public void Show(IEnumerable<MountEntry> entries)
     {
+        MountEntry[] numbered = _numbers.Assign([.. entries]);
+        _places.Set(numbered
+            .Where(entry => entry.LocalPath is not null)
+            .Select(entry => (entry.LocalPath!, Label(entry))));
+
         HashSet<string> live = [];
-        foreach (MountEntry entry in entries)
+        foreach (MountEntry entry in numbered)
         {
             foreach ((string verb, string title, Func<Task> run) in Actions(entry))
             {
@@ -88,23 +99,23 @@ public sealed class MountsViewModel
 
     private IEnumerable<(string Verb, string Title, Func<Task> Run)> Actions(MountEntry entry)
     {
-        string noun = Noun(entry.Kind);
+        string label = Label(entry);
         if (!entry.IsMounted)
         {
             if (entry.CanMount)
-                yield return ("open", $"Open {noun} {entry.Name}", () => MountAsync(entry));
+                yield return ("open", $"Open {label}", () => MountAsync(entry));
             yield break;
         }
 
-        if (!entry.IsFileBacked && entry.LocalPath is { } path)
-            yield return ("goto", $"Go to {noun} {entry.Name}", () => _navigate(path));
+        if (entry.LocalPath is { } path)
+            yield return ("goto", $"Go to {label}", () => _navigate(path));
 
         if (entry.CanEject)
-            yield return ("eject", $"Eject {noun} {entry.Name}", () => UnmountAsync(entry, eject: true));
+            yield return ("eject", $"Eject {label}", () => UnmountAsync(entry, eject: true));
         else if (entry.CanUnmount)
             yield return entry.Kind == MountKind.Network
-                ? ("unmount", $"Disconnect {noun} {entry.Name}", () => UnmountAsync(entry, eject: false))
-                : ("unmount", $"Unmount {noun} {entry.Name}", () => UnmountAsync(entry, eject: false));
+                ? ("unmount", $"Disconnect {label}", () => UnmountAsync(entry, eject: false))
+                : ("unmount", $"Unmount {label}", () => UnmountAsync(entry, eject: false));
     }
 
     private Task MountAsync(MountEntry entry) => RunAsync($"Opening {entry.Name}…", async () =>
@@ -114,7 +125,7 @@ public sealed class MountsViewModel
     });
 
     private Task UnmountAsync(MountEntry entry, bool eject) =>
-        RunAsync(eject ? $"Ejecting {entry.Name}…" : $"Unmounting {entry.Name}…", async () =>
+        RunAsync(eject ? $"Ejecting {Label(entry)}…" : $"Unmounting {Label(entry)}…", async () =>
         {
             if (entry.LocalPath is { } root && IsInside(_currentDirectory(), root))
                 await _navigate(PathCompare.DefaultStartDirectory());
@@ -125,9 +136,10 @@ public sealed class MountsViewModel
                 ErrorRaised?.Invoke(result.Message ?? $"Couldn't unmount {entry.Name}.");
                 return;
             }
+            string label = Label(entry);
             InfoRaised?.Invoke(eject
-                ? $"Ejected {entry.Name}. It's safe to remove."
-                : entry.Kind == MountKind.Network ? $"Disconnected {entry.Name}." : $"Unmounted {entry.Name}.");
+                ? $"Ejected {label}. It's safe to remove."
+                : entry.Kind == MountKind.Network ? $"Disconnected {label}." : $"Unmounted {label}.");
             await RefreshAsync();
         });
 
@@ -139,8 +151,8 @@ public sealed class MountsViewModel
             return;
         }
         InfoRaised?.Invoke(string.Empty);
-        await _navigate(path);
         await RefreshAsync();
+        await _navigate(path);
     }
 
     private async Task RunAsync(string working, Func<Task> work)
@@ -168,6 +180,10 @@ public sealed class MountsViewModel
         return PathCompare.PathMatches(directory, trimmed)
             || directory.StartsWith(trimmed + Path.DirectorySeparatorChar, PathCompare.Comparison);
     }
+
+    private static string Label(MountEntry entry) => entry.Number is { } number
+        ? $"{(entry.Kind == MountKind.Removable ? "USB" : "Disk")} {number}: {entry.Name}"
+        : $"{Noun(entry.Kind)} {entry.Name}";
 
     private static string Noun(MountKind kind) => kind switch
     {

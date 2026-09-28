@@ -19,11 +19,13 @@ public partial class DirectoryListing : ObservableObject
 
     private readonly DispatcherTimer _filterTimer;
     private readonly SettingsStore? _settings;
+    private readonly DrivePlaces? _places;
 
-    public DirectoryListing(IIconCache cache, SettingsStore? settings = null)
+    public DirectoryListing(IIconCache cache, SettingsStore? settings = null, DrivePlaces? places = null)
     {
         _cache = cache;
         _settings = settings;
+        _places = places;
         ListSelection = new(Items);
         _filterTimer = new DispatcherTimer { Interval = _filterDelay };
         _filterTimer.Tick += (_, _) => ApplyView();
@@ -40,8 +42,15 @@ public partial class DirectoryListing : ObservableObject
     [ObservableProperty]
     private string _currentDir = PathCompare.DefaultStartDirectory();
 
-    public PathCrumb[] Crumbs => PathBreadcrumb.Of(CurrentDir,
-        TrashService.BrowsePath is { } trashRoot ? (trashRoot, TrashService.DisplayName) : null);
+    public PathCrumb[] Crumbs => PathBreadcrumb.Of(CurrentDir, [.. NamedPlaces()]);
+
+    private IEnumerable<(string Root, string Label)> NamedPlaces()
+    {
+        if (TrashService.BrowsePath is { } trashRoot)
+            yield return (trashRoot, TrashService.DisplayName);
+        foreach ((string Root, string Label) place in _places?.All ?? [])
+            yield return place;
+    }
 
     partial void OnCurrentDirChanged(string value) => OnPropertyChanged(nameof(Crumbs));
 

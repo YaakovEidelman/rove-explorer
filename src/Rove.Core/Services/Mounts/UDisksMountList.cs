@@ -62,7 +62,8 @@ public static class UDisksMountList
             mountPoint,
             CanMount: mountPoint is null,
             CanUnmount: mountPoint is not null,
-            CanEject: drive is { Ejectable: true } or { CanPowerOff: true });
+            CanEject: drive is { Ejectable: true } or { CanPowerOff: true },
+            VolumeId: block.Uuid.Length > 0 ? block.Uuid : null);
     }
 
     private static string Name(UDisksBlock block, UDisksBlock? filesystem)
