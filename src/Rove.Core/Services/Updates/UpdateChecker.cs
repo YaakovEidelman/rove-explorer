@@ -7,6 +7,8 @@ public static class UpdateChecker
     private const string UserAgent = "rove-explorer-update-checker";
     private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(24);
 
+    public static bool IsDevBuild(Version running) => running.Major == 0;
+
     public static bool DueForCheck(UpdateCheckState? state, DateTime nowUtc) =>
         state is null || nowUtc - state.LastCheckedUtc >= CheckInterval;
 

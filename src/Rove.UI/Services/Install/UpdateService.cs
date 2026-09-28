@@ -24,6 +24,9 @@ public sealed class UpdateService
 
     public async Task CheckInBackgroundAsync(bool autoUpdate, CancellationToken ct)
     {
+        if (UpdateChecker.IsDevBuild(RunningVersion()))
+            return;
+
         UpdateCheckState? state = UpdateCheckState.Read(RovePaths.UpdateCheckStateFile);
         if (!UpdateChecker.DueForCheck(state, DateTime.UtcNow))
             return;

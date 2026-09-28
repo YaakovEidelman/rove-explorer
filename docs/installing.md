@@ -47,6 +47,11 @@ on "Auto-update" in Settings and Rove does that download and install itself,
 the moment it finds a newer release, and only tells you once it's done —
 "restart Rove to use it."
 
+Dev builds skip that background check. Any build whose version starts with
+`0.` counts: `scripts/run.sh` builds are `0.2.0` and dev-channel builds are
+`0.2.N`. Otherwise every dev run would use up the day's check and reinstall
+the latest release over your installed copy. `Ctrl+U` still works in them.
+
 Either way, installing a downloaded release runs it through the same
 `--install` step described above, so it is exactly as if you had downloaded
 and run the build yourself.

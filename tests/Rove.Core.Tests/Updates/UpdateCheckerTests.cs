@@ -6,6 +6,14 @@ namespace Rove.Core.Tests;
 public class UpdateCheckerTests
 {
     [Fact]
+    public void AZeroMajorVersionIsADevBuild()
+    {
+        Assert.True(UpdateChecker.IsDevBuild(new Version(0, 2, 0)));
+        Assert.True(UpdateChecker.IsDevBuild(new Version(0, 2, 20724, 815)));
+        Assert.False(UpdateChecker.IsDevBuild(new Version(1, 0, 2)));
+    }
+
+    [Fact]
     public void NeverHavingCheckedIsDue()
     {
         Assert.True(UpdateChecker.DueForCheck(null, DateTime.UtcNow));
