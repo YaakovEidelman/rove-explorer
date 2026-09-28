@@ -3,12 +3,15 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
+using Rove.UI.Services;
 using Rove.UI.ViewModels;
 
 namespace Rove.UI.Views;
 
 public partial class MainWindow : Window
 {
+    private readonly KeyRepeatPacer _repeat;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -16,7 +19,10 @@ public partial class MainWindow : Window
             Icon = icon;
         if (LoadBrandIcon() is { } brand)
             brand_icon.Source = brand;
+        _repeat = new(() => WaylandKeyRepeat.RateOf(this), () => Environment.TickCount64);
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
+        AddHandler(KeyUpEvent, (_, e) => _repeat.Release(e.Key), RoutingStrategies.Tunnel);
+        Deactivated += (_, _) => _repeat.Reset();
         completion_list.SelectionChanged += (_, _) =>
         {
             if (completion_list.SelectedIndex >= 0)
@@ -117,6 +123,6 @@ public partial class MainWindow : Window
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm)
-            e.Handled = vm.HandleKey(e.Key, e.KeyModifiers);
+            e.Handled = _repeat.Press(new(e.Key, e.KeyModifiers), () => vm.HandleKey(e.Key, e.KeyModifiers));
     }
 }
