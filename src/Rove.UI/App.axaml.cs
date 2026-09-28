@@ -74,7 +74,8 @@ public partial class App : Application
 
             IMountService? mounts = MountServiceChooser.CreateForHost();
             MainWindowViewModel main = new(registry, tabs, palette, globalSearch, bookmarkList, confirm,
-                preview, fileClipboard, fileOperation, settingsPage, keymap.Summary, updates, mounts);
+                preview, fileClipboard, fileOperation, settingsPage, keymap.Summary, updates, mounts,
+                OperatingSystem.IsLinux() ? new LinuxToolInstaller() : null);
             desktop.MainWindow = new MainWindow
             {
                 DataContext = main,

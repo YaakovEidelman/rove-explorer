@@ -66,7 +66,8 @@ public partial class MainWindowViewModel : ViewModelBase
         SettingsViewModel settings,
         string? startupWarning = null,
         UpdateService? updates = null,
-        IMountService? mountService = null
+        IMountService? mountService = null,
+        IToolInstaller? toolInstaller = null
     )
     {
         _registry = registry;
@@ -84,7 +85,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (mountService is not null)
             Mounts = new(registry, mountService, new OverlayMountPrompter(Prompt, Confirm),
                 path => ContentPage.SetCurrentDirectoryAsync(path), () => ContentPage.DirectoryListing.CurrentDir,
-                new DriveNumbers(RovePaths.DriveNumbersFile), tabs.Places);
+                new DriveNumbers(RovePaths.DriveNumbersFile), tabs.Places, toolInstaller);
 
         _registry.Register(CommandDef.CloseApp, CloseApp);
         _registry.Register(CommandDef.ToggleTheme, ToggleTheme);

@@ -50,4 +50,22 @@ public class LinuxTerminalTests
     {
         Assert.Null(LinuxTerminal.Find(UsrBin, null, Present()));
     }
+
+    [Theory]
+    [InlineData("/usr/bin/xdg-terminal-exec", "")]
+    [InlineData("/usr/bin/kitty", "")]
+    [InlineData("/usr/bin/gnome-terminal", "--")]
+    [InlineData("/usr/bin/wezterm", "start --")]
+    [InlineData("/usr/bin/xfce4-terminal", "-x")]
+    [InlineData("/usr/bin/alacritty", "-e")]
+    public void ACommandRunsThroughAShellThatWaitsBeforeClosing(string terminal, string prefix)
+    {
+        string[] arguments = LinuxTerminal.RunArguments(terminal, ["sudo", "pacman", "-S", "udisks2"]);
+
+        string[] expected = prefix.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(expected, arguments[..expected.Length]);
+        Assert.Equal(["sh", "-c"], arguments[expected.Length..(expected.Length + 2)]);
+        Assert.Contains("read", arguments[expected.Length + 2]);
+        Assert.Equal(["sh", "sudo", "pacman", "-S", "udisks2"], arguments[(expected.Length + 3)..]);
+    }
 }

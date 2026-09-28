@@ -5,6 +5,8 @@ namespace Rove.Core.Services;
 
 public static class LinuxTerminal
 {
+    private const string StayOpen = "\"$@\"; echo; printf 'Press Enter to close. '; read -r _";
+
     private static readonly string[] _known =
     [
         "xdg-terminal-exec",
@@ -41,6 +43,40 @@ public static class LinuxTerminal
         {
             return ex.Message;
         }
+    }
+
+    public static string? Run(string[] command)
+    {
+        string? path = Environment.GetEnvironmentVariable("PATH");
+        string? terminal = Find(path, Environment.GetEnvironmentVariable("TERMINAL"), FileOpener.IsRunnable);
+        if (terminal is null)
+            return "No terminal program was found. Set the TERMINAL environment variable to the one you use.";
+
+        ProcessStartInfo start = new(terminal) { UseShellExecute = false };
+        foreach (string argument in RunArguments(terminal, command))
+            start.ArgumentList.Add(argument);
+        try
+        {
+            using Process? started = Process.Start(start);
+            return null;
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or FileNotFoundException)
+        {
+            return ex.Message;
+        }
+    }
+
+    internal static string[] RunArguments(string terminal, string[] command)
+    {
+        string[] prefix = Path.GetFileName(terminal) switch
+        {
+            "xdg-terminal-exec" or "kitty" or "foot" => [],
+            "gnome-terminal" => ["--"],
+            "wezterm" => ["start", "--"],
+            "xfce4-terminal" => ["-x"],
+            _ => ["-e"],
+        };
+        return [.. prefix, "sh", "-c", StayOpen, "sh", .. command];
     }
 
     internal static string? Find(string? pathVariable, string? preferred, Func<string, bool> exists)

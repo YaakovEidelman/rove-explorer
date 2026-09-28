@@ -9,6 +9,8 @@ public sealed class MountsViewModel
     private const string AddressHint =
         "Type a server address, like sftp://me@host/folder, smb://nas/share or ftp://host.";
 
+    private const int SetupChecks = 200;
+
     private readonly ICommandTarget _registry;
     private readonly IMountService _service;
     private readonly IMountPrompter _prompter;
@@ -16,6 +18,7 @@ public sealed class MountsViewModel
     private readonly Func<string> _currentDirectory;
     private readonly DriveNumbers _numbers;
     private readonly DrivePlaces _places;
+    private readonly IToolInstaller? _installer;
     private bool _busy;
 
     public MountsViewModel(
@@ -25,7 +28,8 @@ public sealed class MountsViewModel
         Func<string, Task> navigate,
         Func<string> currentDirectory,
         DriveNumbers? numbers = null,
-        DrivePlaces? places = null)
+        DrivePlaces? places = null,
+        IToolInstaller? installer = null)
     {
         _registry = registry;
         _service = service;
@@ -34,6 +38,7 @@ public sealed class MountsViewModel
         _currentDirectory = currentDirectory;
         _numbers = numbers ?? new DriveNumbers(null);
         _places = places ?? new DrivePlaces();
+        _installer = installer;
         _registry.Register(CommandDef.ConnectToServer, () => _ = ConnectToServerAsync());
     }
 
@@ -42,6 +47,8 @@ public sealed class MountsViewModel
     public event Action<string>? InfoRaised;
 
     public event Action<string, string>? PickRequested;
+
+    internal TimeSpan SetupCheckDelay { get; set; } = TimeSpan.FromSeconds(3);
 
     public void Start()
     {
@@ -84,7 +91,7 @@ public sealed class MountsViewModel
             _registry.Register(
                 new CommandDef(id, SetupTitle(tool), CommandKind.User, Category: CommandCategory.Navigation,
                     Keywords: ["setup", "install", "missing", .. Keywords(Needs(tool))]),
-                () => ErrorRaised?.Invoke(SetupHelp(tool)));
+                () => _ = SetUpAsync(tool));
         }
 
         foreach (string id in _registry.CommandIdsStartingWith(CommandDef.MountIdPrefix))
@@ -107,6 +114,45 @@ public sealed class MountsViewModel
             await ConnectAsync(address);
         else if (address is { Length: > 0 })
             ErrorRaised?.Invoke($"{address} isn't a server address. {AddressHint}");
+    }
+
+    private async Task SetUpAsync(MountTool tool)
+    {
+        if (_installer?.CommandFor(tool) is not { } command)
+        {
+            ErrorRaised?.Invoke(SetupHelp(tool));
+            return;
+        }
+
+        string shown = string.Join(' ', command);
+        if (await _prompter.ChooseAsync(
+                $"{SetupReason(tool)} Install it now? A terminal opens and runs:\n{shown}",
+                ["Install in a terminal"]) is null)
+            return;
+
+        if (_installer.RunInTerminal(command) is { } error)
+        {
+            ErrorRaised?.Invoke($"{error} You can run this yourself: {shown}");
+            return;
+        }
+
+        if (tool != MountTool.UDisks)
+        {
+            InfoRaised?.Invoke("When the install finishes, open Rove again to use phones and servers.");
+            return;
+        }
+
+        InfoRaised?.Invoke("Installing UDisks in the terminal…");
+        for (int check = 0; check < SetupChecks; check++)
+        {
+            await Task.Delay(SetupCheckDelay);
+            await RefreshAsync();
+            if (!_service.Missing.Contains(MountTool.UDisks))
+            {
+                InfoRaised?.Invoke("UDisks is installed. Press g to see your USB drives.");
+                return;
+            }
+        }
     }
 
     private IEnumerable<(string Verb, string Title, Func<Task> Run)> Actions(MountEntry entry)
@@ -276,10 +322,13 @@ public sealed class MountsViewModel
         ? "Set up USB drives (UDisks isn't installed)"
         : "Set up phones and servers (gio isn't installed)";
 
+    private static string SetupReason(MountTool tool) => tool == MountTool.UDisks
+        ? "Rove can't see USB drives because UDisks, the system disk service, isn't installed."
+        : "Phones and servers need gio and gvfs, which aren't installed.";
+
     private static string SetupHelp(MountTool tool) => tool == MountTool.UDisks
-        ? "Rove can't see USB drives because UDisks, the system disk service, isn't installed. "
-            + "Install the udisks2 and polkit packages, then open Rove again."
-        : "Phones and servers need gio and gvfs. Install the glib2 and gvfs packages, then open Rove again.";
+        ? $"{SetupReason(tool)} Install the udisks2 and polkit packages, then open Rove again."
+        : $"{SetupReason(tool)} Install the glib2 and gvfs packages, then open Rove again.";
 
     private static string[] Keywords(MountKind kind) => kind switch
     {

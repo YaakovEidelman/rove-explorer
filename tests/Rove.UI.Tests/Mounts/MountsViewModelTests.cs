@@ -35,6 +35,19 @@ public class MountsViewModelTests : HeadlessTest
         public Task<int?> ChooseAsync(string message, string[] choices) => Task.FromResult(agree ? 0 : (int?)null);
     }
 
+    private sealed class Installer(string[]? command, string? failure = null) : IToolInstaller
+    {
+        public List<string[]> Ran { get; } = [];
+
+        public string[]? CommandFor(MountTool tool) => command;
+
+        public string? RunInTerminal(string[] run)
+        {
+            Ran.Add(run);
+            return failure;
+        }
+    }
+
     private sealed class Setup
     {
         public CommandRegistry Registry { get; } = new();
@@ -46,7 +59,7 @@ public class MountsViewModelTests : HeadlessTest
 
         public string? Picker { get; private set; }
 
-        public Setup(string? reply = null, bool agree = false)
+        public Setup(string? reply = null, bool agree = false, IToolInstaller? installer = null)
         {
             Model = new(Registry, Service, new Answers(reply, agree), path =>
             {
@@ -54,7 +67,10 @@ public class MountsViewModelTests : HeadlessTest
                 Service.Calls.Add("go " + path);
                 Current = path;
                 return Task.CompletedTask;
-            }, () => Current, new DriveNumbers(null), Places);
+            }, () => Current, new DriveNumbers(null), Places, installer)
+            {
+                SetupCheckDelay = TimeSpan.FromMilliseconds(1),
+            };
             Model.PickRequested += (prefix, _) => Picker = prefix;
         }
 
@@ -157,6 +173,52 @@ public class MountsViewModelTests : HeadlessTest
         setup.Model.Show([UnmountedStick]);
 
         Assert.Equal(["Format USB Drive STICK…", "Open USB Drive STICK"], setup.Titles());
+    });
+
+    [Fact]
+    public Task SettingUpAsksThenInstallsInATerminalAndSaysWhenItIsDone() => OnUiThread(() =>
+    {
+        Installer installer = new(["sudo", "pacman", "-S", "udisks2"]);
+        Setup setup = new(agree: true, installer: installer);
+        List<string> info = [];
+        setup.Model.InfoRaised += info.Add;
+        setup.Service.Missing.Add(MountTool.UDisks);
+        setup.Model.Show([]);
+        setup.Service.Missing.Clear();
+
+        setup.Run("Set up USB drives");
+
+        Assert.Equal([["sudo", "pacman", "-S", "udisks2"]], installer.Ran);
+        Assert.Equal("UDisks is installed. Press g to see your USB drives.", info[^1]);
+        Assert.Empty(setup.Titles());
+    });
+
+    [Fact]
+    public Task SayingNoToTheInstallRunsNothing() => OnUiThread(() =>
+    {
+        Installer installer = new(["sudo", "pacman", "-S", "udisks2"]);
+        Setup setup = new(agree: false, installer: installer);
+        setup.Service.Missing.Add(MountTool.UDisks);
+        setup.Model.Show([]);
+
+        setup.Run("Set up USB drives");
+
+        Assert.Empty(installer.Ran);
+    });
+
+    [Fact]
+    public Task WithoutATerminalTheCommandIsShownToRunByHand() => OnUiThread(() =>
+    {
+        Installer installer = new(["sudo", "pacman", "-S", "udisks2"], failure: "No terminal program was found.");
+        Setup setup = new(agree: true, installer: installer);
+        string? error = null;
+        setup.Model.ErrorRaised += message => error = message;
+        setup.Service.Missing.Add(MountTool.UDisks);
+        setup.Model.Show([]);
+
+        setup.Run("Set up USB drives");
+
+        Assert.Equal("No terminal program was found. You can run this yourself: sudo pacman -S udisks2", error);
     });
 
     [Fact]

@@ -185,8 +185,12 @@ GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drive
   The drive keeps its number.
 - **Connected servers.** "Go to Server …" and "Disconnect Server …".
 - **Missing tools.** If UDisks or `gio` isn't installed, "Set up USB drives" or "Set up phones and
-  servers" shows up instead, and says what to install. Desktops like GNOME and KDE include both;
-  a bare Arch install doesn't.
+  servers" shows up instead. Desktops like GNOME and KDE include both; a bare Arch install doesn't.
+  On Arch, Debian/Ubuntu, Fedora and openSUSE (and distros based on them), it offers to open a
+  terminal and run the install (`sudo pacman -S --needed udisks2 polkit` on Arch), so you see the
+  packages and type your password there. Once UDisks is in, your drives show up without a restart.
+  On read-only systems (Silverblue, SteamOS, Flatpak) or other distros, it just says what to
+  install.
 
 A USB drive is named by its model, with the volume name after it: `USB 1: SanDisk 3.2Gen1
 (ARCH_202605)`. Like drive letters on Windows, each drive gets a number that it keeps: plug the
