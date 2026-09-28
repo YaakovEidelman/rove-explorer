@@ -6,15 +6,18 @@ namespace Rove.Core.Services;
 
 public sealed partial class GioMounts(string gio) : IMountService
 {
-    private static readonly TimeSpan _settle = TimeSpan.FromMilliseconds(400);
     private const string WatchUntilStdinCloses = "\"$0\" mount -o & watcher=$!; read -r _; kill $watcher";
 
     private readonly object _gate = new();
+    private readonly MountChangeSignal _change = new();
     private Process? _monitor;
-    private CancellationTokenSource? _pendingChange;
     private bool _disposed;
 
-    public event Action? Changed;
+    public event Action? Changed
+    {
+        add => _change.Fired += value;
+        remove => _change.Fired -= value;
+    }
 
     public async Task<MountEntry[]> ListAsync(CancellationToken ct)
     {
@@ -106,7 +109,7 @@ public sealed partial class GioMounts(string gio) : IMountService
         lock (_gate)
         {
             _disposed = true;
-            _pendingChange?.Cancel();
+            _change.Dispose();
             if (_monitor is { } monitor)
             {
                 try
@@ -129,31 +132,12 @@ public sealed partial class GioMounts(string gio) : IMountService
             while (await monitor.StandardOutput.ReadLineAsync().ConfigureAwait(false) is { } line)
             {
                 if (line.Length > 0 && !line.StartsWith(' '))
-                    SignalChange();
+                    _change.Raise();
             }
         }
         catch (Exception ex) when (ex is IOException or ObjectDisposedException or InvalidOperationException)
         {
         }
-    }
-
-    private void SignalChange()
-    {
-        CancellationTokenSource next = new();
-        lock (_gate)
-        {
-            if (_disposed)
-                return;
-            _pendingChange?.Cancel();
-            _pendingChange = next;
-        }
-        _ = Task.Delay(_settle, next.Token).ContinueWith(
-            t =>
-            {
-                if (!t.IsCanceled)
-                    Changed?.Invoke();
-            },
-            CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
     }
 
     private async Task<string?> LocalPathAsync(string uri, CancellationToken ct)

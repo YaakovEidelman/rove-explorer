@@ -6,9 +6,10 @@ public static class MountServiceChooser
     {
         if (!OperatingSystem.IsLinux())
             return null;
-        return FileOpener.FindProgram(Environment.GetEnvironmentVariable("PATH"), "gio", FileOpener.IsRunnable)
-            is { } gio
-            ? new GioMounts(gio)
+        IMountService? gio = FileOpener.FindProgram(Environment.GetEnvironmentVariable("PATH"), "gio", FileOpener.IsRunnable)
+            is { } program
+            ? new GioMounts(program)
             : null;
+        return new LinuxMounts(new UDisksMounts(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)), gio);
     }
 }

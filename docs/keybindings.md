@@ -168,12 +168,15 @@ leaving the path box. Completing a folder leaves the separator on the end, so
 
 ### Drives, phones and servers (Linux)
 
-Rove uses `gio`, the same GNOME tool Nautilus and Thunar use, so it needs GLib and
-gvfs. `g` ("Go to Drive…") lists what `gio` sees, next to the normal drives:
+USB drives and disks come straight from UDisks, the system disk service, so they need no extra
+tools. Phones and servers go through `gio`, the same GNOME tool Nautilus and Thunar use, so those
+need GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drives:
 
 - **USB drives and disks that aren't mounted yet.** "Open USB Drive …" mounts one and goes there.
+  An encrypted (LUKS) drive asks for its passphrase first.
 - **Phones and cameras** plugged in over USB (MTP). "Open Phone …" does the same.
-- **Mounted USB drives.** "Eject USB Drive …" unmounts and powers it off, so it's safe to pull.
+- **Mounted USB drives.** "Eject USB Drive …" unmounts every part of the drive, locks it if it's
+  encrypted, and powers it off, so it's safe to pull.
 - **Connected servers.** "Go to Server …" and "Disconnect Server …".
 
 `Ctrl+G` ("Connect to Server…") asks for an address. You can also type one straight into the path

@@ -18,7 +18,8 @@ beyond scope for now:
   Linux. Doable on Windows too, just not implemented yet.
 - **Phones and servers.** On Linux, Rove opens phones over USB and connects
   to SFTP, SMB, FTP and other servers through gvfs. Windows has no gvfs, so
-  that needs its own version there.
+  that needs its own version there. (USB drives on Linux talk to UDisks
+  directly and need nothing extra.)
 
 Everyday browsing, tabs, search, archives, and previews all work the same
 on both.

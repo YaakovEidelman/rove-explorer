@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="10.0.9" />
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.95.1" />
   </ItemGroup>
 
   <ItemGroup>
