@@ -175,12 +175,19 @@ need GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal 
 - **USB drives and disks that aren't mounted yet.** "Open USB 1: STICK" mounts one and goes there.
   An encrypted (LUKS) drive asks for its passphrase first.
 - **Phones and cameras** plugged in over USB (MTP). "Open Phone …" does the same.
-- **Mounted USB drives.** "Go to USB 1: STICK", and "Eject USB 1: STICK", which unmounts every
-  part of the drive, locks it if it's encrypted, and powers it off, so it's safe to pull.
+- **Mounted USB drives.** "Go to USB 1: STICK", "Unmount USB 1: STICK" and "Eject USB 1: STICK".
+  Unmount keeps the drive in the list so "Open" brings it back. Eject, like in other file
+  managers, also unmounts the drive's other parts, locks it if it's encrypted, and powers it off,
+  so it's safe to pull. It comes back when you plug it in again.
+- **Formatting.** "Format USB 1: STICK…" picks a file system (exFAT, FAT32, NTFS or ext4; only the
+  ones this system has tools for are shown), asks for a name, and warns before erasing anything.
+  The drive keeps its number.
 - **Connected servers.** "Go to Server …" and "Disconnect Server …".
 
-Like drive letters on Windows, each drive gets a number that it keeps: plug the same stick in
-next week and it's still `USB 1`. Numbers are saved in `drive-numbers.txt` in Rove's state folder.
+A USB drive is named by its model, with the volume name after it: `USB 1: SanDisk 3.2Gen1
+(ARCH_202605)`. Like drive letters on Windows, each drive gets a number that it keeps: plug the
+same stick in next week and it's still `USB 1`. Numbers are saved in `drive-numbers.txt` in Rove's
+state folder.
 Inside a drive, the path bar and tab show its name (`USB 1: STICK › photos`) instead of the
 `/run/media/…` folder it's mounted on. Phones and servers are shown by name the same way.
 

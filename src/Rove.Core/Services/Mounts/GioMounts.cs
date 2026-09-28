@@ -83,6 +83,12 @@ public sealed partial class GioMounts(string gio) : IMountService
             : CommandResult<bool>.Fail("unmount_failed", run.Error($"Couldn't unmount {entry.Name}."));
     }
 
+    public Task<DriveFormat[]> FormatsAsync(CancellationToken ct) => Task.FromResult<DriveFormat[]>([]);
+
+    public Task<CommandResult<string>> FormatAsync(
+        MountEntry entry, DriveFormat format, string name, CancellationToken ct) =>
+        Task.FromResult(CommandResult<string>.Fail("not_formattable", $"{entry.Name} can't be formatted."));
+
     public void StartWatching()
     {
         lock (_gate)

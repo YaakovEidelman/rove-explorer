@@ -15,4 +15,8 @@ public interface IMountService : IDisposable
     Task<CommandResult<string>> ConnectAsync(string address, IMountPrompter prompter, CancellationToken ct);
 
     Task<CommandResult<bool>> UnmountAsync(MountEntry entry, bool eject, CancellationToken ct);
+
+    Task<DriveFormat[]> FormatsAsync(CancellationToken ct);
+
+    Task<CommandResult<string>> FormatAsync(MountEntry entry, DriveFormat format, string name, CancellationToken ct);
 }

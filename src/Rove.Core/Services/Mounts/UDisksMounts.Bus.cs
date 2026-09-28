@@ -6,6 +6,8 @@ public sealed partial class UDisksMounts
 {
     private const string Service = "org.freedesktop.UDisks2";
     private const string Root = "/org/freedesktop/UDisks2";
+    private const string Manager = Root + "/Manager";
+    private const string ManagerInterface = "org.freedesktop.UDisks2.Manager";
     private const string NotAuthorized = "org.freedesktop.UDisks2.Error.NotAuthorized";
     private const string AlreadyMounted = "org.freedesktop.UDisks2.Error.AlreadyMounted";
 
@@ -74,6 +76,41 @@ public sealed partial class UDisksMounts
             OptionsCall(connection, path, UDisksObjects.EncryptedInterface, "Unlock", passphrase),
             static (message, _) => message.GetBodyReader().ReadObjectPathAsString(),
             null);
+
+    private static Task<bool> CanFormatAsync(DBusConnection connection, string type)
+    {
+        MessageBuffer call;
+        using (MessageWriter writer = connection.GetMessageWriter())
+        {
+            writer.WriteMethodCallHeader(Service, Manager, ManagerInterface, "CanFormat", "s");
+            writer.WriteString(type);
+            call = writer.CreateMessage();
+        }
+        return connection.CallMethodAsync(call, static (message, _) => message.GetBodyReader().ReadBool(), null);
+    }
+
+    private static Task FormatAsync(DBusConnection connection, string path, string type, string name)
+    {
+        Dictionary<string, VariantValue> options = new()
+        {
+            ["label"] = VariantValue.String(name),
+            ["update-partition-type"] = VariantValue.Bool(true),
+        };
+        if (type == "ext4")
+            options["take-ownership"] = VariantValue.Bool(true);
+
+        MessageBuffer call;
+        using (MessageWriter writer = connection.GetMessageWriter())
+        {
+            writer.WriteMethodCallHeader(
+                Service, path, UDisksObjects.BlockInterface, "Format", "sa{sv}",
+                MessageFlags.AllowInteractiveAuthorization);
+            writer.WriteString(type);
+            writer.WriteDictionary(options);
+            call = writer.CreateMessage();
+        }
+        return connection.CallMethodAsync(call);
+    }
 
     private static MessageBuffer OptionsCall(
         DBusConnection connection, string path, string iface, string member, string? text)

@@ -139,6 +139,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             Mounts.ErrorRaised += message => StatusError = message;
             Mounts.InfoRaised += message => StatusInfo = message;
+            Mounts.PickRequested += Palette.OpenScoped;
             Mounts.Start();
         }
         Settings.PropertyChanged += OnSurfaceChanged;

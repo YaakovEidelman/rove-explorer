@@ -11,6 +11,7 @@ public sealed class UDisksObjects(IEnumerable<UDisksBlock> blocks, IEnumerable<U
     public const string EncryptedInterface = "org.freedesktop.UDisks2.Encrypted";
 
     private static readonly string[] _removableBuses = ["usb", "sdio", "ieee1394"];
+    private static readonly string[] _placeholderVendors = ["usb", "generic", "general", "ata", "mass"];
 
     public IReadOnlyList<UDisksBlock> Blocks { get; } = [.. blocks.OrderBy(b => b.Device, StringComparer.Ordinal)];
 
@@ -73,7 +74,15 @@ public sealed class UDisksObjects(IEnumerable<UDisksBlock> blocks, IEnumerable<U
             Flag(drive, "Removable") || Flag(drive, "MediaRemovable")
                 || _removableBuses.Contains(Text(drive, "ConnectionBus"), StringComparer.Ordinal),
             Flag(drive, "Ejectable"),
-            Flag(drive, "CanPowerOff"));
+            Flag(drive, "CanPowerOff"),
+            ModelName(Text(drive, "Vendor").Trim(), Text(drive, "Model").Trim()));
+
+    private static string ModelName(string vendor, string model) =>
+        vendor.Length == 0
+            || _placeholderVendors.Contains(vendor.ToLowerInvariant(), StringComparer.Ordinal)
+            || model.StartsWith(vendor, StringComparison.OrdinalIgnoreCase)
+            ? model
+            : $"{vendor} {model}".Trim();
 
     private static string Bytes(VariantValue value) =>
         Encoding.UTF8.GetString(value.GetArray<byte>()).TrimEnd('\0');

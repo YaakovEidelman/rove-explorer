@@ -22,7 +22,7 @@ public class MountsViewModelTests : HeadlessTest
         "nas", MountKind.Network, null, null, "smb://nas/share/", "/run/user/1000/gvfs/smb-share:server=nas,share=share",
         CanMount: false, CanUnmount: true, CanEject: false);
 
-    private sealed class Answers(string? reply) : IMountPrompter
+    private sealed class Answers(string? reply, bool agree) : IMountPrompter
     {
         public List<string> Asked { get; } = [];
 
@@ -32,7 +32,7 @@ public class MountsViewModelTests : HeadlessTest
             return Task.FromResult(reply);
         }
 
-        public Task<int?> ChooseAsync(string message, string[] choices) => Task.FromResult<int?>(null);
+        public Task<int?> ChooseAsync(string message, string[] choices) => Task.FromResult(agree ? 0 : (int?)null);
     }
 
     private sealed class Setup
@@ -44,15 +44,18 @@ public class MountsViewModelTests : HeadlessTest
         public string Current { get; set; } = "/home/me";
         public MountsViewModel Model { get; }
 
-        public Setup(string? reply = null)
+        public string? Picker { get; private set; }
+
+        public Setup(string? reply = null, bool agree = false)
         {
-            Model = new(Registry, Service, new Answers(reply), path =>
+            Model = new(Registry, Service, new Answers(reply, agree), path =>
             {
                 Visited.Add(path);
                 Service.Calls.Add("go " + path);
                 Current = path;
                 return Task.CompletedTask;
             }, () => Current, new DriveNumbers(null), Places);
+            Model.PickRequested += (prefix, _) => Picker = prefix;
         }
 
         public string[] Titles() =>
@@ -60,9 +63,9 @@ public class MountsViewModelTests : HeadlessTest
                 .Select(id => Registry.TryGetCommand(id, out Command c) ? c.Def.Title : "")
                 .Order()];
 
-        public void Run(string titleStart)
+        public void Run(string titleStart, string prefix = CommandDef.MountIdPrefix)
         {
-            string id = Registry.CommandIdsStartingWith(CommandDef.MountIdPrefix)
+            string id = Registry.CommandIdsStartingWith(prefix)
                 .Single(i => Registry.TryGetCommand(i, out Command c) && c.Def.Title.StartsWith(titleStart));
             Registry.TryExecute(id);
             Pump();
@@ -85,7 +88,9 @@ public class MountsViewModelTests : HeadlessTest
 
         setup.Model.Show([UnmountedStick, Server]);
 
-        Assert.Equal(["Disconnect Server nas", "Go to Server nas", "Open USB Drive STICK"], setup.Titles());
+        Assert.Equal(
+            ["Disconnect Server nas", "Format USB Drive STICK…", "Go to Server nas", "Open USB Drive STICK"],
+            setup.Titles());
     });
 
     [Fact]
@@ -95,7 +100,9 @@ public class MountsViewModelTests : HeadlessTest
 
         setup.Model.Show([MountedStick]);
 
-        Assert.Equal(["Eject USB Drive STICK", "Go to USB Drive STICK"], setup.Titles());
+        Assert.Equal(
+            ["Eject USB Drive STICK", "Format USB Drive STICK…", "Go to USB Drive STICK", "Unmount USB Drive STICK"],
+            setup.Titles());
     });
 
     [Fact]
@@ -109,7 +116,7 @@ public class MountsViewModelTests : HeadlessTest
         setup.Model.Show([]);
         setup.Model.Show([other, stick]);
 
-        Assert.Equal(["Open USB 1: STICK", "Open USB 2: OTHER"], setup.Titles());
+        Assert.Equal(["Open USB 1: STICK", "Open USB 2: OTHER"], setup.Titles().Where(t => t.StartsWith("Open")));
     });
 
     [Fact]
@@ -168,6 +175,45 @@ public class MountsViewModelTests : HeadlessTest
         setup.Run("Eject");
 
         Assert.Equal(["eject STICK"], setup.Service.Calls);
+    });
+
+    [Fact]
+    public Task FormattingPicksAFileSystemAsksForANameAndConfirms() => OnUiThread(() =>
+    {
+        Setup setup = new(reply: "BACKUP", agree: true);
+        setup.Model.Show([MountedStick with { VolumeId = "OLD-ID" }]);
+
+        setup.Run("Format");
+        Assert.Equal(CommandDef.FormatAsIdPrefix, setup.Picker);
+        setup.Run("exFAT", CommandDef.FormatAsIdPrefix);
+
+        Assert.Equal(["format STICK exfat BACKUP"], setup.Service.Calls);
+        setup.Model.Show([MountedStick with { VolumeId = "NEW-ID" }]);
+        Assert.Contains("Go to USB 1: STICK", setup.Titles());
+    });
+
+    [Fact]
+    public Task SayingNoToTheWarningFormatsNothing() => OnUiThread(() =>
+    {
+        Setup setup = new(reply: "BACKUP", agree: false);
+        setup.Model.Show([UnmountedStick]);
+
+        setup.Run("Format");
+        setup.Run("FAT32", CommandDef.FormatAsIdPrefix);
+
+        Assert.Empty(setup.Service.Calls);
+    });
+
+    [Fact]
+    public Task AFormatNameIsCutToWhatTheFileSystemAllows() => OnUiThread(() =>
+    {
+        Setup setup = new(reply: "A VERY LONG NAME", agree: true);
+        setup.Model.Show([UnmountedStick]);
+
+        setup.Run("Format");
+        setup.Run("FAT32", CommandDef.FormatAsIdPrefix);
+
+        Assert.Equal(["format STICK vfat A VERY LONG"], setup.Service.Calls);
     });
 
     [Fact]

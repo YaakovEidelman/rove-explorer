@@ -31,6 +31,15 @@ internal sealed class FakeMountService(string name, params MountEntry[] entries)
         return Task.FromResult(CommandResult<bool>.Ok(true));
     }
 
+    public Task<DriveFormat[]> FormatsAsync(CancellationToken ct) => Task.FromResult(DriveFormat.All);
+
+    public Task<CommandResult<string>> FormatAsync(
+        MountEntry entry, DriveFormat format, string name, CancellationToken ct)
+    {
+        Calls.Add("format " + entry.Name);
+        return Task.FromResult(CommandResult<string>.Ok(""));
+    }
+
     public void RaiseChanged() => Changed?.Invoke();
 
     public void Dispose() => Calls.Add("dispose");

@@ -47,6 +47,15 @@ public sealed class DriveNumbers(string? path)
         return numbered;
     }
 
+    public void Move(string from, string to)
+    {
+        Dictionary<string, int> known = _known ??= Read(path);
+        if (from == to || !known.Remove(from, out int number))
+            return;
+        known[to] = number;
+        Save(known);
+    }
+
     private static int Free(HashSet<int> taken, Dictionary<string, int> known)
     {
         HashSet<int> remembered = [.. known.Values];

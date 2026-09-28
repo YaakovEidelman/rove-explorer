@@ -41,6 +41,8 @@ public sealed class MountsViewModel
 
     public event Action<string>? InfoRaised;
 
+    public event Action<string, string>? PickRequested;
+
     public void Start()
     {
         _service.Changed += () => _ = RefreshAsync();
@@ -104,18 +106,22 @@ public sealed class MountsViewModel
         {
             if (entry.CanMount)
                 yield return ("open", $"Open {label}", () => MountAsync(entry));
+            if (entry.Kind == MountKind.Removable)
+                yield return ("format", $"Format {label}…", () => PickFormatAsync(entry));
             yield break;
         }
 
         if (entry.LocalPath is { } path)
             yield return ("goto", $"Go to {label}", () => _navigate(path));
 
-        if (entry.CanEject)
-            yield return ("eject", $"Eject {label}", () => UnmountAsync(entry, eject: true));
-        else if (entry.CanUnmount)
+        if (entry.CanUnmount)
             yield return entry.Kind == MountKind.Network
                 ? ("unmount", $"Disconnect {label}", () => UnmountAsync(entry, eject: false))
                 : ("unmount", $"Unmount {label}", () => UnmountAsync(entry, eject: false));
+        if (entry.CanEject)
+            yield return ("eject", $"Eject {label}", () => UnmountAsync(entry, eject: true));
+        if (entry.Kind == MountKind.Removable)
+            yield return ("format", $"Format {label}…", () => PickFormatAsync(entry));
     }
 
     private Task MountAsync(MountEntry entry) => RunAsync($"Opening {entry.Name}…", async () =>
@@ -142,6 +148,66 @@ public sealed class MountsViewModel
                 : entry.Kind == MountKind.Network ? $"Disconnected {label}." : $"Unmounted {label}.");
             await RefreshAsync();
         });
+
+    private async Task PickFormatAsync(MountEntry entry)
+    {
+        DriveFormat[] formats = await _service.FormatsAsync(CancellationToken.None);
+        foreach (string id in _registry.CommandIdsStartingWith(CommandDef.FormatAsIdPrefix))
+            _registry.Unregister(id);
+        if (formats.Length == 0)
+        {
+            ErrorRaised?.Invoke("Formatting needs UDisks and mkfs tools like exfatprogs or dosfstools.");
+            return;
+        }
+
+        foreach (DriveFormat format in formats)
+        {
+            _registry.Register(
+                new CommandDef(CommandDef.FormatAsIdPrefix + format.Type, $"{format.Name} ({format.Note})",
+                    CommandKind.User, Category: CommandCategory.Navigation),
+                () => _ = FormatAsync(entry, format));
+        }
+        PickRequested?.Invoke(CommandDef.FormatAsIdPrefix, $"format {Label(entry)} as…");
+    }
+
+    private async Task FormatAsync(MountEntry entry, DriveFormat format)
+    {
+        string label = Label(entry);
+        string current = entry.VolumeLabel ?? "";
+        string suggested = current.Length > format.NameLimit ? current[..format.NameLimit] : current;
+        if (await _prompter.AskTextAsync(
+                $"Name for the drive, up to {format.NameLimit} characters.", "Name", secret: false, suggested)
+            is not { } typed)
+            return;
+        string name = typed.Trim();
+        if (name.Length > format.NameLimit)
+            name = name[..format.NameLimit];
+
+        if (await _prompter.ChooseAsync(
+                $"Erase everything on {label} and format it as {format.Name}? This can't be undone.",
+                ["Erase and format"]) is null)
+        {
+            InfoRaised?.Invoke($"Left {label} as it was.");
+            return;
+        }
+
+        await RunAsync($"Formatting {label} as {format.Name}…", async () =>
+        {
+            if (entry.LocalPath is { } root && IsInside(_currentDirectory(), root))
+                await _navigate(PathCompare.DefaultStartDirectory());
+
+            CommandResult<string> result = await _service.FormatAsync(entry, format, name, CancellationToken.None);
+            if (!result.IsOk)
+            {
+                ErrorRaised?.Invoke(result.Message ?? $"Couldn't format {label}.");
+                return;
+            }
+            if (entry.VolumeId is { } old && result.Data is { Length: > 0 } fresh)
+                _numbers.Move(old, fresh);
+            InfoRaised?.Invoke($"Formatted {label} as {format.Name}.");
+            await RefreshAsync();
+        });
+    }
 
     private async Task OpenAsync(CommandResult<string> result)
     {

@@ -72,6 +72,19 @@ public class UDisksMountListTests
     }
 
     [Fact]
+    public void AStickIsNamedByItsModelWithTheVolumeNameAfter()
+    {
+        UDisksObjects objects = new(
+            [Block("sda1", label: "ARCH_202605"), Block("sda2")],
+            [new(UsbDrive, Removable: true, Ejectable: true, CanPowerOff: true, Model: "SanDisk 3.2Gen1")]);
+
+        MountEntry[] entries = UDisksMountList.Build(objects, Home);
+
+        Assert.Equal(["SanDisk 3.2Gen1 (ARCH_202605)", "SanDisk 3.2Gen1"], entries.Select(e => e.Name));
+        Assert.Equal("ARCH_202605", entries[0].VolumeLabel);
+    }
+
+    [Fact]
     public void AnUnnamedVolumeIsNamedBySize()
     {
         Assert.Equal("16 GB Volume", Assert.Single(Build(Block("sdb1"))).Name);

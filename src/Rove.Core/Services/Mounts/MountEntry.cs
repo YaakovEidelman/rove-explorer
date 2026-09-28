@@ -11,7 +11,8 @@ public sealed record MountEntry(
     bool CanUnmount,
     bool CanEject,
     string? VolumeId = null,
-    int? Number = null
+    int? Number = null,
+    string? VolumeLabel = null
 )
 {
     public bool IsMounted => MountUri is not null;

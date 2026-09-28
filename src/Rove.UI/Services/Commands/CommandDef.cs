@@ -162,12 +162,14 @@ public readonly record struct CommandDef(
             ["console", "shell", "cmd"]);
 
     public static bool IsTransient(string id) =>
-        id.StartsWith(OpenWithIdPrefix, StringComparison.Ordinal);
+        id.StartsWith(OpenWithIdPrefix, StringComparison.Ordinal)
+        || id.StartsWith(FormatAsIdPrefix, StringComparison.Ordinal);
 
     public static readonly CommandDef ShowDrives =
         new("nav.drives", "Go to Drive…", CommandKind.User, 7, CommandCategory.Navigation,
             ["drives", "volumes", "disks"]);
     public const string MountIdPrefix = DriveIdPrefix + "mount:";
+    public const string FormatAsIdPrefix = "format.as:";
     public static readonly CommandDef ConnectToServer =
         new("nav.connect_server", "Connect to Server…", CommandKind.User, 8, CommandCategory.Navigation,
             ["network", "sftp", "ssh", "smb", "samba", "ftp", "ftps", "nfs", "webdav", "share", "remote"]);

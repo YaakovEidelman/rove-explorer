@@ -42,6 +42,12 @@ public sealed class LinuxMounts(IMountService drives, IMountService? remote) : I
     public Task<CommandResult<bool>> UnmountAsync(MountEntry entry, bool eject, CancellationToken ct) =>
         For(entry)?.UnmountAsync(entry, eject, ct) ?? NoRemote<bool>();
 
+    public Task<DriveFormat[]> FormatsAsync(CancellationToken ct) => drives.FormatsAsync(ct);
+
+    public Task<CommandResult<string>> FormatAsync(
+        MountEntry entry, DriveFormat format, string name, CancellationToken ct) =>
+        For(entry)?.FormatAsync(entry, format, name, ct) ?? NoRemote<string>();
+
     public void Dispose()
     {
         drives.Dispose();

@@ -5,6 +5,9 @@ namespace Rove.Core.Services;
 
 public sealed partial class UDisksMounts(string home) : IMountService
 {
+    private const int FormatSettleTries = 20;
+    private static readonly TimeSpan FormatSettleDelay = TimeSpan.FromMilliseconds(100);
+
     private readonly MountChangeSignal _change = new();
     private IDisposable? _watch;
     private bool _watching;
@@ -80,6 +83,47 @@ public sealed partial class UDisksMounts(string home) : IMountService
             if (eject && drive is not null)
                 await EjectAsync(connection, drive).ConfigureAwait(false);
             return CommandResult<bool>.Ok(true);
+        });
+
+    public async Task<DriveFormat[]> FormatsAsync(CancellationToken ct)
+    {
+        if (await ConnectionAsync().ConfigureAwait(false) is not { } connection)
+            return [];
+        List<DriveFormat> usable = [];
+        foreach (DriveFormat format in DriveFormat.All)
+        {
+            try
+            {
+                if (await CanFormatAsync(connection, format.Type).ConfigureAwait(false))
+                    usable.Add(format);
+            }
+            catch (DBusErrorReplyException)
+            {
+                usable.Add(format);
+            }
+            catch (DBusExceptionBase)
+            {
+                Forget(connection);
+                return [];
+            }
+        }
+        return [.. usable];
+    }
+
+    public Task<CommandResult<string>> FormatAsync(
+        MountEntry entry, DriveFormat format, string name, CancellationToken ct) =>
+        WithBlockAsync(entry, "format_failed", $"Couldn't format {entry.Name}.", async (connection, objects, block) =>
+        {
+            await ReleaseAsync(connection, objects, block).ConfigureAwait(false);
+            await FormatAsync(connection, block.Path, format.Type, name).ConfigureAwait(false);
+            for (int tries = 0; tries < FormatSettleTries; tries++)
+            {
+                UDisksBlock? now = (await ObjectsAsync(connection).ConfigureAwait(false)).BlockOf(block.Device);
+                if (now is { Uuid.Length: > 0 } && now.Uuid != block.Uuid)
+                    return CommandResult<string>.Ok(now.Uuid);
+                await Task.Delay(FormatSettleDelay, CancellationToken.None).ConfigureAwait(false);
+            }
+            return CommandResult<string>.Ok("");
         });
 
     public void StartWatching()

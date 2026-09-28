@@ -53,9 +53,11 @@ public static class UDisksMountList
     {
         UDisksDrive? drive = objects.DriveOf(block);
         string? mountPoint = filesystem?.MountPoints.FirstOrDefault();
+        MountKind kind = drive?.Removable == true || drive?.Ejectable == true ? MountKind.Removable : MountKind.Disk;
+        string label = VolumeLabel(block, filesystem);
         return new MountEntry(
-            Name(block, filesystem),
-            drive?.Removable == true || drive?.Ejectable == true ? MountKind.Removable : MountKind.Disk,
+            Name(block, filesystem, label, kind == MountKind.Removable ? drive?.Model : null),
+            kind,
             block.Device,
             ActivationUri: null,
             mountPoint is null ? null : new Uri(mountPoint).AbsoluteUri,
@@ -63,15 +65,19 @@ public static class UDisksMountList
             CanMount: mountPoint is null,
             CanUnmount: mountPoint is not null,
             CanEject: drive is { Ejectable: true } or { CanPowerOff: true },
-            VolumeId: block.Uuid.Length > 0 ? block.Uuid : null);
+            VolumeId: block.Uuid.Length > 0 ? block.Uuid : null,
+            VolumeLabel: label.Length > 0 ? label : null);
     }
 
-    private static string Name(UDisksBlock block, UDisksBlock? filesystem)
+    private static string VolumeLabel(UDisksBlock block, UDisksBlock? filesystem) =>
+        filesystem is { Label.Length: > 0 } ? filesystem.Label : block.Label;
+
+    private static string Name(UDisksBlock block, UDisksBlock? filesystem, string label, string? model)
     {
-        if (filesystem is { Label.Length: > 0 })
-            return filesystem.Label;
-        if (block.Label.Length > 0)
-            return block.Label;
+        if (model is { Length: > 0 })
+            return label.Length > 0 ? $"{model} ({label})" : model;
+        if (label.Length > 0)
+            return label;
         return block.IsEncrypted && filesystem is null
             ? $"{SizeText(block.Size)} Encrypted"
             : $"{SizeText(block.Size)} Volume";
