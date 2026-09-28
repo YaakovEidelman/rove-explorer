@@ -59,20 +59,65 @@ public class SettingsViewModelTests : IDisposable
     }
 
     [Fact]
-    public void ActivatingTheThemeRowCyclesThroughEveryOptionAndBack()
+    public void ActivatingTheThemeRowOpensAListInsteadOfChangingTheTheme()
     {
         (SettingsViewModel settings, _, SettingsStore store) = New();
         settings.Toggle();
 
-        string[] expected = OperatingSystem.IsLinux() && OmarchyTheme.IsAvailable
-            ? ["Custom", "Omarchy", "Light", "Dark", "System"]
-            : ["Custom", "Light", "Dark", "System"];
+        settings.Activate();
 
-        foreach (string theme in expected)
-        {
-            settings.Activate();
-            Assert.Equal(theme, store.Current.Theme);
-        }
+        Assert.True(settings.InChoice);
+        Assert.Equal("System", store.Current.Theme);
+        Assert.Equal("System", settings.ChoiceOptions[settings.ChoiceSelectedIndex]);
+        Assert.Contains("Custom", settings.ChoiceOptions);
+    }
+
+    [Fact]
+    public void PickingAThemeFromTheListSavesItAndClosesTheList()
+    {
+        (SettingsViewModel settings, _, SettingsStore store) = New();
+        settings.Toggle();
+        settings.Activate();
+        settings.ChoiceSelectedIndex = settings.ChoiceOptions.IndexOf("Dark");
+
+        settings.PickChoice();
+
+        Assert.False(settings.InChoice);
+        Assert.Equal("Dark", store.Current.Theme);
+        Assert.Equal("Dark", settings.Rows[0].Value);
+    }
+
+    [Fact]
+    public void CancellingTheListLeavesTheThemeAlone()
+    {
+        (SettingsViewModel settings, _, SettingsStore store) = New();
+        settings.Toggle();
+        settings.Activate();
+        settings.ChoiceMoveDown();
+
+        settings.CancelChoice();
+
+        Assert.False(settings.InChoice);
+        Assert.Equal("System", store.Current.Theme);
+    }
+
+    [Fact]
+    public void DefaultViewOffersListAndEveryIconSize()
+    {
+        (SettingsViewModel settings, _, SettingsStore store) = New();
+        settings.Toggle();
+        settings.NextSection();
+        int row = settings.Rows.ToList().FindIndex(r => r.Kind == SettingsRowKind.DefaultView);
+        settings.SelectedIndex = row;
+
+        settings.Activate();
+        Assert.Equal(["List", "Small icons", "Medium icons", "Large icons"], settings.ChoiceOptions);
+
+        settings.ChoiceSelectedIndex = 2;
+        settings.PickChoice();
+
+        Assert.Equal("Medium icons", store.Current.DefaultView);
+        Assert.Equal("Medium icons", settings.Rows[row].Value);
     }
 
     [Fact]

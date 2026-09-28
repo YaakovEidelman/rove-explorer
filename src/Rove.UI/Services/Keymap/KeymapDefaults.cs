@@ -159,6 +159,21 @@ public static class KeymapDefaults
             ]
         },
         {
+            Mode.SettingsChoice,
+            [
+                new(K(Key.Escape), CommandDef.SettingsChoiceCancel.Id),
+                new(K(Key.C, KeyModifiers.Control), CommandDef.SettingsChoiceCancel.Id),
+                new(K(Key.P, KeyModifiers.Control), CommandDef.SettingsChoiceMoveUp.Id),
+                new(K(Key.N, KeyModifiers.Control), CommandDef.SettingsChoiceMoveDown.Id),
+                new(K(Key.Up), CommandDef.SettingsChoiceMoveUp.Id),
+                new(K(Key.Down), CommandDef.SettingsChoiceMoveDown.Id),
+                new(K(Key.J), CommandDef.SettingsChoiceMoveDown.Id),
+                new(K(Key.K), CommandDef.SettingsChoiceMoveUp.Id),
+                new(K(Key.Enter), CommandDef.SettingsChoicePick.Id),
+                new(K(Key.Q, KeyModifiers.Control), CommandDef.CloseApp.Id),
+            ]
+        },
+        {
             Mode.ThemeEditor,
             [
                 new(K(Key.Escape), CommandDef.ThemeEditorClose.Id),

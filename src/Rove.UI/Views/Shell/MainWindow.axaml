@@ -271,6 +271,35 @@
                 </Grid>
             </Border>
         </Panel>
+        <Panel Classes="overlaydim" Classes.open="{Binding Settings.InChoice}"
+               Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Settings.InChoice}">
+            <Border Classes="overlaycard" Classes.open="{Binding Settings.InChoice}"
+                    Width="260"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="10">
+                    <TextBlock Classes="cardtitle" Margin="4,0" Text="{Binding Settings.ChoiceTitle}" />
+                    <ListBox ItemsSource="{Binding Settings.ChoiceOptions}"
+                             SelectedIndex="{Binding Settings.ChoiceSelectedIndex}"
+                             Focusable="False">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{Binding}" FontSize="13" Margin="4,0" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
+                        <Border Classes="kbd"><TextBlock Text="j/k" /></Border>
+                        <TextBlock Classes="hint" Text="move" />
+                        <TextBlock Classes="hintsep" Text="·" />
+                        <Border Classes="kbd"><TextBlock Text="Enter" /></Border>
+                        <TextBlock Classes="hint" Text="pick" />
+                        <TextBlock Classes="hintsep" Text="·" />
+                        <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+                        <TextBlock Classes="hint" Text="cancel" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Panel>
         <Panel Classes="overlaydim" Classes.open="{Binding Settings.InThemeEditorField}"
                Background="{DynamicResource OverlayDimBrush}" IsVisible="{Binding Settings.InThemeEditorField}">
             <Border Classes="overlaycard" Classes.open="{Binding Settings.InThemeEditorField}"

@@ -62,8 +62,7 @@ public partial class ContentViewModel : ViewModelBase
         AppSettings defaults = _settings.Current;
         DirectoryListing.ShowHidden = defaults.ShowHiddenByDefault;
         DirectoryListing.GroupByDate = defaults.GroupByDate;
-        if (defaults.DefaultView == "Icons")
-            ViewMode = ContentViewMode.Icons;
+        ApplyDefaultView(defaults.DefaultView);
 
         _clipboard.Changed += RefreshCutFlags;
 

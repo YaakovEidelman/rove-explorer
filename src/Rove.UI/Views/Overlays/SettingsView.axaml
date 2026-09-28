@@ -96,7 +96,7 @@
             <TextBlock Classes="hint" Text="section" />
             <TextBlock Classes="hintsep" Text="·" />
             <Border Classes="kbd"><TextBlock Text="Enter/Space" /></Border>
-            <TextBlock Classes="hint" Text="change" />
+            <TextBlock Classes="hint" Text="change / choose" />
             <TextBlock Classes="hintsep" Text="·" />
             <Border Classes="kbd"><TextBlock Text="Tab" /></Border>
             <TextBlock Classes="hint" Text="switch tab" />

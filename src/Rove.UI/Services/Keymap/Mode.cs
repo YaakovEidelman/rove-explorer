@@ -18,6 +18,7 @@ public enum Mode
     AddBookmark,
     AddBookmarkCompletion,
     Settings,
+    SettingsChoice,
     ThemeEditor,
     ThemeEditorField,
 }

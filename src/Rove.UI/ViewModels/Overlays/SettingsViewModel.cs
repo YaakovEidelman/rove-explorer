@@ -70,6 +70,7 @@ public partial class SettingsViewModel : ViewModelBase
     private void Close()
     {
         IsOpen = false;
+        CancelChoice();
         CloseThemeEditor();
     }
 
@@ -178,6 +179,12 @@ public partial class SettingsViewModel : ViewModelBase
             return;
         }
 
+        if (IsChoice(row.Kind))
+        {
+            OpenChoice(row);
+            return;
+        }
+
         if (OperatingSystem.IsLinux() && row.Kind == SettingsRowKind.PortalIntegration && _portal is not null)
         {
             if (_portal.Status == PortalStatus.OwnedByRove)
@@ -198,17 +205,12 @@ public partial class SettingsViewModel : ViewModelBase
         AppSettings s = _store.Current;
         _store.Update(row.Kind switch
         {
-            SettingsRowKind.Theme => s with { Theme = NextTheme(s.Theme) },
             SettingsRowKind.ShowHidden => s with { ShowHiddenByDefault = !s.ShowHiddenByDefault },
-            SettingsRowKind.DefaultView => s with { DefaultView = s.DefaultView == "Icons" ? "List" : "Icons" },
             SettingsRowKind.SortDownloadsByTime => s with { SortDownloadsByTime = !s.SortDownloadsByTime },
             SettingsRowKind.GroupByDate => s with { GroupByDate = !s.GroupByDate },
             SettingsRowKind.AutoUpdate => s with { AutoUpdate = !s.AutoUpdate },
             _ => s,
         });
-
-        if (row.Kind == SettingsRowKind.Theme)
-            ApplyTheme();
 
         RebuildMaster();
     }
@@ -221,15 +223,6 @@ public partial class SettingsViewModel : ViewModelBase
             RebuildMaster();
         });
 
-    private static string NextTheme(string theme)
-    {
-        string[] options = OperatingSystem.IsLinux() && OmarchyTheme.IsAvailable
-            ? ["Light", "Dark", "System", "Custom", "Omarchy"]
-            : ["Light", "Dark", "System", "Custom"];
-        int index = Array.IndexOf(options, theme);
-        return options[(index + 1) % options.Length];
-    }
-
     public void ApplyTheme() => ThemePalette.ApplyFromSettings(_store.Current);
 
     private void RegisterBindings()
@@ -240,6 +233,10 @@ public partial class SettingsViewModel : ViewModelBase
         _registry.Register(CommandDef.SettingsActivate, Activate);
         _registry.Register(CommandDef.SettingsNextSection, NextSection);
         _registry.Register(CommandDef.SettingsPreviousSection, PreviousSection);
+        _registry.Register(CommandDef.SettingsChoiceMoveUp, ChoiceMoveUp);
+        _registry.Register(CommandDef.SettingsChoiceMoveDown, ChoiceMoveDown);
+        _registry.Register(CommandDef.SettingsChoicePick, PickChoice);
+        _registry.Register(CommandDef.SettingsChoiceCancel, CancelChoice);
         _registry.Register(CommandDef.ThemeEditorMoveUp, ThemeMoveUp);
         _registry.Register(CommandDef.ThemeEditorMoveDown, ThemeMoveDown);
         _registry.Register(CommandDef.ThemeEditorActivate, ThemeActivate);

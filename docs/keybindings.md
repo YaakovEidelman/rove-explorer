@@ -95,6 +95,7 @@ these names for the `"mode"` form above.
 | `addbookmark`   | typing a path to bookmark    |
 | `addbookmarkcompletion` | the Tab completions under that path box |
 | `settings`      | the settings list             |
+| `settingschoice` | the pop-up list of options for one setting |
 | `themeeditor`   | the custom color list        |
 | `themeeditorfield` | typing a hex color for one row |
 
@@ -273,6 +274,10 @@ rather than shown disabled.
 | `settings.next_section`           | Settings: next section (`l`)       |
 | `settings.previous_section`       | Settings: previous section (`h`)   |
 | `settings.activate`               | Settings: change the selected row  |
+| `settings.choice_move_up`         | Option list: move up               |
+| `settings.choice_move_down`       | Option list: move down             |
+| `settings.choice_pick`            | Option list: pick the option (`Enter`) |
+| `settings.choice_cancel`          | Option list: close without changing (`Esc`) |
 | `settings.theme_editor_move_up`   | Custom colors: move up             |
 | `settings.theme_editor_move_down` | Custom colors: move down           |
 | `settings.theme_editor_activate`  | Custom colors: edit/toggle the selected row |
@@ -284,6 +289,11 @@ Settings is grouped into sections (Appearance, Behavior, Updates, and — on Lin
 `h`/`l` (or `Left`/`Right`) switch sections; `j`/`k` move within the current one, same as
 everywhere else. Each setting takes effect and saves the moment you change it — there is no
 separate save step.
+
+On/off rows flip with `Enter` or `Space`. Rows with more than two options (Theme, Default view)
+open a small list instead: `j`/`k` move, `Enter` picks, `Esc` closes without changing anything.
+Moving through the Theme list previews each theme; `Esc` puts the old one back. Default view can
+be List or Small, Medium or Large icons.
 
 "Edit custom colors…" (in Appearance) opens the custom color editor on top of the settings card,
 switching the active theme to Custom so you see every change live. `j`/`k` move through the list;

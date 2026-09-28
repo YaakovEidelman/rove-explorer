@@ -41,6 +41,21 @@ public partial class ContentViewModel
     private void ApplyIconSize() =>
         DirectoryListing.SetIconSize(ViewMode == ContentViewMode.List ? ListIconPixels : IconSizes.PixelsFor(IconSize));
 
+    private void ApplyDefaultView(string view)
+    {
+        IconSize? size = view switch
+        {
+            "Small icons" => IconSize.Small,
+            "Medium icons" => IconSize.Medium,
+            "Large icons" => IconSize.Large,
+            _ => null,
+        };
+        if (size is not { } icons)
+            return;
+        IconSize = icons;
+        ViewMode = ContentViewMode.Icons;
+    }
+
     private void CycleContentView()
     {
         if (ViewMode == ContentViewMode.List)

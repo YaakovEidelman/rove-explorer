@@ -42,6 +42,8 @@ public partial class MainWindowViewModel
         }
         if (Settings.IsOpen)
         {
+            if (Settings.InChoice)
+                return Mode.SettingsChoice;
             if (Settings.InThemeEditor)
                 return Settings.InThemeEditorField ? Mode.ThemeEditorField : Mode.ThemeEditor;
             return Mode.Settings;
@@ -74,6 +76,7 @@ public partial class MainWindowViewModel
         Mode.AddBookmark => "type a path · Tab complete · Enter add · Esc cancel",
         Mode.AddBookmarkCompletion => "Ctrl+N/Ctrl+P move · Tab go deeper · Enter add · Esc close list",
         Mode.Settings => "j/k move · h/l section · Enter/Space change · Tab switch tab · Esc close",
+        Mode.SettingsChoice => "j/k move · Enter pick · Esc cancel",
         Mode.ThemeEditor => "j/k move · Enter edit/toggle · Esc back to settings",
         Mode.ThemeEditorField => "type a hex color · Enter apply · Esc cancel",
         Mode.EditPath => "type a path · Tab complete · Enter go · Esc cancel",

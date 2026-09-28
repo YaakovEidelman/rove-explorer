@@ -268,6 +268,14 @@ public readonly record struct CommandDef(
     public static readonly CommandDef SettingsNextSection = new("settings.next_section", "Settings: Next Section", CommandKind.System);
     public static readonly CommandDef SettingsPreviousSection =
         new("settings.previous_section", "Settings: Previous Section", CommandKind.System);
+    public static readonly CommandDef SettingsChoiceMoveUp =
+        new("settings.choice_move_up", "Settings Choice: Move Up", CommandKind.System);
+    public static readonly CommandDef SettingsChoiceMoveDown =
+        new("settings.choice_move_down", "Settings Choice: Move Down", CommandKind.System);
+    public static readonly CommandDef SettingsChoicePick =
+        new("settings.choice_pick", "Settings Choice: Pick", CommandKind.System);
+    public static readonly CommandDef SettingsChoiceCancel =
+        new("settings.choice_cancel", "Settings Choice: Cancel", CommandKind.System);
 
     public static readonly CommandDef ThemeEditorMoveUp =
         new("settings.theme_editor_move_up", "Custom Theme: Move Up", CommandKind.System);

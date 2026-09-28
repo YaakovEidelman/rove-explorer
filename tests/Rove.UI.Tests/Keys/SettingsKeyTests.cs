@@ -86,4 +86,36 @@ public class SettingsKeyTests : HeadlessTest
         harness.Press(Key.Escape);
         Assert.False(harness.Model.Settings.IsOpen);
     });
+
+    [Fact]
+    public Task EnterOnThemeOpensAListThatJKAndEnterPickFrom() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(_ => { });
+        harness.Press(Key.OemComma);
+
+        harness.Press(Key.Enter);
+        Assert.Equal(Mode.SettingsChoice, harness.Model.GetCurrentMode());
+        SettingsViewModel settings = harness.Model.Settings;
+        int start = settings.ChoiceSelectedIndex;
+
+        harness.Press(Key.J);
+        string expected = settings.ChoiceOptions[(start + 1) % settings.ChoiceOptions.Count];
+        harness.Press(Key.Enter);
+
+        Assert.Equal(Mode.Settings, harness.Model.GetCurrentMode());
+        Assert.Equal(expected, settings.Rows[0].Value);
+    });
+
+    [Fact]
+    public Task EscapeClosesTheChoiceListButKeepsSettingsOpen() => OnUiThread(() =>
+    {
+        using WindowHarness harness = WindowHarness.Open(_ => { });
+        harness.Press(Key.OemComma);
+        harness.Press(Key.Enter);
+
+        harness.Press(Key.Escape);
+
+        Assert.False(harness.Model.Settings.InChoice);
+        Assert.Equal(Mode.Settings, harness.Model.GetCurrentMode());
+    });
 }
