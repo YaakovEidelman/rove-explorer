@@ -60,7 +60,7 @@ public static class UDisksMountList
             kind,
             block.Device,
             ActivationUri: null,
-            mountPoint is null ? null : new Uri(mountPoint).AbsoluteUri,
+            mountPoint is null ? null : new UriBuilder(Uri.UriSchemeFile, "", -1, mountPoint).Uri.AbsoluteUri,
             mountPoint,
             CanMount: mountPoint is null,
             CanUnmount: mountPoint is not null,
