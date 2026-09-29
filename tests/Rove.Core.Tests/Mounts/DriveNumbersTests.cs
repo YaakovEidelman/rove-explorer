@@ -19,6 +19,20 @@ public class DriveNumbersTests
     }
 
     [Fact]
+    public void AnImageCopyWithTheSameIdDoesNotTakeTheSticksNumber()
+    {
+        DriveNumbers numbers = new(null);
+        Numbers(numbers, "other", "iso");
+        MountEntry copy = Drive("iso") with { Kind = MountKind.Disk, Device = "/dev/loop0p1" };
+        MountEntry stick = Drive("iso") with { MountUri = "file:///run/media/me/ISO", LocalPath = "/run/media/me/ISO" };
+
+        MountEntry[] numbered = numbers.Assign([copy, stick]);
+
+        Assert.Equal(2, numbered[1].Number);
+        Assert.NotEqual(2, numbered[0].Number);
+    }
+
+    [Fact]
     public void ADriveKeepsItsNumberWhenPluggedInAlone()
     {
         DriveNumbers numbers = new(null);

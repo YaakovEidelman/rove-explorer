@@ -100,7 +100,11 @@ public partial class ContentViewModel : ViewModelBase
 
     public ListViewItem? HighlightedItem => DirectoryListing.ListSelection.SelectedItem;
 
-    public void Close() => _core.ReleaseWatcher(_watcher);
+    public void Close()
+    {
+        DirectoryListing.Detach();
+        _core.ReleaseWatcher(_watcher);
+    }
 
     private List<ListViewItem> Targets()
     {

@@ -26,6 +26,8 @@ public partial class DirectoryListing : ObservableObject
         _cache = cache;
         _settings = settings;
         _places = places;
+        if (_places is not null)
+            _places.Changed += OnPlacesChanged;
         ListSelection = new(Items);
         _filterTimer = new DispatcherTimer { Interval = _filterDelay };
         _filterTimer.Tick += (_, _) => ApplyView();
@@ -53,6 +55,14 @@ public partial class DirectoryListing : ObservableObject
     }
 
     partial void OnCurrentDirChanged(string value) => OnPropertyChanged(nameof(Crumbs));
+
+    private void OnPlacesChanged() => OnPropertyChanged(nameof(Crumbs));
+
+    public void Detach()
+    {
+        if (_places is not null)
+            _places.Changed -= OnPlacesChanged;
+    }
 
     [ObservableProperty]
     private bool _inLocalSearch;

@@ -28,6 +28,27 @@ public class MountKeyTests : HeadlessTest
     });
 
     [Fact]
+    public Task ADriveNamedAfterYouWentInStillRenamesThePathBarAndTab() => OnUiThread(() =>
+    {
+        FakeMountService mounts = new();
+        using WindowHarness harness = WindowHarness.Open(Fill, mounts: mounts);
+        string stick = Path.Combine(harness.Root, "remote");
+        harness.GoTo(stick);
+
+        mounts.Entries.Add(new("STICK", MountKind.Removable, "/dev/sdb1", null, new Uri(stick).AbsoluteUri, stick,
+            CanMount: false, CanUnmount: true, CanEject: true));
+        mounts.RaiseChanged();
+        for (int i = 0; i < 20 && harness.Content.DirectoryListing.Crumbs[^1].Label != "USB Drive STICK"; i++)
+        {
+            Thread.Sleep(10);
+            harness.Settle();
+        }
+
+        Assert.Equal("USB Drive STICK", harness.Content.DirectoryListing.Crumbs[^1].Label);
+        Assert.Equal("USB Drive STICK", harness.Tabs.Items[0].Title);
+    });
+
+    [Fact]
     public Task CtrlGAsksForAServerAndEscCancels() => OnUiThread(() =>
     {
         FakeMountService mounts = new();

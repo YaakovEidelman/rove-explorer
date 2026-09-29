@@ -53,7 +53,7 @@ public sealed partial class FolderTab : ObservableObject, IDisposable
 
     private void OnListingChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(DirectoryListing.CurrentDir))
+        if (e.PropertyName is nameof(DirectoryListing.CurrentDir) or nameof(DirectoryListing.Crumbs))
             OnPropertyChanged(nameof(Title));
     }
 

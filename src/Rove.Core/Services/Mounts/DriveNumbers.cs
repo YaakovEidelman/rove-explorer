@@ -15,7 +15,7 @@ public sealed class DriveNumbers(string? path)
         HashSet<int> taken = [];
         HashSet<string> placed = [];
         List<int> waiting = [];
-        for (int i = 0; i < numbered.Length; i++)
+        foreach (int i in Enumerable.Range(0, numbered.Length).OrderBy(i => Claim(numbered[i])))
         {
             if (numbered[i].VolumeId is not { } id)
                 continue;
@@ -46,6 +46,9 @@ public sealed class DriveNumbers(string? path)
             Save(known);
         return numbered;
     }
+
+    private static int Claim(MountEntry entry) =>
+        (entry.Kind == MountKind.Removable ? 0 : 2) + (entry.IsMounted ? 0 : 1);
 
     public void Move(string from, string to)
     {
