@@ -71,17 +71,21 @@ public class MountsViewModelTests : HeadlessTest
             {
                 SetupCheckDelay = TimeSpan.FromMilliseconds(1),
             };
-            Model.PickRequested += (prefix, _) => Picker = prefix;
+            Model.PickRequested += scope => Picker = scope.IdPrefix;
         }
 
+        private IEnumerable<string> ActionIds() =>
+            Registry.CommandIdsStartingWith(CommandDef.MountActionIdPrefix)
+                .Concat(Registry.CommandIdsStartingWith(CommandDef.MountSetupIdPrefix));
+
         public string[] Titles() =>
-            [.. Registry.CommandIdsStartingWith(CommandDef.MountIdPrefix)
+            [.. ActionIds()
                 .Select(id => Registry.TryGetCommand(id, out Command c) ? c.Def.Title : "")
                 .Order()];
 
-        public void Run(string titleStart, string prefix = CommandDef.MountIdPrefix)
+        public void Run(string titleStart, string? prefix = null)
         {
-            string id = Registry.CommandIdsStartingWith(prefix)
+            string id = (prefix is null ? ActionIds() : Registry.CommandIdsStartingWith(prefix))
                 .Single(i => Registry.TryGetCommand(i, out Command c) && c.Def.Title.StartsWith(titleStart));
             Registry.TryExecute(id);
             Pump();
@@ -234,7 +238,7 @@ public class MountsViewModelTests : HeadlessTest
     });
 
     [Fact]
-    public Task TwoCopiesOfTheSameImageGetTheirOwnHeadings() => OnUiThread(() =>
+    public Task TwoCopiesOfTheSameImageGetTheirOwnNames() => OnUiThread(() =>
     {
         Setup setup = new();
         MountEntry first = new("omarchy.iso", MountKind.Image, "/dev/loop0p1", null, null, null,
@@ -245,8 +249,8 @@ public class MountsViewModelTests : HeadlessTest
         Assert.Equal(
             ["Image omarchy.iso · loop0p1", "Image omarchy.iso · loop1p1"],
             setup.Registry.CommandIdsStartingWith(CommandDef.MountIdPrefix)
-                .Select(id => setup.Registry.TryGetCommand(id, out Command c) ? c.Def.Group : null)
-                .Distinct().Order());
+                .Select(id => setup.Registry.TryGetCommand(id, out Command c) ? c.Def.ShortTitle : null)
+                .Order());
     });
 
     [Fact]

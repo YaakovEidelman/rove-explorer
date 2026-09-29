@@ -11,6 +11,8 @@ public sealed class MountsViewModel
 
     private const int SetupChecks = 200;
 
+    public static readonly PaletteScope DrivePicker = new(CommandDef.DriveIdPrefix, "pick a drive…");
+
     private readonly ICommandTarget _registry;
     private readonly IMountService _service;
     private readonly IMountPrompter _prompter;
@@ -46,7 +48,7 @@ public sealed class MountsViewModel
 
     public event Action<string>? InfoRaised;
 
-    public event Action<string, string>? PickRequested;
+    public event Action<PaletteScope>? PickRequested;
 
     internal TimeSpan SetupCheckDelay { get; set; } = TimeSpan.FromSeconds(3);
 
@@ -76,16 +78,24 @@ public sealed class MountsViewModel
         foreach (MountEntry entry in numbered.OrderBy(e => KindRank(e.Kind)).ThenBy(e => e.Number ?? int.MaxValue)
                      .ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ThenBy(e => e.Key, StringComparer.Ordinal))
         {
-            string group = shared.Contains(Label(entry)) && entry.Device is { } device
+            string label = shared.Contains(Label(entry)) && entry.Device is { } device
                 ? $"{Label(entry)} · {Path.GetFileName(device)}"
                 : Label(entry);
-            foreach ((string verb, string title, string shortTitle, Func<Task> run) in Actions(entry, group))
+            PaletteScope options = new($"{CommandDef.MountActionIdPrefix}{entry.Key}:", $"{label}: pick what to do…",
+                DrivePicker);
+            string driveId = CommandDef.MountIdPrefix + entry.Key;
+            live.Add(driveId);
+            _registry.Register(
+                new CommandDef(driveId, $"{label}…", CommandKind.User, order++, CommandCategory.Navigation,
+                    Keywords(entry.Kind), ShortTitle: label),
+                () => PickRequested?.Invoke(options));
+            foreach ((string verb, string title, string shortTitle, Func<Task> run) in Actions(entry, label, options))
             {
-                string id = $"{CommandDef.MountIdPrefix}{verb}:{entry.Key}";
+                string id = options.IdPrefix + verb;
                 live.Add(id);
                 _registry.Register(
                     new CommandDef(id, title, CommandKind.User, order++, CommandCategory.Navigation,
-                        Keywords(entry.Kind), group, shortTitle),
+                        Keywords(entry.Kind), ShortTitle: shortTitle),
                     () => _ = run());
             }
         }
@@ -93,15 +103,16 @@ public sealed class MountsViewModel
         order = CommandDef.SetupOrder;
         foreach (MountTool tool in _service.Missing)
         {
-            string id = $"{CommandDef.MountIdPrefix}setup:{tool}";
+            string id = $"{CommandDef.MountSetupIdPrefix}{tool}";
             live.Add(id);
             _registry.Register(
                 new CommandDef(id, SetupTitle(tool), CommandKind.User, order++, CommandCategory.Navigation,
-                    ["setup", "install", "missing", .. Keywords(Needs(tool))], "Set up", SetupShortTitle(tool)),
+                    ["setup", "install", "missing", .. Keywords(Needs(tool))], SetupShortTitle(tool)),
                 () => _ = SetUpAsync(tool));
         }
 
-        foreach (string id in _registry.CommandIdsStartingWith(CommandDef.MountIdPrefix))
+        foreach (string id in _registry.CommandIdsStartingWith(CommandDef.MountIdPrefix)
+                     .Concat(_registry.CommandIdsStartingWith(CommandDef.MountActionIdPrefix)).ToArray())
         {
             if (!live.Contains(id))
                 _registry.Unregister(id);
@@ -163,7 +174,7 @@ public sealed class MountsViewModel
     }
 
     private IEnumerable<(string Verb, string Title, string ShortTitle, Func<Task> Run)> Actions(
-        MountEntry entry, string label)
+        MountEntry entry, string label, PaletteScope options)
     {
         string eject = entry.Kind == MountKind.Image ? "Detach" : "Eject";
         if (!entry.IsMounted)
@@ -173,7 +184,7 @@ public sealed class MountsViewModel
             if (entry.Kind == MountKind.Image)
                 yield return ("eject", $"Detach {label}", "Detach", () => UnmountAsync(entry, eject: true));
             if (entry.Kind == MountKind.Removable)
-                yield return ("format", $"Format {label}…", "Format…", () => PickFormatAsync(entry));
+                yield return ("format", $"Format {label}…", "Format…", () => PickFormatAsync(entry, options));
             yield break;
         }
 
@@ -187,7 +198,7 @@ public sealed class MountsViewModel
         if (entry.CanEject)
             yield return ("eject", $"{eject} {label}", eject, () => UnmountAsync(entry, eject: true));
         if (entry.Kind == MountKind.Removable)
-            yield return ("format", $"Format {label}…", "Format…", () => PickFormatAsync(entry));
+            yield return ("format", $"Format {label}…", "Format…", () => PickFormatAsync(entry, options));
     }
 
     private Task MountAsync(MountEntry entry) => RunAsync($"Opening {entry.Name}…", async () =>
@@ -216,7 +227,7 @@ public sealed class MountsViewModel
             await RefreshAsync();
         });
 
-    private async Task PickFormatAsync(MountEntry entry)
+    private async Task PickFormatAsync(MountEntry entry, PaletteScope options)
     {
         DriveFormat[] formats = await _service.FormatsAsync(CancellationToken.None);
         foreach (string id in _registry.CommandIdsStartingWith(CommandDef.FormatAsIdPrefix))
@@ -235,7 +246,7 @@ public sealed class MountsViewModel
                     CommandKind.User, i, CommandCategory.Navigation),
                 () => _ = FormatAsync(entry, format));
         }
-        PickRequested?.Invoke(CommandDef.FormatAsIdPrefix, $"format {Label(entry)} as…");
+        PickRequested?.Invoke(new(CommandDef.FormatAsIdPrefix, $"format {Label(entry)} as…", options));
     }
 
     private async Task FormatAsync(MountEntry entry, DriveFormat format)

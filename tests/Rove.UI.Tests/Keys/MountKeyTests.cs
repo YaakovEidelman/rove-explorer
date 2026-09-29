@@ -120,7 +120,8 @@ public class MountKeyTests : HeadlessTest
         harness.Content.RefreshDriveCommands();
 
         string[] ids = [.. harness.Registry.CommandIdsStartingWith(CommandDef.MountIdPrefix)];
-        Assert.Equal(2, ids.Length);
+        Assert.Single(ids);
+        Assert.Equal(2, harness.Registry.CommandIdsStartingWith(CommandDef.MountActionIdPrefix).Count());
         Assert.NotEmpty(harness.Registry.CommandIdsStartingWith(CommandDef.DriveIdPrefix).Except(ids));
     });
 }

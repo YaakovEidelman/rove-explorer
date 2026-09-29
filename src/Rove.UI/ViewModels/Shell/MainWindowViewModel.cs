@@ -99,7 +99,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Tabs.InfoRaised += message => StatusInfo = message;
         Tabs.ConfirmRequested += Confirm.Request;
         Tabs.DrivePickerRequested +=
-            () => Palette.OpenScoped(CommandDef.DriveIdPrefix, "pick a drive…");
+            () => Palette.OpenScoped(MountsViewModel.DrivePicker);
         Tabs.AppPickerRequested += loading => _ = ShowAppPickerAsync(loading);
         Tabs.ConnectRequested += Connect;
         Tabs.SurfaceChanged += RefreshStatusBar;
@@ -174,7 +174,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     private async Task ShowAppPickerAsync(Task loading)
     {
-        Palette.OpenScoped(CommandDef.OpenWithIdPrefix, "open with…");
+        Palette.OpenScoped(new PaletteScope(CommandDef.OpenWithIdPrefix, "open with…"));
         await loading;
         Palette.Refresh();
     }

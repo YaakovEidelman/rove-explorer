@@ -21,7 +21,7 @@ public class OpenWithPaletteTests
     {
         (PaletteViewModel palette, _) = Setup();
 
-        palette.OpenScoped(CommandDef.OpenWithIdPrefix, "open with…");
+        palette.OpenScoped(new PaletteScope(CommandDef.OpenWithIdPrefix, "open with…"));
 
         Assert.Equal(["Open with Kate"], palette.Items.Select(row => row.Entry!.Command.Def.Title));
     }
@@ -51,7 +51,7 @@ public class OpenWithPaletteTests
         }
         PaletteViewModel palette = new(registry);
 
-        palette.OpenScoped(CommandDef.OpenWithIdPrefix, "open with…");
+        palette.OpenScoped(new PaletteScope(CommandDef.OpenWithIdPrefix, "open with…"));
 
         Assert.Equal(
             ["Open with Zed", "Open with Alpha", "Open with Mid"],
@@ -67,7 +67,7 @@ public class OpenWithPaletteTests
             new CommandDef(CommandDef.OpenWithIdPrefix + "kate", "Open with Kate", CommandKind.User),
             () => opened = "kate");
         PaletteViewModel palette = new(registry);
-        palette.OpenScoped(CommandDef.OpenWithIdPrefix, "open with…");
+        palette.OpenScoped(new PaletteScope(CommandDef.OpenWithIdPrefix, "open with…"));
 
         palette.ExecuteOption();
 

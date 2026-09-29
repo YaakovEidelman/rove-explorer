@@ -203,7 +203,8 @@ public static class KeymapConfig
 
     private static bool IsKnownCommand(string id) =>
         _knownCommands.Value.Contains(id)
-        || id.StartsWith(CommandDef.DriveIdPrefix, StringComparison.Ordinal);
+        || id.StartsWith(CommandDef.DriveIdPrefix, StringComparison.Ordinal)
+        || id.StartsWith(CommandDef.MountActionIdPrefix, StringComparison.Ordinal);
 
     public static bool TryParseStroke(string text, out KeyStroke stroke)
     {

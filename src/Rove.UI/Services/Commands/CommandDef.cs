@@ -9,13 +9,13 @@ public readonly record struct CommandDef(
     int Order = 0,
     CommandCategory Category = CommandCategory.None,
     string[]? Keywords = null,
-    string? Group = null,
     string? ShortTitle = null)
 {
     public static readonly CommandDef TogglePalette = new("palette.toggle", "Command Palette", CommandKind.System);
     public static readonly CommandDef PaletteMoveUp = new("palette.move_up", "Palette: Move Up", CommandKind.System);
     public static readonly CommandDef PaletteMoveDown = new("palette.move_down", "Palette: Move Down", CommandKind.System);
     public static readonly CommandDef PaletteExecute = new("palette.execute", "Palette: Run Selected", CommandKind.System);
+    public static readonly CommandDef PaletteBack = new("palette.back", "Palette: Back or Close", CommandKind.System);
     public static readonly CommandDef QuickAccessNextTab =
         new("quickaccess.next_tab", "Quick Access: Next Tab (Commands/Search/Bookmarks)", CommandKind.System);
     public static readonly CommandDef QuickAccessPreviousTab =
@@ -171,6 +171,8 @@ public readonly record struct CommandDef(
         new("nav.drives", "Go to Drive…", CommandKind.User, 7, CommandCategory.Navigation,
             ["drives", "volumes", "disks"]);
     public const string MountIdPrefix = DriveIdPrefix + "mount:";
+    public const string MountSetupIdPrefix = MountIdPrefix + "setup:";
+    public const string MountActionIdPrefix = "mount.action:";
     public const string FormatAsIdPrefix = "format.as:";
     public const int DriveOrder = 1000;
     public const int MountOrder = 2000;

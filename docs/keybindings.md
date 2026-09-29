@@ -171,9 +171,11 @@ leaving the path box. Completing a folder leaves the separator on the end, so
 
 USB drives and disks come straight from UDisks, the system disk service (`udisks2` and `polkit`).
 Phones and servers go through `gio`, the same GNOME tool Nautilus and Thunar use, so those need
-GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drives, each under its
-own heading with its actions below it ("Go to", "Unmount", "Eject", "Format…"). Typing searches
-across everything by full name, like "unmount stick":
+GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drives, one row per
+drive. Typing filters the list by name. Picking a USB drive, disk, phone, image or server opens a
+second list of what you can do with it ("Go to", "Unmount", "Eject", "Format…"), and `Esc` steps
+back to the drives. Picking a normal drive goes straight there. The same actions are also in the
+command palette by full name, like "Unmount USB 1: STICK":
 
 - **USB drives and disks that aren't mounted yet.** "Open USB 1: STICK" mounts one and goes there.
   An encrypted (LUKS) drive asks for its passphrase first.
@@ -260,6 +262,7 @@ whatever opens text.
 | `palette.move_up`    | Palette: move up       |
 | `palette.move_down`  | Palette: move down     |
 | `palette.execute`    | Palette: run selected  |
+| `palette.back`       | Palette: back one list, or close (`Esc`) |
 | `quickaccess.next_tab` | Commands/Search/Bookmarks/Settings: next tab |
 | `quickaccess.previous_tab` | Commands/Search/Bookmarks/Settings: previous tab |
 

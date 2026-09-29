@@ -203,7 +203,7 @@ public static class KeymapDefaults
         {
             Mode.Palette,
             [
-                new(K(Key.Escape), CommandDef.TogglePalette.Id),
+                new(K(Key.Escape), CommandDef.PaletteBack.Id),
                 new(K(Key.C, KeyModifiers.Control), CommandDef.TogglePalette.Id),
                 new(K(Key.P, KeyModifiers.Control), CommandDef.PaletteMoveUp.Id),
                 new(K(Key.N, KeyModifiers.Control), CommandDef.PaletteMoveDown.Id),

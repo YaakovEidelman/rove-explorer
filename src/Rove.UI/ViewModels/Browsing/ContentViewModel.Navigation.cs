@@ -288,7 +288,7 @@ public partial class ContentViewModel
             live.Add(id);
             _registry.Register(
                 new CommandDef(id, $"Go to Drive {name}", CommandKind.User, CommandDef.DriveOrder + live.Count,
-                    CommandCategory.Navigation, ["drive", "volume"], Group: "Drives", ShortTitle: name),
+                    CommandCategory.Navigation, ["drive", "volume"], ShortTitle: $"Drive {name}"),
                 () => _ = SetCurrentDirectoryAsync(root));
         }
 
