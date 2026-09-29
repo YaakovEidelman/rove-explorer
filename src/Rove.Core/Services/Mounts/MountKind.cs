@@ -6,4 +6,5 @@ public enum MountKind
     Removable,
     Phone,
     Network,
+    Image,
 }

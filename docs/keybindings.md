@@ -177,13 +177,19 @@ across everything by full name, like "unmount stick":
 
 - **USB drives and disks that aren't mounted yet.** "Open USB 1: STICK" mounts one and goes there.
   An encrypted (LUKS) drive asks for its passphrase first.
-- **Phones and cameras** plugged in over USB (MTP). "Open Phone …" does the same.
+- **Phones and cameras** plugged in over USB (MTP). "Open Phone …" does the same. A phone shares
+  nothing until it's unlocked and you tap Allow (or pick File transfer), so if it opens empty,
+  Rove says so.
+- **Disk images.** An `.iso` or other image opened with the system's disk image mounter shows up
+  as "Image omarchy.iso (LABEL)". "Detach" unmounts it and lets the image file go.
 - **Mounted USB drives.** "Go to USB 1: STICK", "Unmount USB 1: STICK" and "Eject USB 1: STICK".
   Unmount keeps the drive in the list so "Open" brings it back. Eject, like in other file
   managers, also unmounts the drive's other parts, locks it if it's encrypted, and powers it off,
   so it's safe to pull. It comes back when you plug it in again.
 - **Formatting.** "Format USB 1: STICK…" picks a file system (exFAT, FAT32, NTFS or ext4; only the
   ones this system has tools for are shown), asks for a name, and warns before erasing anything.
+  It wipes the whole stick and makes one partition that fills it, so a stick flashed with an
+  installer (like an Omarchy ISO) comes back to its full size.
   The drive keeps its number.
 - **Connected servers.** "Go to Server …" and "Disconnect Server …".
 - **Missing tools.** If UDisks or `gio` isn't installed, "Set up USB drives" or "Set up phones and

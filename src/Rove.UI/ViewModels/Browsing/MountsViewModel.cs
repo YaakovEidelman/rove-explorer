@@ -72,11 +72,14 @@ public sealed class MountsViewModel
 
         HashSet<string> live = [];
         int order = CommandDef.MountOrder;
+        HashSet<string> shared = [.. numbered.GroupBy(Label).Where(same => same.Count() > 1).Select(same => same.Key)];
         foreach (MountEntry entry in numbered.OrderBy(e => KindRank(e.Kind)).ThenBy(e => e.Number ?? int.MaxValue)
-                     .ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase))
+                     .ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ThenBy(e => e.Key, StringComparer.Ordinal))
         {
-            string group = Label(entry);
-            foreach ((string verb, string title, string shortTitle, Func<Task> run) in Actions(entry))
+            string group = shared.Contains(Label(entry)) && entry.Device is { } device
+                ? $"{Label(entry)} · {Path.GetFileName(device)}"
+                : Label(entry);
+            foreach ((string verb, string title, string shortTitle, Func<Task> run) in Actions(entry, group))
             {
                 string id = $"{CommandDef.MountIdPrefix}{verb}:{entry.Key}";
                 live.Add(id);
@@ -159,27 +162,30 @@ public sealed class MountsViewModel
         }
     }
 
-    private IEnumerable<(string Verb, string Title, string ShortTitle, Func<Task> Run)> Actions(MountEntry entry)
+    private IEnumerable<(string Verb, string Title, string ShortTitle, Func<Task> Run)> Actions(
+        MountEntry entry, string label)
     {
-        string label = Label(entry);
+        string eject = entry.Kind == MountKind.Image ? "Detach" : "Eject";
         if (!entry.IsMounted)
         {
             if (entry.CanMount)
                 yield return ("open", $"Open {label}", "Open", () => MountAsync(entry));
+            if (entry.Kind == MountKind.Image)
+                yield return ("eject", $"Detach {label}", "Detach", () => UnmountAsync(entry, eject: true));
             if (entry.Kind == MountKind.Removable)
                 yield return ("format", $"Format {label}…", "Format…", () => PickFormatAsync(entry));
             yield break;
         }
 
         if (entry.LocalPath is { } path)
-            yield return ("goto", $"Go to {label}", "Go to", () => _navigate(path));
+            yield return ("goto", $"Go to {label}", "Go to", () => GoToAsync(entry, path));
 
         if (entry.CanUnmount)
             yield return entry.Kind == MountKind.Network
                 ? ("unmount", $"Disconnect {label}", "Disconnect", () => UnmountAsync(entry, eject: false))
                 : ("unmount", $"Unmount {label}", "Unmount", () => UnmountAsync(entry, eject: false));
         if (entry.CanEject)
-            yield return ("eject", $"Eject {label}", "Eject", () => UnmountAsync(entry, eject: true));
+            yield return ("eject", $"{eject} {label}", eject, () => UnmountAsync(entry, eject: true));
         if (entry.Kind == MountKind.Removable)
             yield return ("format", $"Format {label}…", "Format…", () => PickFormatAsync(entry));
     }
@@ -187,11 +193,12 @@ public sealed class MountsViewModel
     private Task MountAsync(MountEntry entry) => RunAsync($"Opening {entry.Name}…", async () =>
     {
         CommandResult<string> result = await _service.MountAsync(entry, _prompter, CancellationToken.None);
-        await OpenAsync(result);
+        await OpenAsync(result, entry);
     });
 
     private Task UnmountAsync(MountEntry entry, bool eject) =>
-        RunAsync(eject ? $"Ejecting {Label(entry)}…" : $"Unmounting {Label(entry)}…", async () =>
+        RunAsync(eject ? $"{(entry.Kind == MountKind.Image ? "Detaching" : "Ejecting")} {Label(entry)}…"
+            : $"Unmounting {Label(entry)}…", async () =>
         {
             if (entry.LocalPath is { } root && IsInside(_currentDirectory(), root))
                 await _navigate(PathCompare.DefaultStartDirectory());
@@ -204,7 +211,7 @@ public sealed class MountsViewModel
             }
             string label = Label(entry);
             InfoRaised?.Invoke(eject
-                ? $"Ejected {label}. It's safe to remove."
+                ? entry.Kind == MountKind.Image ? $"Detached {label}." : $"Ejected {label}. It's safe to remove."
                 : entry.Kind == MountKind.Network ? $"Disconnected {label}." : $"Unmounted {label}.");
             await RefreshAsync();
         });
@@ -270,7 +277,7 @@ public sealed class MountsViewModel
         });
     }
 
-    private async Task OpenAsync(CommandResult<string> result)
+    private async Task OpenAsync(CommandResult<string> result, MountEntry? entry = null)
     {
         if (!result.IsOk || result.Data is not { } path)
         {
@@ -279,7 +286,31 @@ public sealed class MountsViewModel
         }
         InfoRaised?.Invoke(string.Empty);
         await RefreshAsync();
+        if (entry is null)
+            await _navigate(path);
+        else
+            await GoToAsync(entry, path);
+    }
+
+    private async Task GoToAsync(MountEntry entry, string path)
+    {
         await _navigate(path);
+        if (entry.Kind == MountKind.Phone && await Task.Run(() => IsEmpty(path)))
+            InfoRaised?.Invoke(
+                $"{entry.Name} isn't sharing its files yet. Unlock the phone and tap Allow, "
+                + "or pick File transfer in its USB notification, then open it again.");
+    }
+
+    private static bool IsEmpty(string path)
+    {
+        try
+        {
+            return !Directory.EnumerateFileSystemEntries(path).Any();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     private async Task RunAsync(string working, Func<Task> work)
@@ -318,6 +349,7 @@ public sealed class MountsViewModel
         MountKind.Removable => "USB Drive",
         MountKind.Phone => "Phone",
         MountKind.Network => "Server",
+        MountKind.Image => "Image",
         _ => "Disk",
     };
 
@@ -331,7 +363,8 @@ public sealed class MountsViewModel
     {
         MountKind.Removable => 0,
         MountKind.Disk => 1,
-        MountKind.Phone => 2,
+        MountKind.Image => 2,
+        MountKind.Phone => 3,
         _ => 3,
     };
 
@@ -352,6 +385,7 @@ public sealed class MountsViewModel
         MountKind.Removable => ["usb", "stick", "removable", "drive", "mount", "eject"],
         MountKind.Phone => ["phone", "android", "mtp", "camera", "device", "mount"],
         MountKind.Network => ["network", "server", "share", "remote", "sftp", "smb", "ftp"],
+        MountKind.Image => ["image", "iso", "loop", "disk image", "mount", "detach"],
         _ => ["disk", "partition", "volume", "drive", "mount"],
     };
 }

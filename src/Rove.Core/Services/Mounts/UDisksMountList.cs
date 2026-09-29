@@ -53,10 +53,14 @@ public static class UDisksMountList
     {
         UDisksDrive? drive = objects.DriveOf(block);
         string? mountPoint = filesystem?.MountPoints.FirstOrDefault();
-        MountKind kind = drive?.Removable == true || drive?.Ejectable == true ? MountKind.Removable : MountKind.Disk;
+        string? image = objects.LoopOf(block)?.BackingFile;
+        MountKind kind = image is not null ? MountKind.Image
+            : drive?.Removable == true || drive?.Ejectable == true ? MountKind.Removable
+            : MountKind.Disk;
         string label = VolumeLabel(block, filesystem);
         return new MountEntry(
-            Name(block, filesystem, label, kind == MountKind.Removable ? drive?.Model : null),
+            image is not null ? ImageName(image, label)
+                : Name(block, filesystem, label, kind == MountKind.Removable ? drive?.Model : null),
             kind,
             block.Device,
             ActivationUri: null,
@@ -64,9 +68,15 @@ public static class UDisksMountList
             mountPoint,
             CanMount: mountPoint is null,
             CanUnmount: mountPoint is not null,
-            CanEject: drive is { Ejectable: true } or { CanPowerOff: true },
-            VolumeId: block.Uuid.Length > 0 ? block.Uuid : null,
+            CanEject: image is not null || drive is { Ejectable: true } or { CanPowerOff: true },
+            VolumeId: image is null && block.Uuid.Length > 0 ? block.Uuid : null,
             VolumeLabel: label.Length > 0 ? label : null);
+    }
+
+    private static string ImageName(string image, string label)
+    {
+        string file = Path.GetFileName(image);
+        return label.Length > 0 ? $"{file} ({label})" : file;
     }
 
     private static string VolumeLabel(UDisksBlock block, UDisksBlock? filesystem) =>

@@ -10,6 +10,7 @@ public sealed partial class UDisksMounts
     private const string ManagerInterface = "org.freedesktop.UDisks2.Manager";
     private const string NotAuthorized = "org.freedesktop.UDisks2.Error.NotAuthorized";
     private const string AlreadyMounted = "org.freedesktop.UDisks2.Error.AlreadyMounted";
+    private const ulong PartitionStart = 1024 * 1024;
     private const string ServiceUnknown = "org.freedesktop.DBus.Error.ServiceUnknown";
 
     private static readonly string[] _watchedInterfaces =
@@ -90,15 +91,9 @@ public sealed partial class UDisksMounts
         return connection.CallMethodAsync(call, static (message, _) => message.GetBodyReader().ReadBool(), null);
     }
 
-    private static Task FormatAsync(DBusConnection connection, string path, string type, string name)
+    private static Task FormatAsync(DBusConnection connection, string path, string type, string? name)
     {
-        Dictionary<string, VariantValue> options = new()
-        {
-            ["label"] = VariantValue.String(name),
-            ["update-partition-type"] = VariantValue.Bool(true),
-        };
-        if (type == "ext4")
-            options["take-ownership"] = VariantValue.Bool(true);
+        Dictionary<string, VariantValue> options = FormatOptions(type, name);
 
         MessageBuffer call;
         using (MessageWriter writer = connection.GetMessageWriter())
@@ -111,6 +106,38 @@ public sealed partial class UDisksMounts
             call = writer.CreateMessage();
         }
         return connection.CallMethodAsync(call);
+    }
+
+    private static Task<string> CreatePartitionAsync(DBusConnection connection, string disk, string type, string name)
+    {
+        MessageBuffer call;
+        using (MessageWriter writer = connection.GetMessageWriter())
+        {
+            writer.WriteMethodCallHeader(
+                Service, disk, UDisksObjects.PartitionTableInterface, "CreatePartitionAndFormat", "ttssa{sv}sa{sv}",
+                MessageFlags.AllowInteractiveAuthorization);
+            writer.WriteUInt64(PartitionStart);
+            writer.WriteUInt64(0);
+            writer.WriteString(DriveFormat.PartitionType(type));
+            writer.WriteString("");
+            writer.WriteDictionary(new Dictionary<string, VariantValue>());
+            writer.WriteString(type);
+            writer.WriteDictionary(FormatOptions(type, name));
+            call = writer.CreateMessage();
+        }
+        return connection.CallMethodAsync(
+            call, static (message, _) => message.GetBodyReader().ReadObjectPathAsString(), null);
+    }
+
+    private static Dictionary<string, VariantValue> FormatOptions(string type, string? name)
+    {
+        Dictionary<string, VariantValue> options = [];
+        if (name is null)
+            return options;
+        options["label"] = VariantValue.String(name);
+        if (type == "ext4")
+            options["take-ownership"] = VariantValue.Bool(true);
+        return options;
     }
 
     private static MessageBuffer OptionsCall(

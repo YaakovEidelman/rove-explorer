@@ -9,6 +9,9 @@ public sealed class UDisksObjects(IEnumerable<UDisksBlock> blocks, IEnumerable<U
     public const string DriveInterface = "org.freedesktop.UDisks2.Drive";
     public const string FilesystemInterface = "org.freedesktop.UDisks2.Filesystem";
     public const string EncryptedInterface = "org.freedesktop.UDisks2.Encrypted";
+    public const string LoopInterface = "org.freedesktop.UDisks2.Loop";
+    public const string PartitionInterface = "org.freedesktop.UDisks2.Partition";
+    public const string PartitionTableInterface = "org.freedesktop.UDisks2.PartitionTable";
 
     private static readonly string[] _removableBuses = ["usb", "sdio", "ieee1394"];
     private static readonly string[] _placeholderVendors = ["usb", "generic", "general", "ata", "mass"];
@@ -28,6 +31,12 @@ public sealed class UDisksObjects(IEnumerable<UDisksBlock> blocks, IEnumerable<U
             ?? Blocks.FirstOrDefault(b => b.Path == block.CryptoBackingDevice)?.Drive;
         return path is null ? null : Drives.FirstOrDefault(d => d.Path == path);
     }
+
+    public UDisksBlock? WholeDiskOf(UDisksBlock block) =>
+        block.Table is { } table ? Blocks.FirstOrDefault(b => b.Path == table) : block;
+
+    public UDisksBlock? LoopOf(UDisksBlock block) =>
+        WholeDiskOf(block) is { BackingFile: not null } loop ? loop : null;
 
     public static UDisksObjects Read(Dictionary<string, Dictionary<string, Dictionary<string, VariantValue>>> objects)
     {
@@ -65,7 +74,14 @@ public sealed class UDisksObjects(IEnumerable<UDisksBlock> blocks, IEnumerable<U
             mountPoints,
             interfaces.ContainsKey(EncryptedInterface),
             ObjectPath(block, "CryptoBackingDevice"),
-            Text(block, "IdUUID"));
+            Text(block, "IdUUID"),
+            interfaces.TryGetValue(PartitionInterface, out Dictionary<string, VariantValue>? partition)
+                ? ObjectPath(partition, "Table")
+                : null,
+            interfaces.TryGetValue(LoopInterface, out Dictionary<string, VariantValue>? loop)
+                && loop.TryGetValue("BackingFile", out VariantValue backing)
+                    ? Bytes(backing)
+                    : null);
     }
 
     private static UDisksDrive ReadDrive(string path, Dictionary<string, VariantValue> drive) =>

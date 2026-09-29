@@ -46,6 +46,22 @@ public class UDisksMountListTests
     }
 
     [Fact]
+    public void AnAttachedDiskImageIsNamedAfterItsFileAndCanBeDetached()
+    {
+        UDisksBlock loop = new(BlockRoot + "loop0", "/dev/loop0", "OMARCHY_202609", 6_000_000_000, null, false,
+            false, [], false, null, "2026-09-15", BackingFile: "/home/me/Downloads/omarchy-4.0.4.iso");
+        UDisksBlock partition = new(BlockRoot + "loop0p1", "/dev/loop0p1", "OMARCHY_202609", 6_000_000_000, null,
+            false, true, [], false, null, "2026-09-15", Table: BlockRoot + "loop0");
+
+        MountEntry image = Assert.Single(Build(loop, partition));
+
+        Assert.Equal("omarchy-4.0.4.iso (OMARCHY_202609)", image.Name);
+        Assert.Equal(MountKind.Image, image.Kind);
+        Assert.Null(image.VolumeId);
+        Assert.True(image.CanEject);
+    }
+
+    [Fact]
     public void AMountedStickPointsAtItsFolder()
     {
         MountEntry stick = Assert.Single(Build(Block("sdb1", label: "STICK", mountPoints: ["/run/media/me/My Stick"])));

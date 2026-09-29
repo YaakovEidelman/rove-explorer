@@ -222,6 +222,57 @@ public class MountsViewModelTests : HeadlessTest
     });
 
     [Fact]
+    public Task ADiskImageOpensAndDetachesButCannotBeFormatted() => OnUiThread(() =>
+    {
+        Setup setup = new();
+        MountEntry image = new("omarchy.iso (OMARCHY)", MountKind.Image, "/dev/loop0p1", null, null, null,
+            CanMount: true, CanUnmount: false, CanEject: true);
+
+        setup.Model.Show([image]);
+
+        Assert.Equal(["Detach Image omarchy.iso (OMARCHY)", "Open Image omarchy.iso (OMARCHY)"], setup.Titles());
+    });
+
+    [Fact]
+    public Task TwoCopiesOfTheSameImageGetTheirOwnHeadings() => OnUiThread(() =>
+    {
+        Setup setup = new();
+        MountEntry first = new("omarchy.iso", MountKind.Image, "/dev/loop0p1", null, null, null,
+            CanMount: true, CanUnmount: false, CanEject: true);
+
+        setup.Model.Show([first, first with { Device = "/dev/loop1p1" }]);
+
+        Assert.Equal(
+            ["Image omarchy.iso · loop0p1", "Image omarchy.iso · loop1p1"],
+            setup.Registry.CommandIdsStartingWith(CommandDef.MountIdPrefix)
+                .Select(id => setup.Registry.TryGetCommand(id, out Command c) ? c.Def.Group : null)
+                .Distinct().Order());
+    });
+
+    [Fact]
+    public Task APhoneThatSharesNothingSaysToUnlockIt() => OnUiThread(() =>
+    {
+        string empty = Directory.CreateTempSubdirectory("rove-phone-").FullName;
+        try
+        {
+            Setup setup = new();
+            List<string> info = [];
+            setup.Model.InfoRaised += info.Add;
+            MountEntry phone = new("Pixel", MountKind.Phone, null, "mtp://Pixel/", "mtp://Pixel/", empty,
+                CanMount: false, CanUnmount: true, CanEject: false);
+            setup.Model.Show([phone]);
+
+            setup.Run("Go to Phone Pixel");
+
+            Assert.Contains("Unlock the phone and tap Allow", info[^1]);
+        }
+        finally
+        {
+            Directory.Delete(empty);
+        }
+    });
+
+    [Fact]
     public Task CommandsForDrivesThatAreGoneAreDropped() => OnUiThread(() =>
     {
         Setup setup = new();

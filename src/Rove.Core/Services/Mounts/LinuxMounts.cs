@@ -58,7 +58,7 @@ public sealed class LinuxMounts(IMountService drives, IMountService? remote) : I
 
     private IMountService? For(MountEntry entry) => IsDrive(entry) ? drives : remote;
 
-    private static bool IsDrive(MountEntry entry) => entry.Kind is MountKind.Disk or MountKind.Removable;
+    private static bool IsDrive(MountEntry entry) => entry.Kind is MountKind.Disk or MountKind.Removable or MountKind.Image;
 
     private static Task<CommandResult<T>> NoRemote<T>() =>
         Task.FromResult(CommandResult<T>.Fail(

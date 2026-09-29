@@ -83,6 +83,15 @@ public sealed partial class UDisksMounts(string home) : IMountService
     public Task<CommandResult<bool>> UnmountAsync(MountEntry entry, bool eject, CancellationToken ct) =>
         WithBlockAsync(entry, "unmount_failed", $"Couldn't unmount {entry.Name}.", async (connection, objects, block) =>
         {
+            if (eject && objects.LoopOf(block) is { } loop)
+            {
+                foreach (UDisksBlock each in objects.Blocks.Where(b => b.CryptoBackingDevice is null
+                             && objects.WholeDiskOf(b) == loop))
+                    await ReleaseAsync(connection, objects, each).ConfigureAwait(false);
+                await CallAsync(connection, loop.Path, UDisksObjects.LoopInterface, "Delete").ConfigureAwait(false);
+                return CommandResult<bool>.Ok(true);
+            }
+
             UDisksDrive? drive = objects.DriveOf(block);
             IEnumerable<UDisksBlock> release = eject && drive is not null
                 ? objects.Blocks.Where(b => b.CryptoBackingDevice is null && objects.DriveOf(b) == drive)
@@ -123,12 +132,19 @@ public sealed partial class UDisksMounts(string home) : IMountService
         MountEntry entry, DriveFormat format, string name, CancellationToken ct) =>
         WithBlockAsync(entry, "format_failed", $"Couldn't format {entry.Name}.", async (connection, objects, block) =>
         {
-            await ReleaseAsync(connection, objects, block).ConfigureAwait(false);
-            await FormatAsync(connection, block.Path, format.Type, name).ConfigureAwait(false);
+            UDisksBlock disk = objects.WholeDiskOf(block) ?? block;
+            UDisksDrive? drive = objects.DriveOf(disk);
+            foreach (UDisksBlock each in objects.Blocks.Where(b => b.CryptoBackingDevice is null
+                         && (b == disk || objects.WholeDiskOf(b) == disk || (drive is not null && objects.DriveOf(b) == drive))))
+                await ReleaseAsync(connection, objects, each).ConfigureAwait(false);
+
+            await FormatAsync(connection, disk.Path, "dos", name: null).ConfigureAwait(false);
+            string created = await CreatePartitionAsync(connection, disk.Path, format.Type, name).ConfigureAwait(false);
             for (int tries = 0; tries < FormatSettleTries; tries++)
             {
-                UDisksBlock? now = (await ObjectsAsync(connection).ConfigureAwait(false)).BlockOf(block.Device);
-                if (now is { Uuid.Length: > 0 } && now.Uuid != block.Uuid)
+                UDisksBlock? now = (await ObjectsAsync(connection).ConfigureAwait(false)).Blocks
+                    .FirstOrDefault(b => b.Path == created);
+                if (now is { Uuid.Length: > 0 })
                     return CommandResult<string>.Ok(now.Uuid);
                 await Task.Delay(FormatSettleDelay, CancellationToken.None).ConfigureAwait(false);
             }

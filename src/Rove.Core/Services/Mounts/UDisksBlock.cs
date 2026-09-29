@@ -11,5 +11,7 @@ public sealed record UDisksBlock(
     string[] MountPoints,
     bool IsEncrypted,
     string? CryptoBackingDevice,
-    string Uuid = ""
+    string Uuid = "",
+    string? Table = null,
+    string? BackingFile = null
 );
