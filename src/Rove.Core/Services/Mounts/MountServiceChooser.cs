@@ -4,6 +4,8 @@ public static class MountServiceChooser
 {
     public static IMountService? CreateForHost()
     {
+        if (OperatingSystem.IsWindows())
+            return new WindowsMounts();
         if (!OperatingSystem.IsLinux())
             return null;
         IMountService? gio = FileOpener.FindProgram(Environment.GetEnvironmentVariable("PATH"), "gio", FileOpener.IsRunnable)

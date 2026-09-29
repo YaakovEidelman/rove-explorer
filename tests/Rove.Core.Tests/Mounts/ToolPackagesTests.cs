@@ -25,6 +25,17 @@ public class ToolPackagesTests
     }
 
     [Fact]
+    public void OmarchyCountsAsArch()
+    {
+        string omarchy = "NAME=\"Omarchy\"\nPRETTY_NAME=\"Omarchy\"\nID=omarchy\nID_LIKE=arch\nVERSION_ID=\"4.0.4\"\n";
+
+        Assert.Equal(
+            ["sudo", "pacman", "-S", "--needed", "udisks2", "polkit"],
+            ToolPackages.Command(omarchy, MountTool.UDisks));
+        Assert.False(ToolPackages.IsReadOnlySystem(omarchy));
+    }
+
+    [Fact]
     public void OpenSuseVariantsUseZypper()
     {
         Assert.Equal(

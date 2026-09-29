@@ -167,7 +167,7 @@ keeps completing from what is in the box, and `Esc` closes the list without
 leaving the path box. Completing a folder leaves the separator on the end, so
 `Tab` again carries on inside it.
 
-### Drives, phones and servers (Linux)
+### Drives, phones and servers
 
 USB drives and disks come straight from UDisks, the system disk service (`udisks2` and `polkit`).
 Phones and servers go through `gio`, the same GNOME tool Nautilus and Thunar use, so those need
@@ -198,6 +198,11 @@ same stick in next week and it's still `USB 1`. Numbers are saved in `drive-numb
 state folder.
 Inside a drive, the path bar and tab show its name (`USB 1: STICK › photos`) instead of the
 `/run/media/…` folder it's mounted on. Phones and servers are shown by name the same way.
+
+On Windows, USB drives (sticks and USB hard drives) show up the same way, named by model with the
+label and letter after it: `USB 1: SanDisk Cruzer (STICK, E:)`. Windows mounts them itself, so
+there's no "Open" or "Unmount", just "Go to", "Eject" and "Format". Format offers exFAT, FAT32 and
+NTFS, and Windows asks for admin rights first. Phones and servers are Linux only for now.
 
 `Ctrl+G` ("Connect to Server…") asks for an address. You can also type one straight into the path
 bar (`Ctrl+L`). Any gvfs address works: `sftp://me@host/folder` (or `ssh://`),
