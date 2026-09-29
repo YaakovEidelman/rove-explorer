@@ -62,8 +62,15 @@ public partial class DirectoryListing
     private void MutateRename(string oldPath, FolderItem item)
     {
         int existingIndex = GetIndexFromContent(oldPath);
+        int replacedIndex = GetIndexFromContent(item.FullPath);
         if (existingIndex == -1)
-            existingIndex = GetIndexFromContent(item.FullPath);
+            existingIndex = replacedIndex;
+        else if (replacedIndex != -1 && replacedIndex != existingIndex)
+        {
+            _unfilteredContent.RemoveAt(replacedIndex);
+            if (replacedIndex < existingIndex)
+                existingIndex--;
+        }
         MutateUpsert(existingIndex, item);
         InvalidateFilter();
     }

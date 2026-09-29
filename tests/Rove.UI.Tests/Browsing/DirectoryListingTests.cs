@@ -327,6 +327,30 @@ public class DirectoryListingTests
     }
 
     [Fact]
+    public void ARenameOntoAnExistingFileReplacesItInsteadOfDoublingIt()
+    {
+        DirectoryListing listing = Listing(Item("movie.zip"), Item("movie.zip.part"));
+
+        listing.Rename(At("movie.zip.part"), Item("movie.zip"));
+
+        Assert.Equal(["movie.zip"], Names(listing));
+    }
+
+    [Fact]
+    public void ABatchedRenameOntoAnExistingFileReplacesItInsteadOfDoublingIt()
+    {
+        DirectoryListing listing = Listing();
+
+        listing.ApplyBatch([
+            new WatchEvent.Upserted(Item("movie.zip")),
+            new WatchEvent.Upserted(Item("movie.zip.part")),
+            new WatchEvent.Renamed(At("movie.zip.part"), Item("movie.zip")),
+        ]);
+
+        Assert.Equal(["movie.zip"], Names(listing));
+    }
+
+    [Fact]
     public void ABigBatchOfWatcherEventsStaysFast()
     {
         FolderItem[] existing = [.. Enumerable.Range(0, 2_000).Select(i => Item($"old{i:D5}.txt"))];
@@ -431,11 +455,11 @@ public class DirectoryListingTests
     [Fact]
     public void GroupByDateLabelsOnlyTheFirstItemOfEachGroup()
     {
-        DateTime now = DateTime.Now;
+        DateTime today = DateTime.Today;
         DirectoryListing listing = Listing(
-            Item("today-a.txt") with { LastWriteTime = now },
-            Item("today-b.txt") with { LastWriteTime = now.AddHours(-1) },
-            Item("old.txt") with { LastWriteTime = now.AddYears(-2) });
+            Item("today-a.txt") with { LastWriteTime = today.AddMinutes(1) },
+            Item("today-b.txt") with { LastWriteTime = today },
+            Item("old.txt") with { LastWriteTime = today.AddYears(-2) });
 
         listing.SetSort(SortKey.Modified);
         listing.GroupByDate = true;
