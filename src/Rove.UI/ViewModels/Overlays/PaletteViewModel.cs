@@ -53,8 +53,10 @@ public partial class PaletteViewModel : ViewModelBase
         Rebuild();
     }
 
-    private PaletteEntry ToEntry(Command c) =>
-        new(c, _registry.HintFor(c.Def.Id), BuildTitleSegments(PaletteSearchText, c.Def.Title), c.IsRunnable);
+    private PaletteEntry ToEntry(Command c, bool underGroup = false) =>
+        new(c, _registry.HintFor(c.Def.Id),
+            BuildTitleSegments(PaletteSearchText, underGroup ? c.Def.ShortTitle ?? c.Def.Title : c.Def.Title),
+            c.IsRunnable);
 
     private static IReadOnlyList<TitleSegment> BuildTitleSegments(string query, string title)
     {
@@ -93,9 +95,9 @@ public partial class PaletteViewModel : ViewModelBase
     {
         Command[] matches = [.. _registry.FilteredCommands(PaletteSearchText).Where(InScope)];
 
-        List<PaletteRow> rows = string.IsNullOrWhiteSpace(PaletteSearchText) && _scope.Length == 0
-            ? GroupedRows(matches)
-            : [.. matches.Select(c => new PaletteRow(null, ToEntry(c)))];
+        List<PaletteRow> rows = !string.IsNullOrWhiteSpace(PaletteSearchText)
+            ? [.. matches.Select(c => new PaletteRow(null, ToEntry(c)))]
+            : _scope.Length == 0 ? GroupedRows(matches) : ScopedRows(matches);
 
         Items.Clear();
         foreach (PaletteRow row in rows)
@@ -135,6 +137,22 @@ public partial class PaletteViewModel : ViewModelBase
             rows.Add(new PaletteRow(null, ToEntry(c)));
         }
 
+        return rows;
+    }
+
+    private List<PaletteRow> ScopedRows(Command[] matches)
+    {
+        List<PaletteRow> rows = [];
+        string? currentGroup = null;
+        foreach (Command c in matches)
+        {
+            if (c.Def.Group is { } group && group != currentGroup)
+            {
+                rows.Add(new PaletteRow(group, null));
+                currentGroup = group;
+            }
+            rows.Add(new PaletteRow(null, ToEntry(c, underGroup: c.Def.Group is not null)));
+        }
         return rows;
     }
 

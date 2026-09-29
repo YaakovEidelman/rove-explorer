@@ -171,7 +171,9 @@ leaving the path box. Completing a folder leaves the separator on the end, so
 
 USB drives and disks come straight from UDisks, the system disk service (`udisks2` and `polkit`).
 Phones and servers go through `gio`, the same GNOME tool Nautilus and Thunar use, so those need
-GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drives:
+GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drives, each under its
+own heading with its actions below it ("Go to", "Unmount", "Eject", "Format…"). Typing searches
+across everything by full name, like "unmount stick":
 
 - **USB drives and disks that aren't mounted yet.** "Open USB 1: STICK" mounts one and goes there.
   An encrypted (LUKS) drive asks for its passphrase first.

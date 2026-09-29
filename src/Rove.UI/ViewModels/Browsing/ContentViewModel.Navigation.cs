@@ -284,12 +284,11 @@ public partial class ContentViewModel
             string root = drive.RootPath;
             if (_core.Places.IsDriveRoot(root))
                 continue;
-            string title = drive.Label is null
-                ? $"Go to Drive {root}"
-                : $"Go to Drive {root} ({drive.Label})";
+            string name = drive.Label is null ? root : $"{root} ({drive.Label})";
             live.Add(id);
             _registry.Register(
-                new CommandDef(id, title, CommandKind.User, Category: CommandCategory.Navigation, Keywords: ["drive", "volume"]),
+                new CommandDef(id, $"Go to Drive {name}", CommandKind.User, CommandDef.DriveOrder + live.Count,
+                    CommandCategory.Navigation, ["drive", "volume"], Group: "Drives", ShortTitle: name),
                 () => _ = SetCurrentDirectoryAsync(root));
         }
 

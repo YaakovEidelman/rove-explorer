@@ -30,7 +30,7 @@
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:PaletteRow">
                     <Panel>
-                        <TextBlock Classes="settingssection"
+                        <TextBlock Classes="palettegroup"
                                    Text="{Binding Header}"
                                    IsVisible="{Binding IsHeader}" />
                         <DockPanel IsVisible="{Binding !IsHeader}" Classes.unavailable="{Binding !IsSelectable}">

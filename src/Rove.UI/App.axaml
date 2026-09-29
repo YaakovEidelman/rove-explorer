@@ -696,6 +696,13 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
         </Style>
+        <Style Selector="TextBlock.palettegroup">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="LetterSpacing" Value="0.4" />
+            <Setter Property="Margin" Value="0,6,0,0" />
+        </Style>
         <Style Selector="TextBlock.paletteMatch">
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />

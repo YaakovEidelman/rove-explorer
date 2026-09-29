@@ -71,26 +71,30 @@ public sealed class MountsViewModel
             .Select(entry => (entry.LocalPath!, Label(entry))));
 
         HashSet<string> live = [];
-        foreach (MountEntry entry in numbered)
+        int order = CommandDef.MountOrder;
+        foreach (MountEntry entry in numbered.OrderBy(e => KindRank(e.Kind)).ThenBy(e => e.Number ?? int.MaxValue)
+                     .ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase))
         {
-            foreach ((string verb, string title, Func<Task> run) in Actions(entry))
+            string group = Label(entry);
+            foreach ((string verb, string title, string shortTitle, Func<Task> run) in Actions(entry))
             {
                 string id = $"{CommandDef.MountIdPrefix}{verb}:{entry.Key}";
                 live.Add(id);
                 _registry.Register(
-                    new CommandDef(id, title, CommandKind.User, Category: CommandCategory.Navigation,
-                        Keywords: Keywords(entry.Kind)),
+                    new CommandDef(id, title, CommandKind.User, order++, CommandCategory.Navigation,
+                        Keywords(entry.Kind), group, shortTitle),
                     () => _ = run());
             }
         }
 
+        order = CommandDef.SetupOrder;
         foreach (MountTool tool in _service.Missing)
         {
             string id = $"{CommandDef.MountIdPrefix}setup:{tool}";
             live.Add(id);
             _registry.Register(
-                new CommandDef(id, SetupTitle(tool), CommandKind.User, Category: CommandCategory.Navigation,
-                    Keywords: ["setup", "install", "missing", .. Keywords(Needs(tool))]),
+                new CommandDef(id, SetupTitle(tool), CommandKind.User, order++, CommandCategory.Navigation,
+                    ["setup", "install", "missing", .. Keywords(Needs(tool))], "Set up", SetupShortTitle(tool)),
                 () => _ = SetUpAsync(tool));
         }
 
@@ -155,29 +159,29 @@ public sealed class MountsViewModel
         }
     }
 
-    private IEnumerable<(string Verb, string Title, Func<Task> Run)> Actions(MountEntry entry)
+    private IEnumerable<(string Verb, string Title, string ShortTitle, Func<Task> Run)> Actions(MountEntry entry)
     {
         string label = Label(entry);
         if (!entry.IsMounted)
         {
             if (entry.CanMount)
-                yield return ("open", $"Open {label}", () => MountAsync(entry));
+                yield return ("open", $"Open {label}", "Open", () => MountAsync(entry));
             if (entry.Kind == MountKind.Removable)
-                yield return ("format", $"Format {label}…", () => PickFormatAsync(entry));
+                yield return ("format", $"Format {label}…", "Format…", () => PickFormatAsync(entry));
             yield break;
         }
 
         if (entry.LocalPath is { } path)
-            yield return ("goto", $"Go to {label}", () => _navigate(path));
+            yield return ("goto", $"Go to {label}", "Go to", () => _navigate(path));
 
         if (entry.CanUnmount)
             yield return entry.Kind == MountKind.Network
-                ? ("unmount", $"Disconnect {label}", () => UnmountAsync(entry, eject: false))
-                : ("unmount", $"Unmount {label}", () => UnmountAsync(entry, eject: false));
+                ? ("unmount", $"Disconnect {label}", "Disconnect", () => UnmountAsync(entry, eject: false))
+                : ("unmount", $"Unmount {label}", "Unmount", () => UnmountAsync(entry, eject: false));
         if (entry.CanEject)
-            yield return ("eject", $"Eject {label}", () => UnmountAsync(entry, eject: true));
+            yield return ("eject", $"Eject {label}", "Eject", () => UnmountAsync(entry, eject: true));
         if (entry.Kind == MountKind.Removable)
-            yield return ("format", $"Format {label}…", () => PickFormatAsync(entry));
+            yield return ("format", $"Format {label}…", "Format…", () => PickFormatAsync(entry));
     }
 
     private Task MountAsync(MountEntry entry) => RunAsync($"Opening {entry.Name}…", async () =>
@@ -216,11 +220,12 @@ public sealed class MountsViewModel
             return;
         }
 
-        foreach (DriveFormat format in formats)
+        for (int i = 0; i < formats.Length; i++)
         {
+            DriveFormat format = formats[i];
             _registry.Register(
                 new CommandDef(CommandDef.FormatAsIdPrefix + format.Type, $"{format.Name} ({format.Note})",
-                    CommandKind.User, Category: CommandCategory.Navigation),
+                    CommandKind.User, i, CommandCategory.Navigation),
                 () => _ = FormatAsync(entry, format));
         }
         PickRequested?.Invoke(CommandDef.FormatAsIdPrefix, $"format {Label(entry)} as…");
@@ -321,6 +326,18 @@ public sealed class MountsViewModel
     private static string SetupTitle(MountTool tool) => tool == MountTool.UDisks
         ? "Set up USB drives (UDisks isn't installed)"
         : "Set up phones and servers (gio isn't installed)";
+
+    private static int KindRank(MountKind kind) => kind switch
+    {
+        MountKind.Removable => 0,
+        MountKind.Disk => 1,
+        MountKind.Phone => 2,
+        _ => 3,
+    };
+
+    private static string SetupShortTitle(MountTool tool) => tool == MountTool.UDisks
+        ? "USB drives: install UDisks"
+        : "Phones and servers: install gio";
 
     private static string SetupReason(MountTool tool) => tool == MountTool.UDisks
         ? "Rove can't see USB drives because UDisks, the system disk service, isn't installed."

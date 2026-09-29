@@ -8,7 +8,9 @@ public readonly record struct CommandDef(
     CommandKind CommandKind,
     int Order = 0,
     CommandCategory Category = CommandCategory.None,
-    string[]? Keywords = null)
+    string[]? Keywords = null,
+    string? Group = null,
+    string? ShortTitle = null)
 {
     public static readonly CommandDef TogglePalette = new("palette.toggle", "Command Palette", CommandKind.System);
     public static readonly CommandDef PaletteMoveUp = new("palette.move_up", "Palette: Move Up", CommandKind.System);
@@ -170,6 +172,9 @@ public readonly record struct CommandDef(
             ["drives", "volumes", "disks"]);
     public const string MountIdPrefix = DriveIdPrefix + "mount:";
     public const string FormatAsIdPrefix = "format.as:";
+    public const int DriveOrder = 1000;
+    public const int MountOrder = 2000;
+    public const int SetupOrder = 9000;
     public static readonly CommandDef ConnectToServer =
         new("nav.connect_server", "Connect to Server…", CommandKind.User, 8, CommandCategory.Navigation,
             ["network", "sftp", "ssh", "smb", "samba", "ftp", "ftps", "nfs", "webdav", "share", "remote"]);

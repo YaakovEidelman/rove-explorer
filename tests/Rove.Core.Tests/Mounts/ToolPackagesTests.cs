@@ -10,7 +10,7 @@ public class ToolPackagesTests
     {
         Assert.Equal(
             ["sudo", "pacman", "-S", "--needed", "udisks2", "polkit"],
-            ToolPackages.Command("NAME=\"Arch Linux\"\nID=arch\n", MountTool.UDisks));
+            ToolPackages.Command("NAME=\"Arch Linux\"\nID=arch\n", MountTool.UDisks)!);
     }
 
     [Fact]
@@ -18,10 +18,10 @@ public class ToolPackagesTests
     {
         Assert.Equal(
             ["sudo", "pacman", "-S", "--needed", "udisks2", "polkit"],
-            ToolPackages.Command("ID=manjaro\nID_LIKE=arch\n", MountTool.UDisks));
+            ToolPackages.Command("ID=manjaro\nID_LIKE=arch\n", MountTool.UDisks)!);
         Assert.Equal(
             ["sudo", "apt-get", "install", "libglib2.0-bin", "gvfs", "gvfs-backends"],
-            ToolPackages.Command("ID=pop\nID_LIKE=\"ubuntu debian\"\n", MountTool.Gio));
+            ToolPackages.Command("ID=pop\nID_LIKE=\"ubuntu debian\"\n", MountTool.Gio)!);
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public class ToolPackagesTests
 
         Assert.Equal(
             ["sudo", "pacman", "-S", "--needed", "udisks2", "polkit"],
-            ToolPackages.Command(omarchy, MountTool.UDisks));
+            ToolPackages.Command(omarchy, MountTool.UDisks)!);
         Assert.False(ToolPackages.IsReadOnlySystem(omarchy));
     }
 
@@ -40,7 +40,7 @@ public class ToolPackagesTests
     {
         Assert.Equal(
             ["sudo", "zypper", "install", "udisks2"],
-            ToolPackages.Command("ID=\"opensuse-tumbleweed\"\nID_LIKE=\"opensuse suse\"\n", MountTool.UDisks));
+            ToolPackages.Command("ID=\"opensuse-tumbleweed\"\nID_LIKE=\"opensuse suse\"\n", MountTool.UDisks)!);
     }
 
     [Fact]
