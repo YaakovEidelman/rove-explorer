@@ -94,6 +94,9 @@ these names for the `"mode"` form above.
 | `bookmarks`     | the bookmark list            |
 | `addbookmark`   | typing a path to bookmark    |
 | `addbookmarkcompletion` | the Tab completions under that path box |
+| `servers`       | the server list               |
+| `serverform`    | typing in the new/edit server form |
+| `serverformoption` | on a switch in that form   |
 | `settings`      | the settings list             |
 | `settingschoice` | the pop-up list of options for one setting |
 | `themeeditor`   | the custom color list        |
@@ -132,7 +135,19 @@ and `f1`–`f12`. Punctuation is written as itself: `/`, `.`, `,`, `-`, `=`,
 | `content.path_complete_down` | Completions: move down |
 | `content.path_complete_dismiss` | Completions: close the list |
 | `nav.drives`             | Go to drive…              |
-| `nav.connect_server`     | Connect to a server (`Ctrl+G`) |
+| `nav.servers`            | Open the server list (`Ctrl+G`) |
+| `nav.connect_server`     | Open the server list on a new server form |
+| `servers.move_up`        | Servers: move up          |
+| `servers.move_down`      | Servers: move down        |
+| `servers.execute`        | Servers: connect to selected (`Enter`) |
+| `servers.edit`           | Servers: edit selected (`Ctrl+E`) |
+| `servers.disconnect`     | Servers: disconnect selected (`Ctrl+X`) |
+| `servers.forget`         | Servers: forget selected (`Ctrl+D`) |
+| `servers.form_next`      | Server form: next field (`Tab`) |
+| `servers.form_previous`  | Server form: previous field (`Shift+Tab`) |
+| `servers.form_toggle`    | Server form: flip a switch (`Space`) |
+| `servers.form_apply`     | Server form: connect, or save an edit (`Enter`) |
+| `servers.form_cancel`    | Server form: back to the list (`Esc`) |
 | `content.open_with`      | Open the highlighted file with a chosen app |
 | `content.open_terminal`  | Open a terminal in the current folder |
 | `nav.trash`              | Go to the trash           |
@@ -171,8 +186,9 @@ leaving the path box. Completing a folder leaves the separator on the end, so
 
 USB drives and disks come straight from UDisks, the system disk service (`udisks2` and `polkit`).
 Phones and servers go through `gio`, the same GNOME tool Nautilus and Thunar use, so those need
-GLib and gvfs. `g` ("Go to Drive…") lists all of them next to the normal drives, one row per
-drive. Typing filters the list by name. Picking a USB drive, disk, phone, image or server opens a
+GLib and gvfs. `g` ("Go to Drive…") lists drives, phones and images next to the normal drives,
+one row per drive. Servers are not in it; they have their own tab (see below). Typing filters the
+list by name. Picking a USB drive, disk, phone or image opens a
 second list of what you can do with it ("Go to", "Unmount", "Eject", "Format…"), and `Esc` steps
 back to the drives. Picking a normal drive goes straight there. The same actions are also in the
 command palette by full name, like "Unmount USB 1: STICK":
@@ -193,7 +209,6 @@ command palette by full name, like "Unmount USB 1: STICK":
   It wipes the whole stick and makes one partition that fills it, so a stick flashed with an
   installer (like an Omarchy ISO) comes back to its full size.
   The drive keeps its number.
-- **Connected servers.** "Go to Server …" and "Disconnect Server …".
 - **Missing tools.** If UDisks or `gio` isn't installed, "Set up USB drives" or "Set up phones and
   servers" shows up instead. Desktops like GNOME and KDE include both; a bare Arch install doesn't.
   On Arch, Debian/Ubuntu, Fedora and openSUSE (and distros based on them), it offers to open a
@@ -214,14 +229,34 @@ label and letter after it: `USB 1: SanDisk Cruzer (STICK, E:)`. Windows mounts t
 there's no "Open" or "Unmount", just "Go to", "Eject" and "Format". Format offers exFAT, FAT32 and
 NTFS, and Windows asks for admin rights first. Phones and servers are Linux only for now.
 
-`Ctrl+G` ("Connect to Server…") asks for an address. You can also type one straight into the path
-bar (`Ctrl+L`). Any gvfs address works: `sftp://me@host/folder` (or `ssh://`),
-`smb://nas/share`, `ftp://`, `ftps://`, `nfs://`, `dav://`/`davs://` (WebDAV) and `afp://`.
-Without a user in the address, Rove tries an anonymous login first. When a server wants a user or
-password, or asks you to trust an unknown SSH host key, Rove asks in a box. `Esc` gives up.
+The drive list updates on its own when something is plugged in or removed.
 
-The list updates on its own when something is plugged in or removed. On Windows, USB drives show
-up as normal drive letters. Connecting to servers and phones is Linux-only for now.
+### Servers
+
+`Ctrl+G` ("Servers…") opens the Servers tab, one of the tabs in the palette card. It lists your
+saved servers, plus any server that is connected right now. Connected ones say so. Typing narrows
+the list. `Enter` connects and goes there, `Ctrl+E` edits a saved server, `Ctrl+X` disconnects, and
+`Ctrl+D` forgets it (and its saved password).
+
+"Connect to a new server…" at the top opens a form: address, user, password, a name, and two
+switches, "Remember this server" and "Save the password in the keyring". `Tab` moves between the
+fields, `Space` flips a switch, `Enter` connects, and `Esc` goes back to the list. The user and
+password are optional; leave them empty and Rove asks if the server wants them. The server is only
+saved once the connection works. Editing a saved server saves the changes without connecting.
+
+The two switches start from the "Servers" section of Settings: "Remember new servers" (on by
+default) and "Save server passwords in the keyring" (off by default). Saved servers live in
+`servers.json` next to `bookmarks.json`, without passwords. Passwords only go in the system keyring
+(GNOME Keyring, KWallet or anything else that speaks the Secret Service), and only if you turn that
+on.
+
+You can also type an address straight into the path bar (`Ctrl+L`). Any gvfs address works:
+`sftp://me@host/folder` (or `ssh://`), `smb://nas/share`, `ftp://`, `ftps://`, `nfs://`,
+`dav://`/`davs://` (WebDAV) and `afp://`. Without a user in the address, Rove tries an anonymous
+login first. When a server wants a user or password, or asks you to trust an unknown SSH host key,
+Rove asks in a box. `Esc` gives up.
+
+Connecting to servers is Linux-only for now.
 
 ### Open Terminal Here
 
@@ -263,12 +298,12 @@ whatever opens text.
 | `palette.move_down`  | Palette: move down     |
 | `palette.execute`    | Palette: run selected  |
 | `palette.back`       | Palette: back one list, or close (`Esc`) |
-| `quickaccess.next_tab` | Commands/Search/Bookmarks/Settings: next tab |
-| `quickaccess.previous_tab` | Commands/Search/Bookmarks/Settings: previous tab |
+| `quickaccess.next_tab` | Commands/Search/Bookmarks/Servers/Settings: next tab |
+| `quickaccess.previous_tab` | Commands/Search/Bookmarks/Servers/Settings: previous tab |
 
-The command palette, deep search, bookmark list, and settings share one card
+The command palette, deep search, bookmark list, server list, and settings share one card
 on screen — whichever one you opened decides what's showing, and `Tab` /
-`Shift+Tab` move to the next or previous of the four without closing the
+`Shift+Tab` move to the next or previous of the five without closing the
 card.
 
 ### The command palette
@@ -308,7 +343,8 @@ rather than shown disabled.
 | `settings.theme_editor_apply_field` | Custom colors: apply the typed hex |
 | `settings.theme_editor_cancel_field` | Custom colors: cancel the edit  |
 
-Settings is grouped into sections (Appearance, Behavior, Updates, and — on Linux — Integration).
+Settings is grouped into sections (Appearance, Behavior, Servers, Updates, and — on Linux —
+Integration).
 `h`/`l` (or `Left`/`Right`) switch sections; `j`/`k` move within the current one, same as
 everywhere else. Each setting takes effect and saves the moment you change it — there is no
 separate save step.

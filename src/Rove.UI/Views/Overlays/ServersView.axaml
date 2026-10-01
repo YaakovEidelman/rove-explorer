@@ -1,0 +1,166 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Rove.UI.ViewModels"
+             xmlns:behaviors="using:Rove.UI.Behaviors"
+             mc:Ignorable="d"
+             x:Class="Rove.UI.Views.ServersView"
+             x:DataType="vm:ServersViewModel">
+    <UserControl.Styles>
+        <Style Selector="Border.formrow">
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Border.formrow.active">
+            <Setter Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+        </Style>
+        <Style Selector="Border.formrow.off">
+            <Setter Property="Opacity" Value="0.45" />
+        </Style>
+        <Style Selector="TextBlock.formlabel">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Width" Value="84" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
+        </Style>
+    </UserControl.Styles>
+    <Grid RowDefinitions="Auto, *, Auto">
+        <TextBox Grid.Row="0"
+                 Text="{Binding SearchText}"
+                 PlaceholderText="find a server…"
+                 IsVisible="{Binding !InForm}"
+                 behaviors:FocusOnTrue.Focus="{Binding FocusSearch}"
+                 Margin="0,0,0,8">
+            <TextBox.InnerLeftContent>
+                <Path Classes="overlayicon" Data="M1,3 L15,3 L15,7 L1,7 Z M1,9 L15,9 L15,13 L1,13 Z M3,5 L4,5 M3,11 L4,11" />
+            </TextBox.InnerLeftContent>
+        </TextBox>
+        <ListBox x:Name="server_list"
+                 Grid.Row="1"
+                 ItemsSource="{Binding Items}"
+                 SelectedIndex="{Binding SelectedIndex}"
+                 IsVisible="{Binding !InForm}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ServerRow">
+                    <Panel>
+                        <TextBlock Text="+ Connect to a new server…" FontSize="13" IsVisible="{Binding IsAddNew}" />
+                        <DockPanel IsVisible="{Binding !IsAddNew}">
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6"
+                                        VerticalAlignment="Center" Margin="8,0,0,0">
+                                <TextBlock Text="password saved" FontSize="11"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           IsVisible="{Binding HasSavedPassword}" />
+                                <Border Classes="valuechip" IsVisible="{Binding IsConnected}">
+                                    <TextBlock Text="connected" />
+                                </Border>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Title}" FontSize="13" />
+                                <TextBlock Text="{Binding Detail}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DockPanel>
+                    </Panel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock Grid.Row="1"
+                   Text="No servers yet. Pick “Connect to a new server” to add one."
+                   Foreground="{DynamicResource TextSecondaryBrush}"
+                   FontSize="12"
+                   HorizontalAlignment="Center"
+                   Margin="0,40,0,0"
+                   VerticalAlignment="Top"
+                   IsVisible="{Binding ShowEmpty}" />
+
+        <StackPanel Grid.Row="0" Grid.RowSpan="2" Spacing="2" IsVisible="{Binding InForm}">
+            <TextBlock Classes="cardtitle" Margin="8,0,0,6" Text="{Binding FormTitle}" />
+            <Border Classes="formrow" Classes.active="{Binding FocusAddress}">
+                <DockPanel>
+                    <TextBlock Classes="formlabel" Text="Address" />
+                    <TextBox Text="{Binding FormAddress}" PlaceholderText="sftp://host/folder"
+                             behaviors:FocusOnTrue.Focus="{Binding FocusAddress}"
+                             behaviors:FocusOnTrue.SelectAll="False" />
+                </DockPanel>
+            </Border>
+            <Border Classes="formrow" Classes.active="{Binding FocusUser}">
+                <DockPanel>
+                    <TextBlock Classes="formlabel" Text="User" />
+                    <TextBox Text="{Binding FormUser}" PlaceholderText="optional"
+                             behaviors:FocusOnTrue.Focus="{Binding FocusUser}" />
+                </DockPanel>
+            </Border>
+            <Border Classes="formrow" Classes.active="{Binding FocusPassword}">
+                <DockPanel>
+                    <TextBlock Classes="formlabel" Text="Password" />
+                    <TextBox Text="{Binding FormPassword}" PasswordChar="•"
+                             PlaceholderText="{Binding PasswordPlaceholder}"
+                             behaviors:FocusOnTrue.Focus="{Binding FocusPassword}" />
+                </DockPanel>
+            </Border>
+            <Border Classes="formrow" Classes.active="{Binding FocusName}">
+                <DockPanel>
+                    <TextBlock Classes="formlabel" Text="Name" />
+                    <TextBox Text="{Binding FormName}" PlaceholderText="optional, like work or nas"
+                             behaviors:FocusOnTrue.Focus="{Binding FocusName}" />
+                </DockPanel>
+            </Border>
+            <Border Classes="formrow" Classes.active="{Binding FocusRemember}"
+                    Focusable="True" behaviors:FocusOnTrue.Focus="{Binding FocusRemember}">
+                <DockPanel>
+                    <Border DockPanel.Dock="Right" Classes="toggletrack" Classes.on="{Binding FormRemember}">
+                        <Ellipse Classes="togglethumb" />
+                    </Border>
+                    <TextBlock Text="Remember this server" FontSize="13" VerticalAlignment="Center" />
+                </DockPanel>
+            </Border>
+            <Border Classes="formrow" Classes.active="{Binding FocusSavePassword}"
+                    Classes.off="{Binding !PasswordOptionEnabled}"
+                    IsVisible="{Binding CanSavePasswords}"
+                    Focusable="True" behaviors:FocusOnTrue.Focus="{Binding FocusSavePassword}">
+                <DockPanel>
+                    <Border DockPanel.Dock="Right" Classes="toggletrack" Classes.on="{Binding FormSavePassword}">
+                        <Ellipse Classes="togglethumb" />
+                    </Border>
+                    <TextBlock Text="Save the password in the keyring" FontSize="13" VerticalAlignment="Center" />
+                </DockPanel>
+            </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0"
+                    IsVisible="{Binding !InForm}">
+            <Border Classes="kbd"><TextBlock Text="Enter" /></Border>
+            <TextBlock Classes="hint" Text="connect" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Ctrl+E" /></Border>
+            <TextBlock Classes="hint" Text="edit" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Ctrl+X" /></Border>
+            <TextBlock Classes="hint" Text="disconnect" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Ctrl+D" /></Border>
+            <TextBlock Classes="hint" Text="forget" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+            <TextBlock Classes="hint" Text="close" />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="4" Margin="2,10,2,0"
+                    IsVisible="{Binding InForm}">
+            <Border Classes="kbd"><TextBlock Text="Tab" /></Border>
+            <TextBlock Classes="hint" Text="next field" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Space" /></Border>
+            <TextBlock Classes="hint" Text="switch" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Enter" /></Border>
+            <TextBlock Classes="hint" Text="connect / save" />
+            <TextBlock Classes="hintsep" Text="·" />
+            <Border Classes="kbd"><TextBlock Text="Esc" /></Border>
+            <TextBlock Classes="hint" Text="back" />
+        </StackPanel>
+    </Grid>
+</UserControl>

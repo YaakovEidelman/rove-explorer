@@ -17,9 +17,9 @@ public readonly record struct CommandDef(
     public static readonly CommandDef PaletteExecute = new("palette.execute", "Palette: Run Selected", CommandKind.System);
     public static readonly CommandDef PaletteBack = new("palette.back", "Palette: Back or Close", CommandKind.System);
     public static readonly CommandDef QuickAccessNextTab =
-        new("quickaccess.next_tab", "Quick Access: Next Tab (Commands/Search/Bookmarks)", CommandKind.System);
+        new("quickaccess.next_tab", "Quick Access: Next Tab", CommandKind.System);
     public static readonly CommandDef QuickAccessPreviousTab =
-        new("quickaccess.previous_tab", "Quick Access: Previous Tab (Commands/Search/Bookmarks)", CommandKind.System);
+        new("quickaccess.previous_tab", "Quick Access: Previous Tab", CommandKind.System);
 
     public static readonly CommandDef ContentMoveUp = new("content.move_up", "Move Up", CommandKind.System);
     public static readonly CommandDef ContentMoveDown = new("content.move_down", "Move Down", CommandKind.System);
@@ -177,9 +177,32 @@ public readonly record struct CommandDef(
     public const int DriveOrder = 1000;
     public const int MountOrder = 2000;
     public const int SetupOrder = 9000;
+    public static readonly CommandDef ShowServers =
+        new("nav.servers", "Servers…", CommandKind.User, 8, CommandCategory.Navigation,
+            ["network", "sftp", "ssh", "smb", "samba", "ftp", "ftps", "nfs", "webdav", "share", "remote", "saved"]);
     public static readonly CommandDef ConnectToServer =
-        new("nav.connect_server", "Connect to Server…", CommandKind.User, 8, CommandCategory.Navigation,
+        new("nav.connect_server", "Connect to a New Server…", CommandKind.User, 8, CommandCategory.Navigation,
             ["network", "sftp", "ssh", "smb", "samba", "ftp", "ftps", "nfs", "webdav", "share", "remote"]);
+    public static readonly CommandDef ServersMoveUp = new("servers.move_up", "Servers: Move Up", CommandKind.System);
+    public static readonly CommandDef ServersMoveDown =
+        new("servers.move_down", "Servers: Move Down", CommandKind.System);
+    public static readonly CommandDef ServersExecute =
+        new("servers.execute", "Servers: Connect to Selected", CommandKind.System);
+    public static readonly CommandDef ServersEdit = new("servers.edit", "Servers: Edit Selected", CommandKind.System);
+    public static readonly CommandDef ServersForget =
+        new("servers.forget", "Servers: Forget Selected", CommandKind.System);
+    public static readonly CommandDef ServersDisconnect =
+        new("servers.disconnect", "Servers: Disconnect Selected", CommandKind.System);
+    public static readonly CommandDef ServerFormNext =
+        new("servers.form_next", "Server Form: Next Field", CommandKind.System);
+    public static readonly CommandDef ServerFormPrevious =
+        new("servers.form_previous", "Server Form: Previous Field", CommandKind.System);
+    public static readonly CommandDef ServerFormToggle =
+        new("servers.form_toggle", "Server Form: Toggle Option", CommandKind.System);
+    public static readonly CommandDef ServerFormApply =
+        new("servers.form_apply", "Server Form: Connect", CommandKind.System);
+    public static readonly CommandDef ServerFormCancel =
+        new("servers.form_cancel", "Server Form: Cancel", CommandKind.System);
     public static readonly CommandDef PromptApply = new("prompt.apply", "Prompt: Submit", CommandKind.System);
     public static readonly CommandDef PromptCancel = new("prompt.cancel", "Prompt: Cancel", CommandKind.System);
     public static readonly CommandDef ShowTrash =

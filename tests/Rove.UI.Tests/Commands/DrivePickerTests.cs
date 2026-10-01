@@ -57,7 +57,7 @@ public class DrivePickerTests
         palette.OpenScoped(MountsViewModel.DrivePicker);
 
         Assert.Equal(
-            ["Drive /", "USB Drive BACKUP", "USB Drive STICK", "Server nas", "Phones and servers: install gio"],
+            ["Drive /", "USB Drive BACKUP", "USB Drive STICK", "Phones and servers: install gio"],
             Rows(palette));
     }
 

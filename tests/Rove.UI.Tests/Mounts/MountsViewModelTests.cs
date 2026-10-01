@@ -106,11 +106,24 @@ public class MountsViewModelTests : HeadlessTest
     {
         Setup setup = new();
 
+        setup.Model.Show([UnmountedStick]);
+
+        Assert.Equal(["Format USB Drive STICK…", "Open USB Drive STICK"], setup.Titles());
+    });
+
+    [Fact]
+    public Task ServersStayOutOfTheDriveListAndGoToTheServersTab() => OnUiThread(() =>
+    {
+        Setup setup = new();
+        MountEntry[]? told = null;
+        setup.Model.ServersChanged += servers => told = servers;
+
         setup.Model.Show([UnmountedStick, Server]);
 
-        Assert.Equal(
-            ["Disconnect Server nas", "Format USB Drive STICK…", "Go to Server nas", "Open USB Drive STICK"],
-            setup.Titles());
+        Assert.DoesNotContain(setup.Titles(), title => title.Contains("nas"));
+        Assert.NotNull(told);
+        Assert.Equal([Server], told);
+        Assert.Equal([Server], setup.Model.Servers);
     });
 
     [Fact]
@@ -280,11 +293,12 @@ public class MountsViewModelTests : HeadlessTest
     public Task CommandsForDrivesThatAreGoneAreDropped() => OnUiThread(() =>
     {
         Setup setup = new();
-        setup.Model.Show([UnmountedStick, Server]);
+        setup.Model.Show([UnmountedStick, MountedStick with { Device = "/dev/sdc1", Name = "OTHER" }]);
 
-        setup.Model.Show([Server]);
+        setup.Model.Show([MountedStick with { Device = "/dev/sdc1", Name = "OTHER" }]);
 
-        Assert.Equal(["Disconnect Server nas", "Go to Server nas"], setup.Titles());
+        Assert.NotEmpty(setup.Titles());
+        Assert.All(setup.Titles(), title => Assert.Contains("OTHER", title));
     });
 
     [Fact]
@@ -362,27 +376,46 @@ public class MountsViewModelTests : HeadlessTest
     });
 
     [Fact]
-    public Task ConnectToServerAsksForTheAddress() => OnUiThread(() =>
+    public Task ConnectingGoesThereAndSaysItWorked() => OnUiThread(() =>
     {
-        Setup setup = new(reply: "sftp://me@host/srv");
+        Setup setup = new();
+        bool? connected = null;
+        async Task Connect() => connected = await setup.Model.ConnectAsync("sftp://me@host/srv");
 
-        setup.Registry.TryExecute(CommandDef.ConnectToServer.Id);
+        _ = Connect();
         Pump();
 
+        Assert.True(connected);
         Assert.Equal(["connect sftp://me@host/srv", "go /run/media/me/STICK"], setup.Service.Calls);
     });
 
     [Fact]
-    public Task SomethingThatIsNotAnAddressIsRefused() => OnUiThread(() =>
+    public Task AFailedConnectionStaysPutAndSaysSo() => OnUiThread(() =>
     {
-        Setup setup = new(reply: "/home/me");
+        Setup setup = new();
+        setup.Service.OnConnect = (_, _) =>
+            Task.FromResult(Rove.Core.Protocol.CommandResult<string>.Fail("connect_failed", "No route to host."));
         string? error = null;
         setup.Model.ErrorRaised += message => error = message;
+        bool? connected = null;
+        async Task Connect() => connected = await setup.Model.ConnectAsync("sftp://host/");
 
-        setup.Registry.TryExecute(CommandDef.ConnectToServer.Id);
+        _ = Connect();
         Pump();
 
-        Assert.Empty(setup.Service.Calls);
-        Assert.NotNull(error);
+        Assert.False(connected);
+        Assert.Equal("No route to host.", error);
+        Assert.Empty(setup.Visited);
+    });
+
+    [Fact]
+    public Task DisconnectingAServerUnmountsIt() => OnUiThread(() =>
+    {
+        Setup setup = new();
+
+        _ = setup.Model.DisconnectAsync(Server);
+        Pump();
+
+        Assert.Equal(["unmount nas"], setup.Service.Calls);
     });
 }

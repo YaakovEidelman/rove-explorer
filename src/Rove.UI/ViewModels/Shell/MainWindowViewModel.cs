@@ -25,6 +25,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public PreviewViewModel Preview { get; }
     public FileOperationViewModel FileOperation { get; }
     public SettingsViewModel Settings { get; }
+    public ServersViewModel Servers { get; }
 
     [ObservableProperty]
     private string _statusError = string.Empty;
@@ -40,12 +41,13 @@ public partial class MainWindowViewModel : ViewModelBase
     public bool IsErrorShown => StatusError.Length > 0;
 
     public bool IsQuickAccessOpen =>
-        Palette.IsPaletteOpen || GlobalSearch.IsOpen || Bookmarks.IsOpen || Settings.IsOpen;
+        Palette.IsPaletteOpen || GlobalSearch.IsOpen || Bookmarks.IsOpen || Servers.IsOpen || Settings.IsOpen;
 
     public string QuickAccessTitle =>
         Palette.IsPaletteOpen ? "COMMANDS"
         : GlobalSearch.IsOpen ? "SEARCH"
         : Bookmarks.IsOpen ? "BOOKMARKS"
+        : Servers.IsOpen ? "SERVERS"
         : Settings.IsOpen ? "SETTINGS"
         : "";
 
@@ -64,6 +66,7 @@ public partial class MainWindowViewModel : ViewModelBase
         FileClipboard clipboard,
         FileOperationViewModel fileOperation,
         SettingsViewModel settings,
+        ServersViewModel servers,
         string? startupWarning = null,
         UpdateService? updates = null,
         IMountService? mountService = null,
@@ -81,11 +84,16 @@ public partial class MainWindowViewModel : ViewModelBase
         Preview = preview;
         FileOperation = fileOperation;
         Settings = settings;
+        Servers = servers;
         Prompt = new(registry);
+        OverlayMountPrompter prompter = new(Prompt, Confirm);
         if (mountService is not null)
-            Mounts = new(registry, mountService, new OverlayMountPrompter(Prompt, Confirm),
+        {
+            Mounts = new(registry, mountService, prompter,
                 path => ContentPage.SetCurrentDirectoryAsync(path), () => ContentPage.DirectoryListing.CurrentDir,
                 new DriveNumbers(RovePaths.DriveNumbersFile), tabs.Places, toolInstaller);
+            Servers.Attach(Mounts, prompter);
+        }
 
         _registry.Register(CommandDef.CloseApp, CloseApp);
         _registry.Register(CommandDef.ToggleTheme, ToggleTheme);
@@ -113,6 +121,8 @@ public partial class MainWindowViewModel : ViewModelBase
         Bookmarks.GoRequested += path => ContentPage.GoToBookmark(path);
         Bookmarks.InfoRaised += message => StatusInfo = message;
         Settings.InfoRaised += message => StatusInfo = message;
+        Servers.InfoRaised += message => StatusInfo = message;
+        Servers.ErrorRaised += message => StatusError = message;
 
         FileOperation.InfoRaised += message => StatusInfo = message;
         FileOperation.PropertyChanged += OnSurfaceChanged;
@@ -133,6 +143,7 @@ public partial class MainWindowViewModel : ViewModelBase
         Palette.Executed += EndHandoff;
         GlobalSearch.PropertyChanged += OnSurfaceChanged;
         Bookmarks.PropertyChanged += OnSurfaceChanged;
+        Servers.PropertyChanged += OnSurfaceChanged;
         Confirm.PropertyChanged += OnSurfaceChanged;
         Prompt.PropertyChanged += OnSurfaceChanged;
 

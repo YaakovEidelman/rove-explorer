@@ -5,7 +5,7 @@ namespace Rove.UI.ViewModels;
 public partial class MainWindowViewModel
 {
     private static readonly Mode[] QuickAccessTabs =
-        [Mode.Palette, Mode.GlobalSearch, Mode.Bookmarks, Mode.Settings];
+        [Mode.Palette, Mode.GlobalSearch, Mode.Bookmarks, Mode.Servers, Mode.Settings];
 
     private void CycleQuickAccessTab()
     {
@@ -32,6 +32,7 @@ public partial class MainWindowViewModel
             case Mode.Palette when !Palette.IsPaletteOpen: Palette.TogglePalette(); break;
             case Mode.GlobalSearch when !GlobalSearch.IsOpen: GlobalSearch.Toggle(); break;
             case Mode.Bookmarks when !Bookmarks.IsOpen: Bookmarks.Toggle(); break;
+            case Mode.Servers when !Servers.IsOpen: Servers.Toggle(); break;
             case Mode.Settings when !Settings.IsOpen: Settings.Toggle(); break;
         }
 
@@ -41,6 +42,8 @@ public partial class MainWindowViewModel
             GlobalSearch.Toggle();
         if (Bookmarks.IsOpen && target != Mode.Bookmarks)
             Bookmarks.Toggle();
+        if (Servers.IsOpen && target != Mode.Servers)
+            Servers.Toggle();
         if (Settings.IsOpen && target != Mode.Settings)
             Settings.Toggle();
     }

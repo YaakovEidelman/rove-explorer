@@ -73,8 +73,10 @@ public partial class App : Application
             _ = Task.Run(() => updates.CheckInBackgroundAsync(settings.Current.AutoUpdate, default));
 
             IMountService? mounts = MountServiceChooser.CreateForHost();
+            ISecretStore? secrets = SecretStoreChooser.CreateForHost();
+            ServersViewModel servers = new(registry, new ServerStore(), settings, secrets);
             MainWindowViewModel main = new(registry, tabs, palette, globalSearch, bookmarkList, confirm,
-                preview, fileClipboard, fileOperation, settingsPage, keymap.Summary, updates, mounts,
+                preview, fileClipboard, fileOperation, settingsPage, servers, keymap.Summary, updates, mounts,
                 OperatingSystem.IsLinux() ? new LinuxToolInstaller() : null);
             desktop.MainWindow = new MainWindow
             {
@@ -91,6 +93,7 @@ public partial class App : Application
                 core.Dispose();
                 updateHttp.Dispose();
                 mounts?.Dispose();
+                (secrets as IDisposable)?.Dispose();
             };
         }
 

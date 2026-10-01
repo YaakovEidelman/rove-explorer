@@ -256,6 +256,7 @@
                             <Ellipse Classes="qadot" Classes.active="{Binding Palette.IsPaletteOpen}" />
                             <Ellipse Classes="qadot" Classes.active="{Binding GlobalSearch.IsOpen}" />
                             <Ellipse Classes="qadot" Classes.active="{Binding Bookmarks.IsOpen}" />
+                            <Ellipse Classes="qadot" Classes.active="{Binding Servers.IsOpen}" />
                             <Ellipse Classes="qadot" Classes.active="{Binding Settings.IsOpen}" />
                         </StackPanel>
                         <TextBlock Classes="cardtitle" Text="{Binding QuickAccessTitle}" Margin="0" />
@@ -266,6 +267,8 @@
                                              DataContext="{Binding GlobalSearch}" IsVisible="{Binding IsOpen}" />
                     <views:BookmarksView Grid.Row="1"
                                           DataContext="{Binding Bookmarks}" IsVisible="{Binding IsOpen}" />
+                    <views:ServersView Grid.Row="1"
+                                        DataContext="{Binding Servers}" IsVisible="{Binding IsOpen}" />
                     <views:SettingsView Grid.Row="1"
                                          DataContext="{Binding Settings}" IsVisible="{Binding IsOpen}" />
                 </Grid>

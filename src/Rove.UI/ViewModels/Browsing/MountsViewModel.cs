@@ -6,9 +6,6 @@ namespace Rove.UI.ViewModels;
 
 public sealed class MountsViewModel
 {
-    private const string AddressHint =
-        "Type a server address, like sftp://me@host/folder, smb://nas/share or ftp://host.";
-
     private const int SetupChecks = 200;
 
     public static readonly PaletteScope DrivePicker = new(CommandDef.DriveIdPrefix, "pick a drive…");
@@ -41,7 +38,6 @@ public sealed class MountsViewModel
         _numbers = numbers ?? new DriveNumbers(null);
         _places = places ?? new DrivePlaces();
         _installer = installer;
-        _registry.Register(CommandDef.ConnectToServer, () => _ = ConnectToServerAsync());
     }
 
     public event Action<string>? ErrorRaised;
@@ -49,6 +45,10 @@ public sealed class MountsViewModel
     public event Action<string>? InfoRaised;
 
     public event Action<PaletteScope>? PickRequested;
+
+    public event Action<MountEntry[]>? ServersChanged;
+
+    public MountEntry[] Servers { get; private set; } = [];
 
     internal TimeSpan SetupCheckDelay { get; set; } = TimeSpan.FromSeconds(3);
 
@@ -72,10 +72,14 @@ public sealed class MountsViewModel
             .Where(entry => entry.LocalPath is not null)
             .Select(entry => (entry.LocalPath!, Label(entry))));
 
+        Servers = [.. numbered.Where(entry => entry.Kind == MountKind.Network)];
+        ServersChanged?.Invoke(Servers);
+
         HashSet<string> live = [];
         int order = CommandDef.MountOrder;
-        HashSet<string> shared = [.. numbered.GroupBy(Label).Where(same => same.Count() > 1).Select(same => same.Key)];
-        foreach (MountEntry entry in numbered.OrderBy(e => KindRank(e.Kind)).ThenBy(e => e.Number ?? int.MaxValue)
+        MountEntry[] drives = [.. numbered.Where(entry => entry.Kind != MountKind.Network)];
+        HashSet<string> shared = [.. drives.GroupBy(Label).Where(same => same.Count() > 1).Select(same => same.Key)];
+        foreach (MountEntry entry in drives.OrderBy(e => KindRank(e.Kind)).ThenBy(e => e.Number ?? int.MaxValue)
                      .ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ThenBy(e => e.Key, StringComparer.Ordinal))
         {
             string label = shared.Contains(Label(entry)) && entry.Device is { } device
@@ -119,20 +123,20 @@ public sealed class MountsViewModel
         }
     }
 
-    public Task ConnectAsync(string address) => RunAsync($"Connecting to {address.Trim()}…", async () =>
+    public async Task<bool> ConnectAsync(string address, IMountPrompter? prompter = null)
     {
-        CommandResult<string> result = await _service.ConnectAsync(address, _prompter, CancellationToken.None);
-        await OpenAsync(result);
-    });
-
-    private async Task ConnectToServerAsync()
-    {
-        string? address = await _prompter.AskTextAsync(AddressHint, "Address", secret: false, "sftp://");
-        if (address is { Length: > 0 } && MountAddress.LooksRemote(address))
-            await ConnectAsync(address);
-        else if (address is { Length: > 0 })
-            ErrorRaised?.Invoke($"{address} isn't a server address. {AddressHint}");
+        bool connected = false;
+        await RunAsync($"Connecting to {address.Trim()}…", async () =>
+        {
+            CommandResult<string> result =
+                await _service.ConnectAsync(address, prompter ?? _prompter, CancellationToken.None);
+            connected = result.IsOk;
+            await OpenAsync(result);
+        });
+        return connected;
     }
+
+    public Task DisconnectAsync(MountEntry server) => UnmountAsync(server, eject: false);
 
     private async Task SetUpAsync(MountTool tool)
     {
@@ -192,9 +196,7 @@ public sealed class MountsViewModel
             yield return ("goto", $"Go to {label}", "Go to", () => GoToAsync(entry, path));
 
         if (entry.CanUnmount)
-            yield return entry.Kind == MountKind.Network
-                ? ("unmount", $"Disconnect {label}", "Disconnect", () => UnmountAsync(entry, eject: false))
-                : ("unmount", $"Unmount {label}", "Unmount", () => UnmountAsync(entry, eject: false));
+            yield return ("unmount", $"Unmount {label}", "Unmount", () => UnmountAsync(entry, eject: false));
         if (entry.CanEject)
             yield return ("eject", $"{eject} {label}", eject, () => UnmountAsync(entry, eject: true));
         if (entry.Kind == MountKind.Removable)

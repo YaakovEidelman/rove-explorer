@@ -26,6 +26,8 @@ public static class RovePaths
 
     public static string SettingsFile => Path.Combine(ConfigDirectory, "settings.json");
 
+    public static string ServersFile => Path.Combine(ConfigDirectory, "servers.json");
+
     public static string CustomThemeFile => Path.Combine(ConfigDirectory, "theme.json");
 
     public static string DownloadsDirectory

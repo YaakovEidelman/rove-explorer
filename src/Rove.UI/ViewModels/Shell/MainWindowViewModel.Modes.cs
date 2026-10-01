@@ -40,6 +40,8 @@ public partial class MainWindowViewModel
                 return Mode.AddBookmarkCompletion;
             return Bookmarks.InAddBookmark ? Mode.AddBookmark : Mode.Bookmarks;
         }
+        if (Servers.IsOpen)
+            return !Servers.InForm ? Mode.Servers : Servers.OnOption ? Mode.ServerFormOption : Mode.ServerForm;
         if (Settings.IsOpen)
         {
             if (Settings.InChoice)
@@ -75,6 +77,10 @@ public partial class MainWindowViewModel
             "type to narrow · Ctrl+N/Ctrl+P move · Ctrl+Shift+N/P reorder · Enter go/add · Ctrl+D forget · Tab switch tab · Esc close",
         Mode.AddBookmark => "type a path · Tab complete · Enter add · Esc cancel",
         Mode.AddBookmarkCompletion => "Ctrl+N/Ctrl+P move · Tab go deeper · Enter add · Esc close list",
+        Mode.Servers =>
+            "type to narrow · Ctrl+N/Ctrl+P move · Enter connect · Ctrl+E edit · Ctrl+X disconnect · Ctrl+D forget · Tab switch tab · Esc close",
+        Mode.ServerForm => "type · Tab next field · Enter connect · Esc back",
+        Mode.ServerFormOption => "Space switch · Tab next field · Enter connect · Esc back",
         Mode.Settings => "j/k move · h/l section · Enter/Space change · Tab switch tab · Esc close",
         Mode.SettingsChoice => "j/k move · Enter pick · Esc cancel",
         Mode.ThemeEditor => "j/k move · Enter edit/toggle · Esc back to settings",

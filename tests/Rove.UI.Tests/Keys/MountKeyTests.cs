@@ -2,6 +2,7 @@ using Avalonia.Input;
 using Rove.Core.Protocol;
 using Rove.Core.Services;
 using Rove.UI.Services;
+using Rove.UI.ViewModels;
 using Xunit;
 
 namespace Rove.UI.Tests;
@@ -49,20 +50,20 @@ public class MountKeyTests : HeadlessTest
     });
 
     [Fact]
-    public Task CtrlGAsksForAServerAndEscCancels() => OnUiThread(() =>
+    public Task CtrlGOpensTheServersTabAndEscClosesIt() => OnUiThread(() =>
     {
         FakeMountService mounts = new();
         using WindowHarness harness = WindowHarness.Open(Fill, mounts: mounts);
 
         harness.Press(Key.G, RawInputModifiers.Control);
 
-        Assert.True(harness.Model.Prompt.IsOpen);
-        Assert.Equal(Mode.Prompt, harness.Model.GetCurrentMode());
-        Assert.Equal("sftp://", harness.Model.Prompt.Text);
+        Assert.True(harness.Model.Servers.IsOpen);
+        Assert.Equal(Mode.Servers, harness.Model.GetCurrentMode());
+        Assert.Equal("SERVERS", harness.Model.QuickAccessTitle);
 
         harness.Press(Key.Escape);
 
-        Assert.False(harness.Model.Prompt.IsOpen);
+        Assert.False(harness.Model.IsQuickAccessOpen);
         Assert.DoesNotContain(mounts.Calls, call => call.StartsWith("connect", StringComparison.Ordinal));
     });
 
@@ -109,19 +110,26 @@ public class MountKeyTests : HeadlessTest
     });
 
     [Fact]
-    public Task RefreshingTheDriveListKeepsServerCommands() => OnUiThread(() =>
+    public Task AConnectedServerIsInTheServersTabButNotTheDriveList() => OnUiThread(() =>
     {
         FakeMountService mounts = new();
         mounts.Entries.Add(new MountEntry(
             "nas", MountKind.Network, null, null, "smb://nas/share/", "/run/user/1000/gvfs/nas",
             CanMount: false, CanUnmount: true, CanEject: false));
         using WindowHarness harness = WindowHarness.Open(Fill, mounts: mounts);
+        for (int i = 0; i < 20 && harness.Model.Mounts!.Servers.Length == 0; i++)
+        {
+            Thread.Sleep(10);
+            harness.Settle();
+        }
 
         harness.Content.RefreshDriveCommands();
+        harness.Press(Key.G, RawInputModifiers.Control);
 
-        string[] ids = [.. harness.Registry.CommandIdsStartingWith(CommandDef.MountIdPrefix)];
-        Assert.Single(ids);
-        Assert.Equal(2, harness.Registry.CommandIdsStartingWith(CommandDef.MountActionIdPrefix).Count());
-        Assert.NotEmpty(harness.Registry.CommandIdsStartingWith(CommandDef.DriveIdPrefix).Except(ids));
+        Assert.Empty(harness.Registry.CommandIdsStartingWith(CommandDef.MountIdPrefix));
+        Assert.NotEmpty(harness.Registry.CommandIdsStartingWith(CommandDef.DriveIdPrefix));
+        ServerRow row = Assert.Single(harness.Model.Servers.Items, r => !r.IsAddNew);
+        Assert.True(row.IsConnected);
+        Assert.Equal("nas", row.Title);
     });
 }

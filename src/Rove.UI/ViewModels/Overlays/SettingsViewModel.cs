@@ -86,6 +86,10 @@ public partial class SettingsViewModel : ViewModelBase
             s.SortDownloadsByTime ? "On" : "Off", "Behavior", isToggle: true, isOn: s.SortDownloadsByTime);
         SetRow(SettingsRowKind.GroupByDate, "Group by date when sorted by date modified",
             s.GroupByDate ? "On" : "Off", "Behavior", isToggle: true, isOn: s.GroupByDate);
+        SetRow(SettingsRowKind.RememberServers, "Remember new servers", s.RememberServers ? "On" : "Off",
+            "Servers", isToggle: true, isOn: s.RememberServers);
+        SetRow(SettingsRowKind.SavePasswords, "Save server passwords in the keyring", s.SavePasswords ? "On" : "Off",
+            "Servers", isToggle: true, isOn: s.SavePasswords);
         SetRow(SettingsRowKind.AutoUpdate, "Auto-update", s.AutoUpdate ? "On" : "Off",
             "Updates", isToggle: true, isOn: s.AutoUpdate);
         if (OperatingSystem.IsLinux() && _portal is not null)
@@ -209,6 +213,8 @@ public partial class SettingsViewModel : ViewModelBase
             SettingsRowKind.SortDownloadsByTime => s with { SortDownloadsByTime = !s.SortDownloadsByTime },
             SettingsRowKind.GroupByDate => s with { GroupByDate = !s.GroupByDate },
             SettingsRowKind.AutoUpdate => s with { AutoUpdate = !s.AutoUpdate },
+            SettingsRowKind.RememberServers => s with { RememberServers = !s.RememberServers },
+            SettingsRowKind.SavePasswords => s with { SavePasswords = !s.SavePasswords },
             _ => s,
         });
 

@@ -9,5 +9,7 @@ public sealed record AppSettings(
     [property: JsonPropertyName("sortDownloadsByTime")] bool SortDownloadsByTime = true,
     [property: JsonPropertyName("groupByDate")] bool GroupByDate = true,
     [property: JsonPropertyName("autoUpdate")] bool AutoUpdate = false,
-    [property: JsonPropertyName("recentCommandIds")] string[]? RecentCommandIds = null
+    [property: JsonPropertyName("recentCommandIds")] string[]? RecentCommandIds = null,
+    [property: JsonPropertyName("rememberServers")] bool RememberServers = true,
+    [property: JsonPropertyName("savePasswords")] bool SavePasswords = false
 );

@@ -23,6 +23,8 @@ internal sealed class WindowHarness : IDisposable
 
     public CommandRegistry Registry { get; }
 
+    public required ServerStore SavedServers { get; init; }
+
     public ContentViewModel Content => Model.ContentPage;
 
     public TabsViewModel Tabs => Model.Tabs;
@@ -31,10 +33,13 @@ internal sealed class WindowHarness : IDisposable
 
     private readonly string _settingsFile;
 
+    private readonly string _serverFile;
+
     private WindowHarness(
         string root, RoveCore core, MainWindow window, MainWindowViewModel model,
-        BookmarkStore bookmarks, string bookmarkFile, string settingsFile, CommandRegistry registry)
+        BookmarkStore bookmarks, string bookmarkFile, string settingsFile, string serverFile, CommandRegistry registry)
     {
+        _serverFile = serverFile;
         Registry = registry;
         Root = root;
         Core = core;
@@ -45,7 +50,8 @@ internal sealed class WindowHarness : IDisposable
         _settingsFile = settingsFile;
     }
 
-    public static WindowHarness Open(Action<string> fill, IAdminSession? admin = null, IMountService? mounts = null)
+    public static WindowHarness Open(
+        Action<string> fill, IAdminSession? admin = null, IMountService? mounts = null, ISecretStore? secrets = null)
     {
         string root = Path.Combine(Path.GetTempPath(), "rove-ui-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -72,14 +78,21 @@ internal sealed class WindowHarness : IDisposable
 
         BookmarksViewModel bookmarkList = new(registry, bookmarks, core);
         SettingsViewModel settingsPage = new(registry, settings);
+        string serverFile = Path.Combine(Path.GetTempPath(), "rove-servers-" + Guid.NewGuid().ToString("N") + ".json");
+        ServerStore serverStore = new(serverFile);
+        ServersViewModel servers = new(registry, serverStore, settings, secrets);
         MainWindowViewModel model = new(
             registry, tabs, palette, search, bookmarkList, confirm, preview, fileClipboard, operation, settingsPage,
-            mountService: mounts);
+            servers, mountService: mounts);
 
         MainWindow window = new() { DataContext = model };
         window.Show();
 
-        WindowHarness harness = new(root, core, window, model, bookmarks, bookmarkFile, settingsFile, registry);
+        WindowHarness harness = new(
+            root, core, window, model, bookmarks, bookmarkFile, settingsFile, serverFile, registry)
+        {
+            SavedServers = serverStore,
+        };
         harness.GoTo(root);
         return harness;
     }
@@ -145,6 +158,7 @@ internal sealed class WindowHarness : IDisposable
             Directory.Delete(Root, recursive: true);
             File.Delete(_bookmarkFile);
             File.Delete(_settingsFile);
+            File.Delete(_serverFile);
         }
         catch (IOException)
         {

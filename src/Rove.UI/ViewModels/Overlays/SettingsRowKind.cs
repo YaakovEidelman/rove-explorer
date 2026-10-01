@@ -10,4 +10,6 @@ public enum SettingsRowKind
     GroupByDate,
     AutoUpdate,
     PortalIntegration,
+    RememberServers,
+    SavePasswords,
 }

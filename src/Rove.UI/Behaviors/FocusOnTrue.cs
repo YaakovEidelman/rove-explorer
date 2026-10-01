@@ -30,6 +30,8 @@ public class FocusOnTrue
                     textBox.SelectAll();
             }, DispatcherPriority.Render);
         }
+        else if (args.NewValue is true)
+            Dispatcher.UIThread.InvokeAsync(() => control.Focus(), DispatcherPriority.Render);
     }
 
     public static bool GetFocus(AvaloniaObject element) => element.GetValue(FocusProperty);
